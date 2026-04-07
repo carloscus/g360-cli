@@ -1,0 +1,27 @@
+{
+  "name": "g360-cli",
+  "version": "1.0.0",
+  "description": "CLI tool for bootstrapping G360 ecosystem projects",
+  "type": "module",
+  "main": "src/cli.js",
+  "bin": {
+    "g360": "./src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js",
+    "test": "echo \"No tests configured\""
+  },
+  "keywords": ["g360", "cli", "scaffolding", "generator"],
+  "author": "Carlos Cusi",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "fs-extra": "^11.2.0",
+    "inquirer": "^9.2.15",
+    "ora": "^7.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
