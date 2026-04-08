@@ -1,7 +1,7 @@
 {
-  "name": "mi-react-proyecto",
+  "name": "mi-solid-proyecto",
   "version": "1.0.0",
-  "description": "Proyecto G360 creado con React + Vite",
+  "description": "Proyecto G360 creado con SolidJS",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,12 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "solid-js": "^1.8.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.0",
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "vite-plugin-solid": "^2.8.0"
   },
   "author": "@carloscus",
   "license": "MIT"

@@ -8,12 +8,13 @@ import { progress } from '../lib/progress.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export async function init(name, options) {
-  const { template = 'web-pwa', dir = '.', dryRun = false, force = false } = options;
+  const { template = 'web-pwa', skill = 'corporativo-movil', dir = '.', dryRun = false, force = false } = options;
   const targetDir = path.join(process.cwd(), dir, name);
   
   console.log(chalk.bold.cyan('\n🚀 G360 Project Initialization\n'));
   console.log(`Project: ${chalk.yellow(name)}`);
   console.log(`Template: ${chalk.blue(template)}`);
+  console.log(`Skill: ${chalk.magenta(skill)}`);
   console.log(`Target: ${chalk.gray(targetDir)}\n`);
 
   const templatesPath = path.join(__dirname, '../assets/templates');

@@ -94,6 +94,7 @@ g360 init <nombre> [opciones]
 | Opción | Descripción | Valor por defecto |
 |--------|-------------|-------------------|
 | `-t, --template <tipo>` | Tipo de plantilla | `web-pwa` |
+| `-s, --skill <skill>` | Skill a usar | `corporativo-movil` |
 | `-d, --dir <ruta>` | Directorio destino | `.` |
 | `--dry-run` | Previsualizar sin crear | `false` |
 | `--force` | Sobrescribir existente | `false` |
@@ -101,14 +102,47 @@ g360 init <nombre> [opciones]
 **Ejemplos:**
 
 ```bash
-# Proyecto web PWA
-g360 init mi-webapp
+# Proyecto Lit para cliente móvil
+g360 init mi-proyecto --template lit-web --skill corporativo-movil
 
-# Proyecto Python CLI
-g360 init mi-cli --template python-cli
+# Proyecto Solid para herramienta propia
+g360 init mi-herramienta --template solid-web --skill moderno-movil
+
+# Proyecto SvelteKit minimalista
+g360 init mi-script --template svelte-web --skill minimalista
 
 # Preview sin crear
 g360 init mi-proyecto --dry-run
+```
+
+---
+
+### `g360 set-skill`
+
+Cambia el skill del proyecto actual.
+
+```bash
+g360 set-skill <skill> [opciones]
+```
+
+**Opciones:**
+
+| Opción | Descripción |
+|--------|-------------|
+| `--verbose` | Mostrar detalles |
+| `--force` | Sobrescribir skill existente |
+
+**Ejemplos:**
+
+```bash
+# Cambiar a skill corporativo para PC
+g360 set-skill corporativo
+
+# Cambiar a skill moderno para móvil
+g360 set-skill moderno-movil
+
+# Ver detalles del skill
+g360 set-skill corporativo-g360 --verbose
 ```
 
 ---
@@ -307,17 +341,71 @@ g360 update
 
 ## Plantillas
 
-### web-pwa
+### lit-web
 
-Plantilla PWA con soporte offline.
+Plantilla Web Components con Lit.
 
 ```
 mi-proyecto/
 ├── index.html
-├── styles.css
+├── src/
+│   ├── index.js
+│   ├── components/
+│   │   └── app-root.js
+│   └── styles/
+│       └── main.css
+├── vite.config.js
+├── package.json
+└── skill.json
+```
+
+### solid-web
+
+Plantilla con SolidJS.
+
+```
+mi-proyecto/
+├── index.html
+├── src/
+│   ├── index.jsx
+│   ├── components/
+│   │   └── App.jsx
+│   └── styles/
+│       └── main.css
+├── vite.config.js
+├── package.json
+└── skill.json
+```
+
+### svelte-web
+
+Plantilla con SvelteKit.
+
+```
+mi-proyecto/
+├── src/
+│   ├── app.html
+│   ├── app.css
+│   ├── routes/
+│   │   └── +page.svelte
+│   └── core/
+│       └── skill.json
+├── svelte.config.js
+├── package.json
+└── skill.json
+```
+
+### web-pwa (React)
+
+Plantilla React + Vite con PWA.
+
+```
+mi-proyecto/
+├── index.html
 ├── app.js
+├── styles.css
 ├── manifest.json
-└── g360-manifest.json
+└── package.json
 ```
 
 ### python-cli
@@ -331,7 +419,7 @@ mi-cli/
 │   └── core/
 │       └── skill.json
 ├── requirements.txt
-└── g360-manifest.json
+└── skill.json
 ```
 
 ### vba-excel
@@ -344,28 +432,37 @@ mi-excel/
 │   ├── Module_Main.bas
 │   ├── g360-datamap.bas
 │   └── skill.json
-└── g360-manifest.json
+└── skill.json
 ```
 
 ---
 
 ## Componentes
 
-### G360Signature
+### g360-signature
 
-Firma HTML para emails y documentos.
+Firma G360 para proyectos web (Web Component).
 
-```jsx
-import G360Signature from './g360/components/G360Signature.jsx';
+```html
+<!-- Modo para clientes -->
+<g360-signature mode="powered"></g360-signature>
 
-const firma = G360Signature({
-  name: 'Carlos Cusi',
-  role: 'Developer',
-  company: 'G360',
-  email: 'carlos@g360.dev',
-  phone: '+51 999 123 456'
-});
+<!-- Modo propio -->
+<g360-signature mode="own"></g360-signature>
+
+<!-- Con versión -->
+<g360-signature mode="powered" version="1.0.0"></g360-signature>
 ```
+
+**Atributos:**
+- `mode`: "own" (G360 by ccusi) o "powered" (powered by G360)
+- `version`: Número de versión opcional
+
+**Características:**
+- Isotipo: 3 puntos verticales + chevron >
+- Colores: #00d084 (verde), #94a3b8 (gris)
+- Opacidad: 0.4 por defecto, 1.0 en hover
+- Tema: auto-detecta prefers-color-scheme
 
 ### G360DragModal
 
@@ -386,52 +483,51 @@ G360DragModal({
 
 ## Skills
 
-### g360-skill-audit
+Los skills definen el estilo visual, dispositivo y signature del proyecto.
 
-Audita código fuente.
+### corporativo
 
-```javascript
-import { audit } from './g360/engine/g360-skill-audit.mjs';
+Proyectos para clientes - estilo corporativo conservador (PC).
 
-const results = await audit(codeString, { verbose: true });
-console.log(results.score, results.issues);
-```
+### corporativo-movil
 
-### g360-skill-meta-evaluator
+Proyectos para clientes - estilo corporativo - enfoque móvil.
 
-Evalúa meta tags SEO.
+### corporativo-g360
 
-```javascript
-import { evaluateMetaTags } from './g360/engine/g360-skill-meta-evaluator.mjs';
+Proyectos para clientes con colores G360 vibrantes (PC).
 
-const results = await evaluateMetaTags(htmlString);
-console.log(results.score, results.tags);
-```
+### corporativo-g360-movil
 
-### g360-field-mapper
+Proyectos para clientes con colores G360 - enfoque móvil.
 
-Mapea campos entre sistemas.
+### moderno
 
-```javascript
-import { mapField, validateMapping } from './g360/engine/g360-field-mapper.js';
+Herramientas propias G360 - estilo innovador (PC).
 
-const mapping = mapField('cliente_nombre', fieldMap);
-const validation = validateMapping(data, fieldMap);
-```
+### moderno-movil
 
-### g360-data-validator
+Herramientas propias G360 - estilo innovador (móvil).
 
-Valida datos contra reglas.
+### minimalista
 
-```javascript
-import { validate } from './g360/engine/g360-data-validator.js';
+Proyectos minimalistas - scripts, CLI, Python.
 
-const rules = {
-  email: { required: true, type: 'string' },
-  edad: { type: 'number', min: 18, max: 99 }
-};
+### custom
 
-const results = validate(data, rules);
+Configuración personalizada - colores ajustables.
+
+### Ejemplos de uso
+
+```bash
+# Al crear proyecto
+g360 init mi-proyecto --skill corporativo-movil
+
+# Cambiar skill después
+g360 set-skill moderno
+
+# Ver skills disponibles
+g360 list skills
 ```
 
 ---
