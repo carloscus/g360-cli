@@ -147,6 +147,42 @@ g360 set-skill corporativo-g360 --verbose
 
 ---
 
+### `g360 convert`
+
+Convierte un proyecto existente a identidad G360.
+
+```bash
+g360 convert [ruta] [opciones]
+```
+
+**Opciones:**
+
+| Opción | Descripción | Valor por defecto |
+|--------|-------------|-------------------|
+| `-s, --skill <skill>` | Skill a aplicar | `corporativo-movil` |
+| `--dry-run` | Previsualizar sin aplicar | `false` |
+| `--restructure` | Reestructurar archivos | `false` |
+| `--force` | Forzar cambios peligrosos | `false` |
+| `--backup` | Crear backup antes | `false` |
+
+**Ejemplos:**
+
+```bash
+# Preview de cambios
+g360 convert . --dry-run
+
+# Convertir proyecto existente
+g360 convert ./mi-proyecto --skill corporativo
+
+# Con backup automático
+g360 convert . --skill moderno --backup
+
+# Forzar cambios peligrosos
+g360 convert . --skill corporativo-movil --force
+```
+
+---
+
 ### `g360 bring`
 
 Trae assets G360 al proyecto actual.
@@ -265,7 +301,7 @@ g360 audit ./mi-proyecto --verbose
 
 ### `g360 clean`
 
-Limpia assets G360 embebidos.
+Limpia código muerto, duplicados y archivos huérfanos del proyecto.
 
 ```bash
 g360 clean [ruta] [opciones]
@@ -277,15 +313,26 @@ g360 clean [ruta] [opciones]
 |--------|-------------|
 | `--dry-run` | Previsualizar archivos |
 | `--force` | Omitir confirmación |
+| `--dead` | Eliminar archivos muertos/descontinuados |
+| `--duplicates` | Eliminar archivos duplicados |
+| `--orphans` | Eliminar archivos huérfanos (sin referencias) |
+| `--organize` | Mostrar archivos descolocados |
+| `--all` | Ejecutar todas las verificaciones |
 
-**Ejemplo:**
+**Ejemplos:**
 
 ```bash
-# Preview de archivos a eliminar
-g360 clean --dry-run
+# Preview de limpieza completa
+g360 clean --dry-run --all
 
-# Eliminar (requiere --force)
-g360 clean --force
+# Solo archivos muertos
+g360 clean --dead --force
+
+# Solo duplicados
+g360 clean --duplicates --force
+
+# Verificar huérfanos (sin eliminar)
+g360 clean --orphans --dry-run
 ```
 
 ---
