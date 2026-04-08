@@ -298,16 +298,17 @@ function findEmptyDirectories(dir, baseDir = dir) {
 
 async function getAllFiles(dir, baseDir = dir) {
   const files = [];
+  const ignoreDirs = ['node_modules', '.git', 'dist', 'build', '.next', 'out', '.nuxt', 'coverage', '.cache'];
   
   if (!fs.existsSync(dir)) return files;
   
   const items = fs.readdirSync(dir, { withFileTypes: true });
   
   for (const item of items) {
+    if (ignoreDirs.includes(item.name)) continue;
+    
     const fullPath = path.join(dir, item.name);
     const relativePath = path.relative(baseDir, fullPath).replace(/\\/g, '/');
-    
-    if (item.name === 'node_modules' || item.name === '.git') continue;
     
     if (item.isDirectory()) {
       files.push(...await getAllFiles(fullPath, baseDir));
