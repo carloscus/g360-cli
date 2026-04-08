@@ -18,7 +18,7 @@ const program = new Command();
 program
   .name('g360')
   .description('CLI tool for bootstrapping G360 ecosystem projects')
-  .version('1.0.0');
+  .version('1.1.0');
 
 program
   .command('init')

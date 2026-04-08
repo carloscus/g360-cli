@@ -298,7 +298,7 @@ function findEmptyDirectories(dir, baseDir = dir) {
 
 async function getAllFiles(dir, baseDir = dir) {
   const files = [];
-  const ignoreDirs = ['node_modules', '.git', 'dist', 'build', '.next', 'out', '.nuxt', 'coverage', '.cache'];
+  const ignoreDirs = ['node_modules', '.git', 'dist', 'build', '.next', 'out', '.nuxt', 'coverage', '.cache', '.svelte-kit'];
   
   if (!fs.existsSync(dir)) return files;
   
