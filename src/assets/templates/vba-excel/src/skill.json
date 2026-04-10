@@ -1,9 +1,0 @@
-{
-  "proyecto": "vba-excel-template",
-  "tipo": "vba-excel",
-  "skill": "libre",
-  "dominio": "operaciones",
-  "version": "1.0.0",
-  "autor": "Carlos Cusi",
-  "descripcion": "Template base para macros VBA Excel con G360"
-}

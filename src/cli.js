@@ -12,6 +12,7 @@ import { clean } from './commands/clean.js';
 import { health } from './commands/health.js';
 import { update } from './commands/update.js';
 import { convert } from './commands/convert.js';
+import { signature } from './commands/signature.js';
 
 const program = new Command();
 
@@ -95,5 +96,12 @@ program
   .option('--force', 'Force dangerous changes')
   .option('--backup', 'Create backup before converting')
   .action(convert);
+
+program
+  .command('signature')
+  .argument('<command>', 'Command to execute (install)')
+  .option('-p, --path <path>', 'Target project path', '.')
+  .option('--force', 'Force reinstall if already exists')
+  .action(signature);
 
 program.parse();

@@ -11,7 +11,12 @@
     "prepublishOnly": "node -e \"console.log('Use: npm install -g g360-cli')\"",
     "test": "echo \"No tests configured\""
   },
-  "keywords": ["g360", "cli", "scaffolding", "generator"],
+  "keywords": [
+    "g360",
+    "cli",
+    "scaffolding",
+    "generator"
+  ],
   "author": "Carlos Cusi",
   "license": "MIT",
   "dependencies": {
