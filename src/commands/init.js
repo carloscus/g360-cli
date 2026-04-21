@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { manifest } from '../lib/manifest.js';
 import { progress } from '../lib/progress.js';
+import { setSkill } from './set-skill.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -48,8 +49,15 @@ export async function init(name, options) {
   const progressBar = progress('Creating project...');
   
   try {
+    // Asegurar que el directorio base existe
+    await fs.ensureDir(path.dirname(targetDir));
+
     await fs.copy(templateDir, targetDir);
     await manifest.init(targetDir, { name, template, version: '1.0.0' });
+    
+    // Aplicar el skill pasando el directorio destino explícitamente
+    await setSkill(skill, { force: true, verbose: options.verbose, cwd: targetDir });
+
     progressBar.stop();
     
     console.log(chalk.green('\n✅ Project created successfully!\n'));

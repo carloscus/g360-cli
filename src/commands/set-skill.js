@@ -7,19 +7,21 @@
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-const SKILLS_PATH = path.join(process.cwd(), 'g360-cli/src/assets/config/g360-skills.json');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const SKILLS_PATH = path.resolve(__dirname, '../assets/config/g360-skills.json');
 
 export async function setSkill(skillName, options) {
-  const { verbose = false } = options;
+  const { verbose = false, cwd = process.cwd() } = options;
+  const isInternalCall = options.cwd !== undefined;
   
   console.log(chalk.bold.cyan('\n🎨 G360 Skill Selector\n'));
   
   // Cargar skills disponibles
   let skillsConfig;
   try {
-    const cliPath = path.join(process.cwd(), 'g360-cli/src/assets/config/g360-skills.json');
-    skillsConfig = await fs.readJson(cliPath);
+    skillsConfig = await fs.readJson(SKILLS_PATH);
   } catch (error) {
     console.error(chalk.red('❌ No se pudo cargar la configuración de skills'));
     return;
@@ -38,7 +40,7 @@ export async function setSkill(skillName, options) {
   }
   
   // Verificar si existe skill.json en el proyecto
-  const skillJsonPath = path.join(process.cwd(), 'skill.json');
+  const skillJsonPath = path.join(cwd, 'skill.json');
   
   if (fs.existsSync(skillJsonPath)) {
     console.log(chalk.yellow('⚠️  El proyecto ya tiene un skill configurado.'));
