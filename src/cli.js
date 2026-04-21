@@ -2,6 +2,9 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
+import fs from 'fs-extra';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { init } from './commands/init.js';
 import { setSkill } from './commands/set-skill.js';
 import { bring } from './commands/bring.js';
@@ -14,12 +17,15 @@ import { update } from './commands/update.js';
 import { convert } from './commands/convert.js';
 import { signature } from './commands/signature.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const pkg = fs.readJsonSync(path.join(__dirname, '../package.json'));
+
 const program = new Command();
 
 program
   .name('g360')
   .description('CLI tool for bootstrapping G360 ecosystem projects')
-  .version('1.2.2');
+  .version(pkg.version);
 
 program
   .command('init')
