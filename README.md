@@ -1,13 +1,15 @@
 # g360-cli
 
-> CLI tool for bootstrapping G360 ecosystem projects with standardized structure, assets, and best practices.
+> CLI tool for bootstrapping G360 projects with standardized structure, assets, and identity
 
 [![npm version](https://img.shields.io/npm/v/g360-cli)](https://www.npmjs.com/package/g360-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Tabla de Contenidos
 
+- [Descripción](#descripción)
 - [Características](#características)
+- [Tecnologías](#tecnologías)
 - [Instalación](#instalación)
 - [Inicio Rápido](#inicio-rápido)
 - [Comandos](#comandos)
@@ -16,8 +18,34 @@
 - [Skills](#skills)
 - [Configuración](#configuración)
 - [API](#api)
+- [Estructura](#estructura)
+- [Scripts](#scripts)
+- [Testing](#testing)
 - [Contribución](#contribución)
 - [Licencia](#licencia)
+- [Ecosistema G360](#ecosistema-g360)
+
+---
+
+## Descripción
+
+CLI tool para el ecosistema G360 que permite inicializar proyectos con estructura estándar, gestionar assets embebidos, y asegurar compliance mediante auditoría automática. Forma parte del núcleo del ecosistema y está disponible como paquete global de npm.
+
+**Tipo**: CLI Tool / Scaffolding / Generator  
+**Plataforma**: Node.js >= 18.0.0  
+**Distribución**: npm global (`npm install -g g360-cli`)
+
+---
+
+## Tecnologías
+
+- **Runtime**: Node.js >= 18.0.0
+- **Lenguaje**: JavaScript (ESModules)
+- **CLI Framework**: Commander 11.1.0
+- **UI**: Chalk 5.3.0 (colores), Ora 7.0.1 (spinners), Inquirer 9.2.15 (prompts)
+- **Filesystem**: fs-extra 11.2.0
+- **Build**: pkg 5.8.1 (portable .exe)
+- **Distribución**: npm global
 
 ---
 
@@ -627,6 +655,48 @@ await g360.clean({ path: '.', force: true });
 
 ---
 
+## Estructura
+
+```
+g360-cli/
+├── src/
+│   ├── cli.js           # Entrada principal CLI
+│   ├── commands/         # Comandos (init, bring, audit, etc.)
+│   ├── lib/             # Utilidades (assets, auditor, config)
+│   └── assets/          # Assets embebidos
+│       ├── templates/    # Plantillas de proyecto
+│       ├── components/   # Componentes G360
+│       ├── skills/      # Skills de identidad
+│       ├── engine/      # G360 Engine
+│       └── config/      # Configuraciones
+├── package.json
+├── README.md
+└── LICENSE
+```
+
+---
+
+## Scripts
+
+| Comando | Descripción |
+|---------|-------------|
+| `npm run build` | Build portable con pkg (g360.exe) |
+| `npm run build:portable` | Especificar target node18-win-x64 |
+| `npm test` | Ejecutar tests (actualmente placeholder) |
+| `npm run prepublishOnly` | Validación antes de publicar en npm |
+
+---
+
+## Testing
+
+```bash
+npm test
+```
+
+Actualmente configurado con un placeholder. Próximamente se integrará con Vitest para testing de comandos y utilidades.
+
+---
+
 ## Contribución
 
 1. Fork el repositorio
@@ -643,9 +713,36 @@ MIT License - ver [LICENSE](LICENSE) para más detalles.
 
 ---
 
+## Ecosistema G360
+
+Este proyecto forma parte de la familia de microherramientas **G360** para apoyo CRM y gestión de datos en escritorio, enfocadas en áreas como ventas, finanzas y logística.
+
+### Identidad Visual G360
+
+- **Isotipo**: 3 puntos verticales paralelos (gris-verde-gris) + chevron `>`
+- **Colores**: #00d084 (verde), #94a3b8 (gris)
+- **Marca**: G360 - Microherramientas para apoyo CRM y datos en escritorio
+- **Implementación**: Usar `g360-signature` para branding consistente
+
+### Herramientas Relacionadas
+
+- **[g360-signature](https://github.com/carloscus/g360-signature)**: Web component de branding G360
+- **[g360-order-xlsx](https://github.com/carloscus/g360-order-xlsx)**: Procesador de cotizaciones Excel
+- **[g360-day-calculator](https://github.com/carloscus/g360-day-calculator)**: Calculadora de días laborables
+- **[g360-master-data](https://github.com/carloscus/g360-master-data)**: Gestión de datos maestros
+
+---
+
 ## Enlaces
 
 - [npm](https://www.npmjs.com/package/g360-cli)
 - [GitHub](https://github.com/carloscus/g360-cli)
 - [Documentación](#)
 - [Reportar Issue](https://github.com/carloscus/g360-cli/issues)
+
+---
+**Marca**: G360
+**Isotipo**: 3 puntos verticales paralelos (gris-verde-gris) + chevron `>`
+**Autor**: Carlos Cusi
+**Desarrollo**: Con asistencia de herramientas de código IA (Vibe Code)
+**Powered by**: [g360-signature](https://github.com/carloscus/g360-signature)

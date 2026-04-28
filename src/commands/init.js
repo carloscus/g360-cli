@@ -55,8 +55,11 @@ export async function init(name, options) {
     await fs.copy(templateDir, targetDir);
     await manifest.init(targetDir, { name, template, version: '1.0.0' });
     
-    // Aplicar el skill pasando el directorio destino explícitamente
+     // Aplicar el skill pasando el directorio destino explícitamente
     await setSkill(skill, { force: true, verbose: options.verbose, cwd: targetDir });
+
+    // Crear estructura estándar G360 para auditoría y desarrollo guiado
+    await createG360Structure(targetDir, templatesPath);
 
     progressBar.stop();
     
@@ -65,8 +68,37 @@ export async function init(name, options) {
     console.log(`  ${chalk.cyan('cd')} ${name}`);
     console.log(`  ${chalk.cyan('g360 bring')}`);
     console.log(`  ${chalk.cyan('g360 present')}\n`);
-  } catch (error) {
+} catch (error) {
     progressBar.stop();
     console.error(chalk.red(`\n❌ Error: ${error.message}`));
+  }
+}
+
+async function createG360Structure(projectPath, assetsDir) {
+  try {
+    const g360Dir = path.join(projectPath, 'g360');
+    await fs.ensureDir(g360Dir);
+    
+    const subdirs = ['skills', 'snippets', 'samples', 'config', 'engine'];
+    for (const dir of subdirs) {
+      await fs.ensureDir(path.join(g360Dir, dir));
+    }
+    
+    const skillJsonPath = path.join(g360Dir, 'skill.json');
+    if (!fs.existsSync(skillJsonPath)) {
+      const exampleSkillPath = path.join(assetsDir, 'config/skills.json');
+      if (fs.existsSync(exampleSkillPath)) {
+        await fs.copy(exampleSkillPath, skillJsonPath);
+      }
+    }
+    
+    const snippetsDir = path.join(g360Dir, 'snippets');
+    const exampleSnippetsPath = path.join(assetsDir, 'snippets/snippets.json');
+    if (fs.existsSync(exampleSnippetsPath) && !fs.existsSync(path.join(snippetsDir, 'snippets.json'))) {
+      await fs.copy(exampleSnippetsPath, path.join(snippetsDir, 'snippets.json'));
+    }
+    
+  } catch (error) {
+    console.log(chalk.yellow(`Warning: Could not create G360 structure: ${error.message}`));
   }
 }

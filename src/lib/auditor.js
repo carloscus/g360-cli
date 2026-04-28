@@ -46,7 +46,25 @@ export const auditor = {
     if (fs.existsSync(manifestPath)) {
       return { status: 'pass', details: 'Manifest found' };
     }
-    return { status: 'warn', issue: { file: 'g360-manifest.json', message: 'No manifest found' } };
+    
+    const pkgPath = path.join(projectDir, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+        const isG360Tool = 
+          pkg.name?.startsWith('g360-') || 
+          (pkg.keywords && pkg.keywords.some(k => k.includes('g360'))) ||
+          pkg.name === 'g360-cli';
+        
+        if (isG360Tool) {
+          return { status: 'pass', details: 'G360 tool/package - manifest optional' };
+        }
+      } catch (e) {
+        // Continue to warning
+      }
+    }
+    
+    return { status: 'warn', issue: { file: 'g360-manifest.json', message: 'No manifest found - run "g360 bring" to initialize' } };
   },
 
   checkStructure(projectDir) {
@@ -54,7 +72,26 @@ export const auditor = {
     if (fs.existsSync(g360Dir)) {
       return { status: 'pass', details: 'G360 assets directory found' };
     }
-    return { status: 'warn', issue: { file: 'g360/', message: 'No G360 assets found' } };
+    
+    // Check if this is a G360 tool/package - structure optional
+    const pkgPath = path.join(projectDir, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+        const isG360Tool = 
+          pkg.name?.startsWith('g360-') || 
+          (pkg.keywords && pkg.keywords.some(k => k.includes('g360'))) ||
+          pkg.name === 'g360-cli';
+        
+        if (isG360Tool) {
+          return { status: 'pass', details: 'G360 tool/package - G360 structure optional' };
+        }
+      } catch (e) {
+        // If package.json is invalid, continue to warning
+      }
+    }
+    
+    return { status: 'warn', issue: { file: 'g360/', message: 'No G360 assets found - run "g360 bring" to initialize assets' } };
   },
 
   checkConfig(projectDir) {
