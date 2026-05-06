@@ -31,10 +31,12 @@ program
   .command('init')
   .argument('<name>', 'Project name')
   .option('-t, --template <type>', 'Project template type', 'web-pwa')
-  .option('-s, --skill <skill>', 'Skill to use (corporativo, corporativo-movil, moderno, moderno-movil, minimalista, custom)', 'corporativo-movil')
+  .option('-s, --skill <skill>', 'Skill to use (corporativo, corporativo-movil, moderno, moderno-movil, minimalista, custom, flet-desktop)', 'corporativo-movil')
   .option('-d, --dir <path>', 'Target directory', '.')
   .option('--dry-run', 'Preview without creating files')
   .option('--force', 'Overwrite existing files')
+  .option('--portable', 'Create portable version (for python-flet, python-cli)')
+  .option('--no-portable', 'Skip portable version creation')
   .action(init);
 
 program
@@ -81,6 +83,8 @@ program
   .option('--orphans', 'Remove orphan files (unreferenced)')
   .option('--organize', 'Show misplaced files suggestions')
   .option('--all', 'Run all cleanup tasks')
+  .option('--github', 'Prepare repo for GitHub (update .gitignore)')
+  .option('--pre-push', 'Alias for --github (prepare before push)')
   .action(clean);
 
 program

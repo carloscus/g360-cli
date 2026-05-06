@@ -22,6 +22,22 @@
       "features": ["cli", "argparse", "rich"]
     },
     {
+      "id": "python-flet",
+      "name": "Python Flet Desktop",
+      "description": "Python desktop app with Flet framework",
+      "framework": "flet",
+      "features": ["desktop", "gui", "cross-platform", "portable"],
+      "portable": true
+    },
+    {
+      "id": "python-flet-migrate",
+      "name": "Python Flet Migration",
+      "description": "Migrate tkinter/ctkinter app to Flet",
+      "framework": "flet",
+      "features": ["migration", "desktop", "gui", "portable"],
+      "portable": true
+    },
+    {
       "id": "vba-excel",
       "name": "VBA Excel",
       "description": "Excel VBA macros",

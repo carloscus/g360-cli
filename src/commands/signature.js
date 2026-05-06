@@ -21,19 +21,23 @@ export async function signature(command, options) {
 
     let htmlContent = fs.readFileSync(indexHtmlPath, 'utf8');
 
-    // Verificar si ya esta instalado
-    if (htmlContent.includes('g360-signature') && !force) {
-      console.log(chalk.yellow('⚠️  g360-signature ya se encuentra instalado'));
-      console.log(chalk.gray('Usa --force para reinstalar'));
-      return;
-    }
-
-    // Agregar script CDN antes del cierre del body
     const scriptTag = '    <script type="module" src="https://unpkg.com/g360-signature@latest/index.js"></script>';
     const signatureComponent = `
     <!-- Firma Oficial G360 -->
     <g360-signature mode="powered" style="position: fixed; bottom: 16px; right: 16px; z-index: 99999;"></g360-signature>
 `;
+
+    // Si --force es true, eliminamos cualquier instancia existente para una reinstalación limpia.
+    // De lo contrario, si ya está instalado y no se fuerza, salimos.
+    if (force) {
+      htmlContent = htmlContent.replace(new RegExp(scriptTag.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
+      htmlContent = htmlContent.replace(new RegExp(signatureComponent.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
+      htmlContent = htmlContent.replace(/\n\s*\n/g, '\n'); // Limpiar posibles líneas vacías extra
+    } else if (htmlContent.includes('g360-signature')) {
+      console.log(chalk.yellow('⚠️  g360-signature ya se encuentra instalado'));
+      console.log(chalk.gray('Usa --force para reinstalar'));
+      return;
+    }
 
     if (!htmlContent.includes(scriptTag)) {
       htmlContent = htmlContent.replace('</body>', `${scriptTag}\n  </body>`);

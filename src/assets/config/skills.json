@@ -26,6 +26,18 @@
       "files": []
     },
     {
+      "name": "python-desktop",
+      "description": "Python Flet desktop development agent",
+      "files": [],
+      "capabilities": ["flet", "gui", "desktop", "portable", "migrate-tkinter", "migrate-ctkinter"]
+    },
+    {
+      "name": "python-calculations",
+      "description": "Python calculations and data processing agent",
+      "files": [],
+      "capabilities": ["python", "math", "data-processing", "statistics", "flet-ui"]
+    },
+    {
       "name": "calculations",
       "description": "Calculations and data processing",
       "files": []

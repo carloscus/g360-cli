@@ -5,18 +5,60 @@ import { fileURLToPath } from 'url';
 import { manifest } from '../lib/manifest.js';
 import { progress } from '../lib/progress.js';
 import { setSkill } from './set-skill.js';
+import inquirer from 'inquirer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const PORTABLE_TEMPLATES = ['python-flet', 'python-flet-migrate', 'python-cli', 'python-customtkinter'];
+
+async function askPortableOption(template) {
+  if (!PORTABLE_TEMPLATES.includes(template)) {
+    return false;
+  }
+
+  const answers = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'portable',
+      message: '¿Deseas crear una versión portable del proyecto? (ejecutable standalone)',
+      default: false
+    }
+  ]);
+
+  return answers.portable;
+}
+
 export async function init(name, options) {
-  const { template = 'web-pwa', skill = 'corporativo-movil', dir = '.', dryRun = false, force = false } = options;
+  const {
+    template = 'web-pwa',
+    skill = 'corporativo-movil',
+    dir = '.',
+    dryRun = false,
+    force = false,
+    portable = null
+  } = options;
+
   const targetDir = path.join(process.cwd(), dir, name);
-  
+
   console.log(chalk.bold.cyan('\n🚀 G360 Project Initialization\n'));
   console.log(`Project: ${chalk.yellow(name)}`);
   console.log(`Template: ${chalk.blue(template)}`);
   console.log(`Skill: ${chalk.magenta(skill)}`);
   console.log(`Target: ${chalk.gray(targetDir)}\n`);
+
+  let wantPortable = false;
+
+  if (portable === true) {
+    wantPortable = true;
+    console.log(chalk.yellow('📦 Versión portable: SÍ (flag)\n'));
+  } else if (portable === false) {
+    console.log(chalk.gray('📦 Versión portable: NO\n'));
+  } else {
+    wantPortable = await askPortableOption(template);
+    if (wantPortable) {
+      console.log(chalk.yellow('📦 Versión portable: SÍ\n'));
+    }
+  }
 
   const templatesPath = path.join(__dirname, '../assets/templates');
   
@@ -49,21 +91,31 @@ export async function init(name, options) {
   const progressBar = progress('Creating project...');
   
   try {
-    // Asegurar que el directorio base existe
     await fs.ensureDir(path.dirname(targetDir));
 
     await fs.copy(templateDir, targetDir);
-    await manifest.init(targetDir, { name, template, version: '1.0.0' });
-    
-     // Aplicar el skill pasando el directorio destino explícitamente
+    await manifest.init(targetDir, { name, template, version: '1.0.0', portable: wantPortable });
+
+    if (wantPortable) {
+      const portableDir = path.join(targetDir, 'portable');
+      await fs.ensureDir(portableDir);
+      const buildScript = path.join(targetDir, 'build-portable.bat');
+      if (fs.existsSync(buildScript)) {
+        await fs.copy(buildScript, path.join(portableDir, 'build.bat'));
+      }
+      console.log(chalk.gray('  📦 Carpeta portable/ creada para builds\n'));
+    }
+
     await setSkill(skill, { force: true, verbose: options.verbose, cwd: targetDir });
 
-    // Crear estructura estándar G360 para auditoría y desarrollo guiado
     await createG360Structure(targetDir, templatesPath);
 
     progressBar.stop();
-    
+
     console.log(chalk.green('\n✅ Project created successfully!\n'));
+    if (wantPortable) {
+      console.log(chalk.yellow('📦 Versión portable habilitada\n'));
+    }
     console.log(chalk.gray('Next steps:'));
     console.log(`  ${chalk.cyan('cd')} ${name}`);
     console.log(`  ${chalk.cyan('g360 bring')}`);

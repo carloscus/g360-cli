@@ -21,14 +21,16 @@ const DEAD_PATTERNS = [
 const DUPLICATE_EXTENSIONS = ['.bak', '.orig', '.swp', '.swo', '~'];
 
 export async function clean(projectPath, options) {
-  const { 
-    dryRun = false, 
+  const {
+    dryRun = false,
     force = false,
     dead = false,
     duplicates = false,
     orphans = false,
     organize = false,
-    all = false 
+    all = false,
+    github = false,
+    prePush = false
   } = options;
   
   const targetDir = path.join(process.cwd(), projectPath);
@@ -123,8 +125,53 @@ export async function clean(projectPath, options) {
     return;
   }
 
+  if (github || prePush) {
+    console.log(chalk.bold.cyan('\n📦 Modo Pre-Push GitHub\n'));
+    console.log(chalk.gray('Limpiando para subir a repositorio remoto...\n'));
+
+    const gitIgnore = path.join(targetDir, '.gitignore');
+    const requiredIgnores = [
+      'node_modules/',
+      '__pycache__/',
+      '*.pyc',
+      '.env',
+      'dist/',
+      'build/',
+      '*.log',
+      '.cache/',
+      'coverage/',
+      '*.egg-info/',
+      '.pytest_cache/'
+    ];
+
+    if (fs.existsSync(gitIgnore)) {
+      const currentIgnore = await fs.readFile(gitIgnore, 'utf-8');
+      let updatedIgnore = currentIgnore;
+
+      for (const pattern of requiredIgnores) {
+        if (!currentIgnore.includes(pattern)) {
+          updatedIgnore += `\n${pattern}`;
+        }
+      }
+
+      await fs.writeFile(gitIgnore, updatedIgnore);
+      console.log(chalk.green('  ✅ .gitignore actualizado'));
+    } else {
+      await fs.writeFile(gitIgnore, requiredIgnores.join('\n') + '\n');
+      console.log(chalk.green('  ✅ .gitignore creado'));
+    }
+
+    console.log(chalk.green('\n✅ Repo listo para GitHub!\n'));
+    console.log(chalk.gray('Para subir:'));
+    console.log(`  ${chalk.cyan('git add .')}`);
+    console.log(`  ${chalk.cyan('git commit -m "clean: preparing for push"')}`);
+    console.log(`  ${chalk.cyan('git push')}\n`);
+
+    return;
+  }
+
   console.log(chalk.cyan('\n🚀 Aplicando limpieza...'));
-  
+
   let cleaned = 0;
 
   for (const file of issues.dead) {

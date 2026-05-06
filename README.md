@@ -41,9 +41,9 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 - **Runtime**: Node.js >= 18.0.0
 - **Lenguaje**: JavaScript (ESModules)
-- **CLI Framework**: Commander 11.1.0
-- **UI**: Chalk 5.3.0 (colores), Ora 7.0.1 (spinners), Inquirer 9.2.15 (prompts)
-- **Filesystem**: fs-extra 11.2.0
+- **CLI Framework**: Commander 14.x
+- **UI**: Chalk 5.x (colores), Ora 9.x (spinners), Inquirer 13.x (prompts)
+- **Filesystem**: fs-extra 11.x
 - **Build**: pkg 5.8.1 (portable .exe)
 - **Distribución**: npm global
 
@@ -55,7 +55,8 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 - **Gestión de assets** - Trae componentes, skills y plantillas embebidas
 - **Auditoría** - Verifica compliance de proyectos G360
 - **Limpieza** - Elimina assets embebidos antes de deployment
-- **Multi-plantilla** - Web PWA, Python CLI, VBA Excel
+- **Multi-plantilla** - Web (Lit, Solid, Svelte, React), Python (CLI, Flet, CustomTkinter), VBA Excel
+- **Modo portable** - Proyectos Python con ejecución directa (sin PyInstaller)
 - **Modo offline** - Funciona sin conexión usando assets cacheados
 - **Preview** - Dry-run para previsualizar cambios
 
@@ -207,6 +208,33 @@ g360 convert . --skill moderno --backup
 
 # Forzar cambios peligrosos
 g360 convert . --skill corporativo-movil --force
+```
+
+---
+
+### `g360 signature`
+
+Instala el componente de firma oficial G360 en proyectos web.
+
+```bash
+g360 signature install [opciones]
+```
+
+**Opciones:**
+
+| Opción | Descripción | Valor por defecto |
+|--------|-------------|-------------------|
+| `-p, --path <ruta>` | Ruta al index.html | `.` |
+| `--force` | Reinstalar si ya existe | `false` |
+
+**Ejemplos:**
+
+```bash
+# Instalar en el directorio actual
+g360 signature install
+
+# Forzar reinstalación
+g360 signature install --force
 ```
 
 ---
@@ -485,7 +513,7 @@ mi-proyecto/
 
 ### python-cli
 
-Plantilla CLI de Python.
+Plantilla CLI de Python con estructura argparse completa.
 
 ```
 mi-cli/
@@ -494,7 +522,53 @@ mi-cli/
 │   └── core/
 │       └── skill.json
 ├── requirements.txt
+├── run.bat
+├── build-portable.bat
 └── skill.json
+```
+
+### python-flet
+
+Plantilla GUI de escritorio con **Flet** (flask-like para Flutter).
+
+```
+mi-app/
+├── src/
+│   ├── main.py
+│   └── core/
+│       └── skill.json
+├── requirements.txt
+├── run.bat
+├── build-portable.bat
+└── skill.json
+```
+
+### python-flet-migrate
+
+Plantilla para migrar aplicaciones Tkinter/CTkinter a Flet.
+
+```
+mi-app/
+├── src/
+│   ├── main.py
+│   └── migrate_tkinter.py
+├── requirements.txt
+└── skill.json
+```
+
+### python-customtkinter
+
+Plantilla GUI de escritorio con **CustomTkinter** (tema oscuro moderno).
+
+```
+mi-app/
+├── src/
+│   ├── main.py
+│   └── core/
+│       └── skill.json
+├── requirements.txt
+├── run.bat
+└── build-portable.bat
 ```
 
 ### vba-excel
@@ -591,6 +665,14 @@ Proyectos minimalistas - scripts, CLI, Python.
 ### custom
 
 Configuración personalizada - colores ajustables.
+
+### flet-desktop
+
+Aplicaciones de escritorio Flet - estilo moderno G360 (PC).
+
+### flet-desktop-corporativo
+
+Aplicaciones Flet para clientes - estilo corporativo conservador.
 
 ### Ejemplos de uso
 
