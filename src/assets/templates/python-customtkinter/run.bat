@@ -8,22 +8,29 @@ echo   G360 CustomTkinter Application
 echo ==============================================
 echo.
 
-python --version >nul 2>&1
+where uv >nul 2>&1
 if errorlevel 1 (
-    echo ERROR: Python no encontrado
+    echo [SETUP] uv no encontrado
+    echo.
+    echo Por favor instala uv desde:
+    echo https://github.com/astral-sh/uv
+    echo.
     pause
     exit /b 1
 )
 
-echo Verificando customtkinter...
-pip show customtkinter >nul 2>&1
-if errorlevel 1 (
-    echo   Instalando customtkinter...
-    pip install customtkinter
+echo [CHECK] uv: OK
+
+if not exist ".venv" (
+    echo [SETUP] Creando entorno virtual...
+    uv venv
 )
 
+echo [SETUP] Sincronizando dependencias...
+uv sync
+
 echo.
-echo Ejecutando aplicacion...
-python src\main.py
+echo [RUN] Ejecutando aplicacion...
+uv run python src/main.py
 
 pause

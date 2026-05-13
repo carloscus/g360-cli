@@ -24,6 +24,7 @@
 - [Contribución](#contribución)
 - [Licencia](#licencia)
 - [Ecosistema G360](#ecosistema-g360)
+- [Integración con OpenCode](#integración-con-opencode)
 
 ---
 
@@ -812,6 +813,127 @@ Este proyecto forma parte de la familia de microherramientas **G360** para apoyo
 - **[g360-order-xlsx](https://github.com/carloscus/g360-order-xlsx)**: Procesador de cotizaciones Excel
 - **[g360-day-calculator](https://github.com/carloscus/g360-day-calculator)**: Calculadora de días laborables
 - **[g360-master-data](https://github.com/carloscus/g360-master-data)**: Gestión de datos maestros
+
+---
+
+## Integración con OpenCode
+
+g360-cli incluye integración con **OpenCode** para desarrollo asistido por IA. Esta integración permite que los agentes de IA tengan acceso a los recursos de g360-cli durante el desarrollo.
+
+### Archivo de Skill
+
+El archivo `G360-CLI-SKILL.md` contiene toda la información necesaria para que OpenCode:
+
+- **Recomiende skills apropiados** basándose en el tipo de proyecto
+- **Sugiera snippets** relevantes para el contexto de desarrollo
+- **Aplique convenciones** del ecosistema G360 automáticamente
+- **Genere código** siguiendo los patrones G360
+- **Valide compliance** con los estándares G360
+
+### Configuración de OpenCode
+
+El archivo `opencode-config.json` contiene la configuración de integración con OpenCode, incluyendo:
+
+- Rutas a los recursos de g360-cli
+- Comandos disponibles para ejecución
+- Convenciones de desarrollo del ecosistema
+- Configuración de colores y formato
+
+### Uso con OpenCode
+
+Para usar g360-cli con OpenCode:
+
+1. **Asegúrate de tener el repo local**:
+   ```bash
+   cd "C:\Users\ccusi\Documents\Proyect_Coder\G360-ecosystem\projects\g360-cli"
+   ```
+
+2. **Ejecuta comandos g360**:
+   ```bash
+   node src/cli.js list
+   node src/cli.js init <nombre> -t <template> -s <skill>
+   ```
+
+3. **OpenCode puede acceder a los recursos**:
+   - Skills de identidad visual
+   - Snippets de código reutilizables
+   - Plantillas de proyecto estandarizadas
+   - Componentes G360 predefinidos
+   - Convenciones de desarrollo
+
+### Ejemplos de Interacción
+
+#### Crear Nuevo Proyecto
+
+```
+Usuario: "Quiero crear una app web para un cliente corporativo"
+OpenCode: "Te recomiendo usar el skill 'corporativo-movil' con la plantilla 'web-pwa'. 
+¿Quieres que inicialice el proyecto con g360 init mi-proyecto --skill corporativo-movil --template web-pwa?"
+```
+
+#### Agregar Componente
+
+```
+Usuario: "Necesito un botón con estilo G360"
+OpenCode: "Puedo usar el snippet 'g360-button' que incluye los estilos G360 estándar. 
+Aquí está el código: <button class='g360-btn'>Click</button>"
+```
+
+#### Validar Compliance
+
+```
+Usuario: "Verifica si este proyecto cumple con los estándares G360"
+OpenCode: "Ejecutaré g360 audit para verificar compliance y te reportaré cualquier problema encontrado."
+```
+
+### Recursos Disponibles
+
+#### Skills de Identidad Visual
+
+- `corporativo` - Proyectos para clientes - estilo corporativo conservador (PC)
+- `corporativo-movil` - Proyectos para clientes - estilo corporativo - enfoque móvil
+- `corporativo-g360` - Proyectos para clientes con colores G360 vibrantes (PC)
+- `corporativo-g360-movil` - Proyectos para clientes con colores G360 - enfoque móvil
+- `moderno` - Herramientas propias G360 - estilo innovador (PC)
+- `moderno-movil` - Herramientas propias G360 - estilo innovador (móvil)
+- `minimalista` - Proyectos minimalistas - scripts, CLI, Python
+- `custom` - Configuración personalizada - colores ajustables
+- `flet-desktop` - Aplicaciones de escritorio Flet - estilo moderno G360 (PC)
+- `flet-desktop-corporativo` - Aplicaciones Flet para clientes - estilo corporativo conservador
+
+#### Snippets de Código
+
+**Python CLI**: `cli-argparse-basic`, `cli-subcommands`, `cli-logging`, `cli-config-json`, `cli-progress-bar`, `cli-env-config`, `cli-exit-codes`
+
+**Web Components**: `g360-header`, `g360-button`, `g360-card`, `g360-badge`
+
+**Flet Components**: `flet-page`, `flet-card`, `flet-button`, `flet-nav-rail`, `flet-datatable`, `flet-dialog`, `flet-chart-bar`
+
+#### Plantillas de Proyecto
+
+- `web-pwa` - Progressive Web App with offline support
+- `svelte-web` - Svelte web application
+- `solid-web` - SolidJS web application
+- `lit-web` - Lit web application
+- `python-cli` - Python command-line tool
+- `python-flet` - Python desktop app with Flet framework
+- `python-flet-migrate` - Migrate tkinter/ctkinter app to Flet
+- `python-customtkinter` - Python desktop app with CustomTkinter
+
+### Actualización del Skill
+
+Para mantener la integración con OpenCode actualizada:
+
+1. **Sincronizar con g360-cli**: Actualizar `G360-CLI-SKILL.md` cuando se agreguen nuevos skills o snippets
+2. **Validar comandos**: Verificar que los comandos de g360-cli funcionen correctamente
+3. **Documentar cambios**: Agregar nuevas funcionalidades a la documentación
+4. **Testing**: Probar las integraciones con OpenCode regularmente
+
+### Referencias
+
+- **G360-CLI-SKILL.md**: Documentación completa del skill para OpenCode
+- **opencode-config.json**: Configuración de integración con OpenCode
+- **AGENTS.md**: Guías de desarrollo para agentes en el ecosistema G360
 
 ---
 

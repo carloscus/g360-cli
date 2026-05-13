@@ -5,29 +5,30 @@ title G360 - Portable Flet App
 echo.
 echo ==============================================
 echo   G360 Flet - Portable Version
-echo   (Requires Python + flet installed)
+echo   (Requires Python + uv installed)
 echo ==============================================
 echo.
 
-python --version >nul 2>&1
+where uv >nul 2>&1
 if errorlevel 1 (
-    echo ERROR: Python no encontrado
-    echo Instala Python desde: https://python.org
+    echo [SETUP] uv no encontrado
+    echo.
+    echo Por favor instala uv desde:
+    echo https://github.com/astral-sh/uv
+    echo.
     pause
     exit /b 1
 )
 
-echo Verificando flet...
-pip show flet >nul 2>&1
-if errorlevel 1 (
-    echo   Flet no encontrado. Instalando...
-    pip install flet
-    if errorlevel 1 (
-        echo ERROR: No se pudo instalar flet
-        pause
-        exit /b 1
-    )
+echo [CHECK] uv: OK
+
+if not exist ".venv" (
+    echo [SETUP] Creando entorno virtual...
+    uv venv
 )
+
+echo [SETUP] Sincronizando dependencias...
+uv sync
 
 if not exist "src\main.py" (
     echo ERROR: src\main.py no encontrado
@@ -36,7 +37,7 @@ if not exist "src\main.py" (
 )
 
 echo.
-echo Ejecutando G360 Flet App...
-python src\main.py %*
+echo [RUN] Ejecutando G360 Flet App...
+uv run python src\main.py
 
 pause

@@ -2,7 +2,37 @@ import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 
+/**
+ * @typedef {Object} AuditIssue
+ * @property {string} file - Archivo donde se encontró el issue
+ * @property {string} message - Mensaje descriptivo del issue
+ * @property {string} severity - Severidad del issue ('error' | 'warning')
+ */
+
+/**
+ * @typedef {Object} AuditResult
+ * @property {number} passed - Cantidad de checks que pasaron
+ * @property {number} failed - Cantidad de checks que fallaron
+ * @property {number} warnings - Cantidad de advertencias
+ * @property {number} total - Cantidad total de checks
+ * @property {AuditIssue[]} issues - Lista de issues encontrados
+ */
+
+/**
+ * Módulo de auditoría para proyectos G360
+ * @namespace auditor
+ */
 export const auditor = {
+  /**
+   * Ejecuta auditoría completa del proyecto
+   * @param {string} projectDir - Directorio del proyecto a auditar
+   * @param {Object} options - Opciones de auditoría
+   * @param {boolean} [options.verbose=false] - Mostrar información detallada
+   * @returns {Promise<AuditResult>} Resultado de la auditoría
+   * @example
+   * const result = await auditor.audit('/my/project', { verbose: true });
+   * console.log(`Passed: ${result.passed}, Failed: ${result.failed}`);
+   */
   async audit(projectDir, options = {}) {
     const { verbose = false } = options;
     const results = {
@@ -41,6 +71,12 @@ export const auditor = {
     return results;
   },
 
+  /**
+   * Verifica si existe el manifiesto del proyecto
+   * @param {string} projectDir - Directorio del proyecto
+   * @returns {Object} Resultado del check
+   * @private
+   */
   checkManifest(projectDir) {
     const manifestPath = path.join(projectDir, 'g360-manifest.json');
     if (fs.existsSync(manifestPath)) {
@@ -67,6 +103,12 @@ export const auditor = {
     return { status: 'warn', issue: { file: 'g360-manifest.json', message: 'No manifest found - run "g360 bring" to initialize' } };
   },
 
+  /**
+   * Verifica la estructura del proyecto
+   * @param {string} projectDir - Directorio del proyecto
+   * @returns {Object} Resultado del check
+   * @private
+   */
   checkStructure(projectDir) {
     const g360Dir = path.join(projectDir, 'g360');
     if (fs.existsSync(g360Dir)) {
@@ -94,6 +136,12 @@ export const auditor = {
     return { status: 'warn', issue: { file: 'g360/', message: 'No G360 assets found - run "g360 bring" to initialize assets' } };
   },
 
+  /**
+   * Verifica la configuración del proyecto
+   * @param {string} projectDir - Directorio del proyecto
+   * @returns {Object} Resultado del check
+   * @private
+   */
   checkConfig(projectDir) {
     const configPath = path.join(projectDir, 'g360', 'config');
     if (fs.existsSync(configPath)) {

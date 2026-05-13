@@ -5,24 +5,33 @@ title G360 - Portable CustomTkinter
 echo.
 echo ==============================================
 echo   G360 CustomTkinter - Portable
-echo   (Requires Python installed)
+echo   (Requires Python + uv installed)
 echo ==============================================
 echo.
 
-python --version >nul 2>&1
+where uv >nul 2>&1
 if errorlevel 1 (
-    echo ERROR: Python no encontrado
+    echo [SETUP] uv no encontrado
+    echo.
+    echo Por favor instala uv desde:
+    echo https://github.com/astral-sh/uv
+    echo.
     pause
     exit /b 1
 )
 
-pip show customtkinter >nul 2>&1
-if errorlevel 1 (
-    pip install customtkinter
+echo [CHECK] uv: OK
+
+if not exist ".venv" (
+    echo [SETUP] Creando entorno virtual...
+    uv venv
 )
 
+echo [SETUP] Sincronizando dependencias...
+uv sync
+
 echo.
-echo Ejecutando G360 App...
-python src\main.py
+echo [RUN] Ejecutando G360 App...
+uv run python src/main.py
 
 pause
