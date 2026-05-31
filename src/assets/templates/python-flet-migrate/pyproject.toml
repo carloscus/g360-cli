@@ -1,0 +1,13 @@
+[project]
+name = "g360-migrate-app"
+version = "1.0.0"
+description = "G360 Flet Desktop - Migrated from Tkinter"
+requires-python = ">=3.11"
+dependencies = [
+    "flet>=0.23.0",
+]
+
+[project.optional-dependencies]
+build = [
+    "pyinstaller>=6.0.0",
+]

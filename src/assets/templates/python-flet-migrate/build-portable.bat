@@ -4,7 +4,7 @@ title G360 - Build Portable EXE
 
 echo.
 echo ==============================================
-echo   G360 Flet - Build Portable EXE
+echo   G360 Flet Migrated - Build Portable EXE
 echo   Genera un .exe standalone (sin Python)
 echo ==============================================
 echo.

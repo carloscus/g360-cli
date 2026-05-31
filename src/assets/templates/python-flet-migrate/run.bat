@@ -7,7 +7,7 @@ set LOG_FILE=run_log.txt
 echo [%DATE% %TIME%] Inicio App > %LOG_FILE%
 
 echo.
-echo === G360 Flet App - Inicio ===
+echo === G360 Flet Migrated - Inicio ===
 echo.
 
 REM ============================================
@@ -37,7 +37,6 @@ if errorlevel 1 (
     echo   uv encontrado.
 )
 
-REM Refresh PATH
 for /f "tokens=*" %%i in ('where uv 2^>nul') do set "UV_PATH=%%~dpi"
 if defined UV_PATH set "PATH=%UV_PATH%;%PATH%"
 

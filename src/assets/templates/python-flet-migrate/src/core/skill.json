@@ -1,7 +1,7 @@
 {
   "name": "flet-desktop",
-  "description": "G360 CustomTkinter Desktop Application",
-  "framework": "customtkinter",
+  "description": "G360 Flet Desktop - Migrated",
+  "framework": "flet",
   "version": "1.1.0",
   "colors": {
     "bg": "#0b1220",
@@ -19,13 +19,13 @@
     "rounded": "12px"
   },
   "signature": {
-    "mode": "own",
-    "text": "G360 Desktop"
+    "mode": "powered",
+    "text": "powered by G360"
   },
   "build": {
     "type": "portable",
     "output": "dist",
-    "name": "G360-App",
+    "name": "G360-Migrated-App",
     "tool": "pyinstaller",
     "onefile": true,
     "windowed": true

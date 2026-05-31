@@ -3,19 +3,27 @@ Set objFSO = CreateObject("Scripting.FileSystemObject")
 
 strCurrentPath = objFSO.GetParentFolderName(WScript.ScriptFullName)
 strDesktop = objShell.SpecialFolders("Desktop")
+
+strExePath = strCurrentPath & "\dist\G360-App.exe"
 strBatPath = strCurrentPath & "\run.bat"
 strIconPath = strCurrentPath & "\assets\images\app.ico"
 
-' Eliminar acceso directo anterior si existe
-If objFSO.FileExists(strDesktop & "\G360 App.lnk") Then
-    objFSO.DeleteFile strDesktop & "\G360 App.lnk", True
+' Preferir el EXE portable, sino el run.bat
+targetPath = strExePath
+if not objFSO.FileExists(strExePath) Then
+    targetPath = strBatPath
 End If
 
-Set objShortcut = objShell.CreateShortcut(strDesktop & "\G360 App.lnk")
-objShortcut.TargetPath = strBatPath
+appName = "G360 App"
+
+If objFSO.FileExists(strDesktop & "\" & appName & ".lnk") Then
+    objFSO.DeleteFile strDesktop & "\" & appName & ".lnk", True
+End If
+
+Set objShortcut = objShell.CreateShortcut(strDesktop & "\" & appName & ".lnk")
+objShortcut.TargetPath = targetPath
 objShortcut.WorkingDirectory = strCurrentPath
 objShortcut.Description = "G360 Desktop Application - Powered by Flet"
-objShortcut.WindowStyle = 7  ' 7=Minimized
 
 If objFSO.FileExists(strIconPath) Then
     objShortcut.IconLocation = strIconPath & ", 0"
@@ -25,5 +33,4 @@ End If
 
 objShortcut.Save
 
-' Refrescar cache de iconos del escritorio
 objShell.Run "ie4uinit.exe -show", 0, True

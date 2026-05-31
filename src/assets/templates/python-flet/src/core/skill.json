@@ -2,20 +2,44 @@
   "name": "flet-desktop",
   "description": "G360 Flet Desktop Application",
   "framework": "flet",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "portable": true,
   "colors": {
     "bg": "#0b1220",
-    "surface": "#151e2e",
+    "surface": "#1a2332",
     "accent": "#00d084",
     "text": "#f0f4f8",
-    "muted": "#94a3b8"
+    "muted": "#94a3b8",
+    "success": "#22c55e",
+    "warning": "#f59e0b",
+    "error": "#ef4444"
+  },
+  "effects": {
+    "glassmorphism": true,
+    "blur": "12px",
+    "rounded": "12px"
+  },
+  "signature": {
+    "mode": "own",
+    "text": "G360 Desktop"
   },
   "build": {
     "type": "portable",
-    "output": "dist"
+    "output": "dist",
+    "name": "G360-App",
+    "tool": "pyinstaller",
+    "onefile": true,
+    "windowed": true
   },
   "dependencies": {
-    "flet": ">=0.21.0"
+    "flet": ">=0.21.0",
+    "pyinstaller": ">=6.0.0"
+  },
+  "guidelines": {
+    "architecture": "src/core (logica), src/ui (componentes), src/export (reportes)",
+    "naming": "PascalCase para clases UI, camelCase para metodos y variables",
+    "state_management": "Usar atributos de clase para estado, evitar globales",
+    "threading": "Usar threading.Thread + page.run_thread para operaciones bloqueantes",
+    "window_config": "width=1350, height=900, resizable=True, theme_mode=DARK"
   }
 }
