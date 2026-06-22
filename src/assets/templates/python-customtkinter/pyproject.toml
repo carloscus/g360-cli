@@ -1,17 +1,18 @@
 [project]
 name = "g360-app"
 version = "1.0.0"
-description = "G360 CustomTkinter Desktop Application"
-requires-python = ">=3.10"
+description = "G360 Desktop Application (CustomTkinter)"
+authors = [
+    { name = "ccusi", email = "ccusi@cipsa.com.pe" },
+]
+requires-python = ">=3.12"
 dependencies = [
     "customtkinter>=5.2.0",
+    "openpyxl>=3.1.0",
+    "pandas>=2.0.0",
 ]
 
 [project.optional-dependencies]
 build = [
     "pyinstaller>=6.0.0",
 ]
-
-[build-system]
-requires = ["setuptools>=68.0"]
-build-backend = "setuptools.build_meta"

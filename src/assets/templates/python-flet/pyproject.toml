@@ -2,9 +2,14 @@
 name = "g360-app"
 version = "1.0.0"
 description = "G360 Desktop Application"
+authors = [
+    { name = "ccusi", email = "ccusi@cipsa.com.pe" },
+]
 requires-python = ">=3.11"
 dependencies = [
     "flet>=0.23.0",
+    "openpyxl>=3.1.0",
+    "pandas>=2.0.0",
 ]
 
 [project.optional-dependencies]

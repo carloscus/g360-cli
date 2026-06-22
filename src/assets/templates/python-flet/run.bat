@@ -4,10 +4,13 @@ chcp 65001 >nul
 cd /d "%~dp0"
 
 set LOG_FILE=run_log.txt
-echo [%DATE% %TIME%] Inicio App > %LOG_FILE%
+echo [%DATE% %TIME%] Inicio > %LOG_FILE%
 
 echo.
-echo === G360 Flet App - Inicio ===
+echo ========================================
+echo    G360 Flet App
+echo    powered by G360
+echo ========================================
 echo.
 
 REM ============================================
@@ -21,25 +24,23 @@ if errorlevel 1 (
         echo   Usando uv.exe local...
         set "PATH=%~dp0;%PATH%"
     ) else (
-        echo   uv no encontrado. Descargando e instalando...
+        echo   uv no encontrado. Instalando...
         powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex" >> %LOG_FILE% 2>&1
         if errorlevel 1 (
             echo [%DATE% %TIME%] [ERROR] No se pudo instalar uv >> %LOG_FILE%
-            echo   ERROR: No se pudo instalar uv automaticamente.
-            echo   Descargue manualmente de: https://docs.astral.sh/uv/
-            msg * "G360 App: No se pudo instalar uv. Descarguelo manualmente de https://docs.astral.sh/uv/"
+            echo   ERROR: No se pudo instalar uv.
+            msg * "G360 App: No se pudo instalar uv. Descarguelo de https://docs.astral.sh/uv/"
             pause
             exit /b 1
         )
-        echo   uv instalado correctamente.
+        echo   uv instalado.
     )
 ) else (
     echo   uv encontrado.
 )
 
-REM Refresh PATH
 for /f "tokens=*" %%i in ('where uv 2^>nul') do set "UV_PATH=%%~dpi"
-if defined UV_PATH set "PATH=%UV_PATH%;%PATH%"
+if defined UV_PATH set "PATH=!UV_PATH!;%PATH%"
 
 where uv >nul 2>&1
 if errorlevel 1 (
@@ -53,20 +54,13 @@ if errorlevel 1 (
 echo.
 
 REM ============================================
-REM [2/5] Verificar / Instalar Python
+REM [2/5] Verificar / Instalar Python 3.11
 echo [%DATE% %TIME%] [2/5] Verificando Python... >> %LOG_FILE%
 echo [2/5] Verificando Python...
 
-where uv >nul 2>&1
-if errorlevel 1 (
-    echo   ERROR: uv no disponible. No se puede instalar Python.
-    pause
-    exit /b 1
-)
-
 uv python list --only-installed 2>nul | find "3.11" >nul
 if errorlevel 1 (
-    echo   Python 3.11 no encontrado. Instalando con uv...
+    echo   Python 3.11 no encontrado. Instalando...
     uv python install 3.11 >> %LOG_FILE% 2>&1
     if errorlevel 1 (
         echo [%DATE% %TIME%] [ERROR] No se pudo instalar Python 3.11 >> %LOG_FILE%
@@ -83,47 +77,58 @@ if errorlevel 1 (
 echo.
 
 REM ============================================
-REM [3/5] Crear entorno virtual e instalar dependencias
-echo [%DATE% %TIME%] [3/5] Configurando entorno virtual... >> %LOG_FILE%
+REM [3/5] Entorno virtual y dependencias
+echo [%DATE% %TIME%] [3/5] Configurando entorno... >> %LOG_FILE%
 echo [3/5] Configurando entorno virtual...
+
 if not exist ".venv\Scripts\python.exe" (
     echo   Creando entorno virtual...
-    uv venv .venv --python 3.11 >> %LOG_FILE% 2>&1
+    uv venv .venv --python 3.11 --seed >> %LOG_FILE% 2>&1
     if errorlevel 1 (
-        echo [%DATE% %TIME%] [ERROR] No se pudo crear el entorno virtual >> %LOG_FILE%
+        echo [%DATE% %TIME%] [ERROR] No se pudo crear .venv >> %LOG_FILE%
         echo   ERROR: No se pudo crear el entorno virtual.
-        msg * "G360 App: No se pudo crear el entorno virtual. Revise %LOG_FILE%"
+        msg * "G360 App: No se pudo crear .venv. Revise %LOG_FILE%"
         pause
         exit /b 1
     )
     echo   Entorno virtual creado.
+) else (
+    .venv\Scripts\python.exe -c "import sys" 2>> %LOG_FILE%
+    if errorlevel 1 (
+        echo   .venv corrupto, recreando...
+        rd /s /q ".venv" 2>> %LOG_FILE%
+        uv venv .venv --python 3.11 --seed >> %LOG_FILE% 2>&1
+    )
 )
 
 echo   Instalando dependencias...
 uv sync >> %LOG_FILE% 2>&1
 if errorlevel 1 (
-    echo [%DATE% %TIME%] [ERROR] Error al sincronizar dependencias >> %LOG_FILE%
+    echo [%DATE% %TIME%] [ERROR] Error en dependencias >> %LOG_FILE%
     echo   ERROR: No se pudieron instalar las dependencias.
-    echo   Revise %LOG_FILE% para mas detalles.
-    msg * "G360 App: No se pudieron instalar las dependencias. Revise %LOG_FILE%"
+    msg * "G360 App: Error en dependencias. Revise %LOG_FILE%"
     pause
     exit /b 1
 )
-echo [%DATE% %TIME%] [3/5] Dependencias instaladas >> %LOG_FILE%
+echo [%DATE% %TIME%] [3/5] Dependencias listas >> %LOG_FILE%
 echo   Dependencias instaladas.
 
 echo.
 
 REM ============================================
-REM [4/5] Acceso directo
-echo [%DATE% %TIME%] [4/5] Creando acceso directo... >> %LOG_FILE%
+REM [4/5] Acceso directo en escritorio
+echo [%DATE% %TIME%] [4/5] Acceso directo... >> %LOG_FILE%
 echo [4/5] Creando acceso directo...
-if exist "create_shortcut.vbs" (
-    cscript //nologo create_shortcut.vbs >> %LOG_FILE% 2>&1
-    echo [%DATE% %TIME%] [4/5] Acceso directo creado >> %LOG_FILE%
-    echo   Acceso directo creado en el escritorio.
+
+if not exist "%USERPROFILE%\Desktop\G360 App.lnk" (
+    if exist "create_shortcut.vbs" (
+        cscript //nologo create_shortcut.vbs >> %LOG_FILE% 2>&1
+        echo   Acceso directo creado en el escritorio.
+    ) else (
+        echo   create_shortcut.vbs no encontrado.
+    )
 ) else (
-    echo   create_shortcut.vbs no encontrado - omitiendo.
+    echo   Acceso directo ya existe.
 )
 
 echo.
@@ -131,21 +136,19 @@ echo.
 REM ============================================
 REM [5/5] Iniciar aplicacion
 echo [%DATE% %TIME%] [5/5] Iniciando G360 App... >> %LOG_FILE%
-echo [5/5] Iniciando G360 App...
+echo [5/5] Iniciando aplicacion...
 echo.
 
-echo [%DATE% %TIME%] [5/5] Lanzando aplicacion... >> %LOG_FILE%
 .venv\Scripts\python.exe src\main.py
+
 if errorlevel 1 (
     echo [%DATE% %TIME%] [ERROR] La aplicacion fallo >> %LOG_FILE%
     echo.
     echo La aplicacion fallo. Revise %LOG_FILE% para mas detalles.
-    msg * "G360 App: La aplicacion fallo. Revise %LOG_FILE% para mas detalles."
-    echo Presione una tecla para salir...
+    msg * "G360 App: La aplicacion fallo. Revise %LOG_FILE%"
     pause
 )
 
-echo [%DATE% %TIME%] App terminada normalmente >> %LOG_FILE%
+echo [%DATE% %TIME%] App terminada >> %LOG_FILE%
 echo.
-echo === G360 App terminada ===
-echo.
+echo ========================================

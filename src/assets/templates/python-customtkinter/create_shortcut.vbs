@@ -3,27 +3,18 @@ Set objFSO = CreateObject("Scripting.FileSystemObject")
 
 strCurrentPath = objFSO.GetParentFolderName(WScript.ScriptFullName)
 strDesktop = objShell.SpecialFolders("Desktop")
-
-strExePath = strCurrentPath & "\dist\G360-App.exe"
 strBatPath = strCurrentPath & "\run.bat"
 strIconPath = strCurrentPath & "\assets\images\app.ico"
 
-' Preferir el EXE portable, sino el run.bat
-targetPath = strExePath
-if not objFSO.FileExists(strExePath) Then
-    targetPath = strBatPath
+If objFSO.FileExists(strDesktop & "\G360 App.lnk") Then
+    objFSO.DeleteFile strDesktop & "\G360 App.lnk", True
 End If
 
-appName = "G360 App"
-
-If objFSO.FileExists(strDesktop & "\" & appName & ".lnk") Then
-    objFSO.DeleteFile strDesktop & "\" & appName & ".lnk", True
-End If
-
-Set objShortcut = objShell.CreateShortcut(strDesktop & "\" & appName & ".lnk")
-objShortcut.TargetPath = targetPath
+Set objShortcut = objShell.CreateShortcut(strDesktop & "\G360 App.lnk")
+objShortcut.TargetPath = strBatPath
 objShortcut.WorkingDirectory = strCurrentPath
-objShortcut.Description = "G360 Desktop Application - Powered by Flet"
+objShortcut.Description = "G360 Flet App - powered by G360"
+objShortcut.WindowStyle = 7
 
 If objFSO.FileExists(strIconPath) Then
     objShortcut.IconLocation = strIconPath & ", 0"
