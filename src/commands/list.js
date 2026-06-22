@@ -14,13 +14,15 @@ export async function list(type, options) {
   const assets = {
     templates: [],
     components: [],
-    skills: []
+    skills: [],
+    brands: []
   };
 
   const templatesPath = path.join(assetsPath, 'templates');
   const componentsPath = path.join(assetsPath, 'components');
   const configPath = path.join(assetsPath, 'config');
   const snippetsPath = path.join(assetsPath, 'snippets');
+  const brandPath = path.join(assetsPath, 'brand');
 
   if (fs.existsSync(templatesPath)) {
     assets.templates = fs.readdirSync(templatesPath);
@@ -61,6 +63,22 @@ export async function list(type, options) {
     }
   }
 
+  if (fs.existsSync(brandPath)) {
+    const brandConfigPath = path.join(brandPath, 'brand.json');
+    if (fs.existsSync(brandConfigPath)) {
+      try {
+        const brandData = fs.readJsonSync(brandConfigPath);
+        assets.brands = Object.entries(brandData.brands || {}).map(([key, val]) => ({
+          name: key,
+          description: val.description,
+          logo: val.default_logo
+        }));
+      } catch (error) {
+        console.log(chalk.yellow(`Warning: Could not read brand config: ${error.message}`));
+      }
+    }
+  }
+
   if (json) {
     console.log(JSON.stringify(assets, null, 2));
     return;
@@ -94,6 +112,15 @@ export async function list(type, options) {
       });
     } else {
       console.log(chalk.gray('  No skills found'));
+    }
+  }
+
+  if (!type || type === 'all' || type === 'brands') {
+    console.log(chalk.bold.yellow('\n🎨 Brands:'));
+    if (assets.brands.length) {
+      assets.brands.forEach(b => console.log(chalk.gray(`  - ${b.name}`)));
+    } else {
+      console.log(chalk.gray('  No brands found'));
     }
   }
 

@@ -96,6 +96,141 @@
       "name": "flet-chart-bar",
       "description": "Flet bar chart for data visualization",
       "code": "ft.BarChart(\n    bar_groups=[\n        ft.BarChartGroup(\n            x=0,\n            bar_rods=[\n                ft.BarChartRod(\n                    from_y=0,\n                    to_y=50,\n                    width=40,\n                    color='#00d084',\n                ),\n            ],\n        ),\n    ],\n    left_axis=ft.ChartAxis(labels_size=40),\n    bottom_axis=ft.ChartAxis(labels=[...]),\n)"
+    },
+    {
+      "name": "flet-chart-line",
+      "description": "LineChart for time series data",
+      "code": "ft.LineChart(\n    data_series=[\n        ft.LineChartData(\n            data_points=[\n                ft.LineChartDataPoint(x=1, y=10),\n                ft.LineChartDataPoint(x=2, y=25),\n                ft.LineChartDataPoint(x=3, y=15),\n                ft.LineChartDataPoint(x=4, y=40),\n            ],\n            color='#00d084',\n            stroke_width=3,\n        ),\n    ],\n    left_axis=ft.ChartAxis(labels_size=40),\n    bottom_axis=ft.ChartAxis(labels=[...]),\n)"
+    },
+    {
+      "name": "flet-kpi-card",
+      "description": "Reusable KPI card for dashboards",
+      "code": "ft.Container(\n    content=ft.Column([\n        ft.Text(label, size=14, color='#94a3b8'),\n        ft.Text(value, size=32, weight=ft.FontWeight.BOLD, color='#00d084'),\n        ft.Row([\n            ft.Icon(ft.icons.TRENDING_UP, size=16, color='#22c55e'),\n            ft.Text(f'{delta}%', size=14, color='#22c55e'),\n        ]) if delta else ft.Container(),\n    ], spacing=5),\n    bgcolor='#1a2332',\n    border_radius=12,\n    padding=20,\n    expand=True,\n)"
+    },
+    {
+      "name": "flet-drop-zone",
+      "description": "File upload zone with FilePicker",
+      "code": "def __init__(self, page):\n    self.page = page\n    self.file_picker = ft.FilePicker(on_result=self._on_file_selected)\n    self.page.overlay.append(self.file_picker)\n\ndef _build_drop_zone(self):\n    return ft.Container(\n        content=ft.Column([\n            ft.Icon(ft.icons.UPLOAD_FILE, size=48, color='#00d084'),\n            ft.Text('Arrastra un archivo o haz clic', size=16, color='#94a3b8'),\n            ft.Text('Formatos: .xlsx, .xls, .csv', size=12, color='#64748b'),\n        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),\n        bgcolor='#1a2332',\n        border=ft.border.all(2, '#00d08440'),\n        border_radius=12,\n        padding=40,\n        on_click=lambda _: self.file_picker.pick_files(allow_multiple=False),\n        ink=True,\n    )\n\ndef _on_file_selected(self, e):\n    if e.files:\n        file = e.files[0]\n        self._process_file(file.path, file.name)"
+    },
+    {
+      "name": "flet-progress-bar",
+      "description": "Styled progress bar for loading states",
+      "code": "ft.Container(\n    content=ft.Column([\n        ft.Text(label, size=14, color='#94a3b8'),\n        ft.ProgressBar(\n            value=progress,  # 0.0 to 1.0\n            bar_height=8,\n            color='#00d084',\n            bgcolor='#1a2332',\n        ),\n        ft.Text(f'{int(progress * 100)}%', size=12, color='#64748b'),\n    ], spacing=5),\n    padding=10,\n)"
+    },
+    {
+      "name": "flet-search-field",
+      "description": "Search field with icon",
+      "code": "ft.TextField(\n    hint_text='Buscar...',\n    prefix_icon=ft.icons.SEARCH,\n    border_color='#1a2332',\n    focused_border_color='#00d084',\n    bgcolor='#1a2332',\n    color='#f0f4f8',\n    hint_style=ft.TextStyle(color='#94a3b8'),\n    on_change=lambda e: on_search(e.control.value),\n)"
+    },
+    {
+      "name": "flet-tabs",
+      "description": "Tabs for multi-view layouts",
+      "code": "ft.Tabs(\n    selected_index=0,\n    animation_duration=300,\n    tabs=[\n        ft.Tab(text='Resumen', content=resumen_view),\n        ft.Tab(text='Detalle', content=detalle_view),\n        ft.Tab(text='Reportes', content=reportes_view),\n    ],\n    on_change=lambda e: on_tab_change(e),\n)"
+    },
+    {
+      "name": "flet-tooltip",
+      "description": "Rich tooltip on hover",
+      "code": "ft.Tooltip(\n    message='Descripcion detallada del elemento',\n    bgcolor='#1a2332',\n    text_style=ft.TextStyle(color='#f0f4f8', size=12),\n    padding=10,\n    border_radius=8,\n    wait_duration=500,\n    content=ft.Text('Elemento con tooltip', color='#00d084'),\n)"
+    },
+    {
+      "name": "flet-pagination",
+      "description": "Pagination control for large tables",
+      "code": "def _build_pagination(self, page, total_pages, on_page_change):\n    controls = []\n    controls.append(ft.IconButton(ft.icons.CHEVRON_LEFT, on_click=lambda _: on_page_change(page - 1)))\n    for p in range(max(0, page - 2), min(total_pages, page + 3)):\n        controls.append(\n            ft.Container(\n                content=ft.Text(str(p + 1), size=14, color='#00d084' if p == page else '#94a3b8'),\n                padding=10,\n                on_click=lambda _, x=p: on_page_change(x),\n            )\n        )\n    controls.append(ft.IconButton(ft.icons.CHEVRON_RIGHT, on_click=lambda _: on_page_change(page + 1)))\n    return ft.Row(controls, alignment=ft.MainAxisAlignment.CENTER)"
+    },
+    {
+      "name": "flet-export-menu",
+      "description": "Export dropdown with PopupMenuButton",
+      "code": "ft.PopupMenuButton(\n    content=ft.Row([\n        ft.Icon(ft.icons.DOWNLOAD, color='#00d084'),\n        ft.Text('Exportar', color='#00d084'),\n    ]),\n    items=[\n        ft.PopupMenuItem(text='Exportar a Excel', icon=ft.icons.TABLE_CHART, on_click=lambda _: export_excel()),\n        ft.PopupMenuItem(text='Exportar a CSV', icon=ft.icons.CSV, on_click=lambda _: export_csv()),\n        ft.PopupMenuItem(text='Exportar a PDF', icon=ft.icons.PICTURE_AS_PDF, on_click=lambda _: export_pdf()),\n        ft.PopupMenuDivider(),\n        ft.PopupMenuItem(text='Copiar al portapapeles', icon=ft.icons.CONTENT_COPY, on_click=lambda _: copy_clipboard()),\n    ],\n)"
+    },
+    {
+      "name": "pandas-groupby-agg",
+      "description": "Data aggregation with groupby and agg",
+      "code": "import pandas as pd\n\ndef aggregate_data(df, group_cols, agg_map):\n    \"\"\"Agrega datos usando groupby + agg.\n    \n    Args:\n        df: DataFrame\n        group_cols: Lista de columnas para agrupar\n        agg_map: Dict {col: agg_func}, ej: {'venta': 'sum', 'cantidad': 'mean'}\n    \"\"\"\n    result = df.groupby(group_cols, as_index=False).agg(agg_map)\n    return result"
+    },
+    {
+      "name": "pandas-nc-normalize",
+      "description": "Normalize Notas de Credito from ERP data",
+      "code": "import pandas as pd\nimport numpy as np\n\ndef normalize_nc(df, monto_col='monto', tipo_col='tipo_doc'):\n    \"\"\"Normaliza Notas de Credito: montos positivos y flag NC.\"\"\"\n    df = df.copy()\n    df['es_nc'] = df[tipo_col].str.contains('NC|NOTA CREDITO|DEVOLUCION', case=False, na=False).astype(int)\n    df[monto_col] = df.apply(\n        lambda r: -abs(r[monto_col]) if r['es_nc'] else abs(r[monto_col]),\n        axis=1\n    )\n    return df"
+    },
+    {
+      "name": "pandas-calculate-kpi",
+      "description": "Calculate derived KPIs from data",
+      "code": "import pandas as pd\nimport numpy as np\n\ndef calculate_kpis(df, venta_col='venta_bruta', costo_col='costo', devolucion_col='devolucion'):\n    \"\"\"Calcula KPIs derivados: margen, ratio devolucion, etc.\"\"\"\n    result = df.copy()\n    result['margen_bruto'] = result[venta_col] - result[costo_col]\n    result['margen_pct'] = np.where(\n        result[venta_col] != 0,\n        (result['margen_bruto'] / result[venta_col]) * 100,\n        0\n    )\n    if devolucion_col in result.columns:\n        result['ratio_devolucion'] = np.where(\n            result[venta_col] != 0,\n            (abs(result[devolucion_col]) / result[venta_col]) * 100,\n            0\n        )\n    return result"
+    },
+    {
+      "name": "pandas-date-range",
+      "description": "Filter DataFrame by date range",
+      "code": "import pandas as pd\n\ndef filter_by_date_range(df, date_col, start_date, end_date):\n    \"\"\"Filtra DataFrame por rango de fechas.\"\"\"\n    mask = (df[date_col] >= pd.Timestamp(start_date)) & (df[date_col] <= pd.Timestamp(end_date))\n    return df[mask].copy()\n\n# Uso:\n# df_filtrado = filter_by_date_range(df, 'fecha', '2025-01-01', '2025-12-31')"
+    },
+    {
+      "name": "pandas-gap-analysis",
+      "description": "Gap analysis between catalog and purchases",
+      "code": "import pandas as pd\n\ndef gap_analysis(catalogo, compras, key_col='sku'):\n    \"\"\"Analiza gaps entre catalogo y compras.\n    \n    Returns:\n        Dict con: en_catalogo, en_compras, en_ambos, sin_compras, no_catalogados\n    \"\"\"\n    cat_set = set(catalogo[key_col].unique())\n    comp_set = set(compras[key_col].unique())\n    return {\n        'en_catalogo': len(cat_set),\n        'en_compras': len(comp_set),\n        'en_ambos': len(cat_set & comp_set),\n        'sin_compras': len(cat_set - comp_set),\n        'no_catalogados': len(comp_set - cat_set),\n    }"
+    },
+    {
+      "name": "pandas-temporal-compare",
+      "description": "Temporal comparison A vs B period",
+      "code": "import pandas as pd\n\ndef temporal_compare(df, date_col, value_col, group_col, period_a, period_b):\n    \"\"\"Compara metricas entre dos periodos.\n    \n    Args:\n        period_a, period_b: Tuplas (start, end) como strings 'YYYY-MM-DD'\n    \"\"\"\n    a = df[(df[date_col] >= period_a[0]) & (df[date_col] <= period_a[1])]\n    b = df[(df[date_col] >= period_b[0]) & (df[date_col] <= period_b[1])]\n    \n    a_agg = a.groupby(group_col)[value_col].sum().rename('periodo_a')\n    b_agg = b.groupby(group_col)[value_col].sum().rename('periodo_b')\n    \n    result = pd.concat([a_agg, b_agg], axis=1).fillna(0)\n    result['variacion'] = result['periodo_b'] - result['periodo_a']\n    result['variacion_pct'] = (result['variacion'] / result['periodo_a'].replace(0, float('nan'))) * 100\n    return result"
+    },
+    {
+      "name": "pandas-hhi-index",
+      "description": "Calculate Herfindahl-Hirschman Index",
+      "code": "import pandas as pd\nimport numpy as np\n\ndef calculate_hhi(df, group_col, value_col):\n    \"\"\"Calcula el indice HHI de concentracion.\n    \n    HHI = sum((share_i)^2) donde share_i es proporcion del total.\n    > 2500: Alta concentracion\n    1500-2500: Concentracion moderada\n    < 1500: Baja concentracion\n    \"\"\"\n    total = df[value_col].sum()\n    if total == 0:\n        return 0.0\n    shares = df.groupby(group_col)[value_col].sum() / total\n    hhi = (shares ** 2).sum() * 10000\n    return round(hhi, 2)"
+    },
+    {
+      "name": "openpyxl-workbook",
+      "description": "Create Excel workbook with G360 styling",
+      "code": "from openpyxl import Workbook\nfrom openpyxl.styles import Font, PatternFill, Alignment, Border, Side\n\nG360_ACCENT = '00D084'\nG360_SURFACE = '1A2332'\nG360_TEXT = 'F0F4F8'\n\ndef create_g360_workbook():\n    wb = Workbook()\n    ws = wb.active\n    ws.title = 'Reporte G360'\n    \n    # Header styling\n    header_fill = PatternFill(start_color=G360_ACCENT, end_color=G360_ACCENT, fill_type='solid')\n    header_font = Font(bold=True, color=G360_TEXT, size=11)\n    thin_border = Border(\n        left=Side(style='thin', color=G360_SURFACE),\n        right=Side(style='thin', color=G360_SURFACE),\n        top=Side(style='thin', color=G360_SURFACE),\n        bottom=Side(style='thin', color=G360_SURFACE),\n    )\n    \n    return wb, ws, header_fill, header_font, thin_border"
+    },
+    {
+      "name": "openpyxl-styled-table",
+      "description": "Write styled table to Excel sheet",
+      "code": "def write_styled_table(ws, headers, data, header_fill, header_font, thin_border):\n    \"\"\"Escribe una tabla con headers estilizados G360.\"\"\"\n    # Headers\n    for col_idx, header in enumerate(headers, 1):\n        cell = ws.cell(row=1, column=col_idx, value=header)\n        cell.fill = header_fill\n        cell.font = header_font\n        cell.alignment = Alignment(horizontal='center')\n        cell.border = thin_border\n    \n    # Data\n    for row_idx, row_data in enumerate(data, 2):\n        for col_idx, value in enumerate(row_data, 1):\n            cell = ws.cell(row=row_idx, column=col_idx, value=value)\n            cell.border = thin_border\n            cell.alignment = Alignment(horizontal='center')\n    \n    # Auto-width\n    for col in ws.columns:\n        max_length = max(len(str(cell.value or '')) for cell in col)\n        ws.column_dimensions[col[0].column_letter].width = max_length + 3"
+    },
+    {
+      "name": "openpyxl-kpi-sheet",
+      "description": "Create KPI summary sheet with formatting",
+      "code": "def write_kpi_sheet(wb, sheet_name, kpis):\n    \"\"\"Crea un sheet de KPIs con formato G360.\n    \n    kpis: [(nombre, valor, formato), ...]\n    \"\"\"\n    ws = wb.create_sheet(title=sheet_name)\n    \n    accent_fill = PatternFill(start_color='00D084', end_color='00D084', fill_type='solid')\n    accent_font = Font(bold=True, color='F0F4F8', size=14)\n    value_font = Font(bold=True, size=20, color='00D084')\n    \n    ws.cell(row=1, column=1, value='KPI').fill = accent_fill\n    ws.cell(row=1, column=1).font = accent_font\n    ws.cell(row=1, column=2, value='Valor').fill = accent_fill\n    ws.cell(row=1, column=2).font = accent_font\n    \n    for i, (name, value, fmt) in enumerate(kpis, 2):\n        ws.cell(row=i, column=1, value=name)\n        ws.cell(row=i, column=2, value=value)\n        ws.cell(row=i, column=2).font = value_font\n        if fmt:\n            ws.cell(row=i, column=2).number_format = fmt\n    \n    ws.column_dimensions['A'].width = 30\n    ws.column_dimensions['B'].width = 20"
+    },
+    {
+      "name": "openpyxl-multi-sheet",
+      "description": "Create multi-sheet Excel report",
+      "code": "def create_multi_sheet_report(output_path, sheets_data):\n    \"\"\"Crea un Excel con multiples sheets.\n    \n    sheets_data: [(name, headers, rows), ...]\n    \"\"\"\n    from openpyxl import Workbook\n    wb = Workbook()\n    wb.remove(wb.active)\n    \n    header_fill = PatternFill(start_color='00D084', end_color='00D084', fill_type='solid')\n    header_font = Font(bold=True, color='F0F4F8', size=11)\n    \n    for name, headers, rows in sheets_data:\n        ws = wb.create_sheet(title=name[:31])\n        for col_idx, h in enumerate(headers, 1):\n            cell = ws.cell(row=1, column=col_idx, value=h)\n            cell.fill = header_fill\n            cell.font = header_font\n        for row_idx, row in enumerate(rows, 2):\n            for col_idx, val in enumerate(row, 1):\n                ws.cell(row=row_idx, column=col_idx, value=val)\n    \n    wb.save(output_path)\n    return output_path"
+    },
+    {
+      "name": "flet-loading-overlay",
+      "description": "Loading overlay with spinner for blocking operations",
+      "code": "self.loading = ft.Container(\n    content=ft.Column([\n        ft.ProgressRing(width=48, height=48, color='#00d084'),\n        ft.Container(height=16),\n        ft.Text('Cargando...', size=16, color='#f0f4f8'),\n    ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, alignment=ft.MainAxisAlignment.CENTER),\n    bgcolor='#0b1220E0',\n    expand=True,\n    alignment=ft.alignment.center,\n    visible=False,\n)\n\n# En el layout, dentro de un Stack:\nft.Stack([page_content, self.loading], expand=True)\n\ndef show_loading(self, message='Procesando...'):\n    self.loading.content.controls[2].value = message\n    self.loading.visible = True\n    self.page.update()\n\ndef hide_loading(self):\n    self.loading.visible = False\n    self.page.update()"
+    },
+    {
+      "name": "flet-logo-base64",
+      "description": "Embed logo as base64 (PyInstaller-safe, no file paths)",
+      "code": "import base64\nfrom pathlib import Path\n\nLOGO_B64 = None\n\ndef get_logo_src():\n    global LOGO_B64\n    if LOGO_B64:\n        return LOGO_B64\n    candidates = [\n        Path('assets/images/logo-g360-dark.svg'),\n        Path(__file__).parent / 'assets' / 'images' / 'logo-g360-dark.svg',\n    ]\n    for p in candidates:\n        if p.exists():\n            raw = p.read_bytes()\n            b64 = base64.b64encode(raw).decode()\n            LOGO_B64 = f'data:image/svg+xml;base64,{b64}'\n            return LOGO_B64\n    return None\n\n# Uso en Flet:\n# ft.Image(src_base64=get_logo_src(), height=40, fit=ft.ImageFit.CONTAIN)"
+    },
+    {
+      "name": "flet-logging-setup",
+      "description": "Logging setup for desktop apps (debug remoto)",
+      "code": "import logging\nimport sys\nfrom pathlib import Path\n\ndef setup_logging(app_name='g360-app'):\n    log_dir = Path.home() / '.g360' / 'logs'\n    log_dir.mkdir(parents=True, exist_ok=True)\n    log_file = log_dir / f'{app_name}.log'\n    \n    logging.basicConfig(\n        level=logging.DEBUG,\n        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',\n        handlers=[\n            logging.FileHandler(log_file, encoding='utf-8'),\n            logging.StreamHandler(sys.stdout),\n        ]\n    )\n    return logging.getLogger(app_name)\n\n# Uso:\n# logger = setup_logging('mi-app')\n# logger.info('App iniciada')"
+    },
+    {
+      "name": "flet-footer-signature",
+      "description": "G360 signature footer with logo + powered by",
+      "code": "ft.Container(\n    content=ft.Row([\n        ft.Image(src_base64=get_logo_src(), height=16, fit=ft.ImageFit.CONTAIN),\n        ft.Container(width=8),\n        ft.Text('powered by G360', size=10, color='#94a3b8'),\n    ], alignment=ft.MainAxisAlignment.CENTER),\n    padding=8,\n    bgcolor='#1a2332',\n)"
+    },
+    {
+      "name": "flet-error-boundary",
+      "description": "Global error handler for Flet callbacks",
+      "code": "import traceback\nimport logging\n\nlogger = logging.getLogger('g360-app')\n\ndef safe_handler(fn):\n    \"\"\"Decorator que atrapa excepciones en callbacks Flet.\"\"\"\n    def wrapper(*args, **kwargs):\n        try:\n            return fn(*args, **kwargs)\n        except Exception as e:\n            logger.error(f'Error en {fn.__name__}: {e}\\n{traceback.format_exc()}')\n            page = args[0].page if hasattr(args[0], 'page') else None\n            if page:\n                page.snack_bar = ft.SnackBar(\n                    content=ft.Text(f'Error: {str(e)[:80]}'),\n                    bgcolor='#ef4444',\n                )\n                page.snack_bar.open = True\n                page.update()\n    return wrapper\n\n# Uso:\n# @safe_handler\n# def on_click(e): ..."
+    },
+    {
+      "name": "flet-snackbar-error",
+      "description": "Show error message via SnackBar",
+      "code": "def show_error(page, message):\n    page.snack_bar = ft.SnackBar(\n        content=ft.Row([\n            ft.Icon(ft.icons.ERROR_OUTLINE, color='#f0f4f8', size=20),\n            ft.Text(str(message)[:120], color='#f0f4f8', size=14),\n        ]),\n        bgcolor='#ef4444',\n        duration=5000,\n    )\n    page.snack_bar.open = True\n    page.update()\n\ndef show_success(page, message):\n    page.snack_bar = ft.SnackBar(\n        content=ft.Row([\n            ft.Icon(ft.icons.CHECK_CIRCLE, color='#0b1220', size=20),\n            ft.Text(message, color='#0b1220', size=14),\n        ]),\n        bgcolor='#22c55e',\n        duration=3000,\n    )\n    page.snack_bar.open = True\n    page.update()\n\ndef show_warning(page, message):\n    page.snack_bar = ft.SnackBar(\n        content=ft.Row([\n            ft.Icon(ft.icons.WARNING, color='#0b1220', size=20),\n            ft.Text(message, color='#0b1220', size=14),\n        ]),\n        bgcolor='#f59e0b',\n        duration=4000,\n    )\n    page.snack_bar.open = True\n    page.update()"
+    },
+    {
+      "name": "openpyxl-metadata",
+      "description": "Set G360 standard author/title metadata on openpyxl workbook",
+      "code": "from openpyxl import Workbook\n\nwb = Workbook()\n# G360 standard metadata\nwb.properties.creator = \"ccusi\"\nwb.properties.title = \"PreOrder Allocator\"\nwb.properties.description = \"Generado por G360\"\n\nws = wb.active\n# ... populate data ...\nwb.save(\"reporte.xlsx\")"
     }
   ]
 }

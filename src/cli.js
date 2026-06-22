@@ -31,7 +31,7 @@ program
   .command('init')
   .argument('<name>', 'Project name')
   .option('-t, --template <type>', 'Project template type', 'web-pwa')
-  .option('-s, --skill <skill>', 'Skill to use (corporativo, corporativo-movil, moderno, moderno-movil, minimalista, custom, flet-desktop)', 'corporativo-movil')
+  .option('-s, --skill <skill>', 'Skill to use (corporativo, corporativo-movil, moderno, moderno-movil, minimalista, custom, flet-desktop, flet-desktop-corporativo, cipsa, cipsa-movil)', 'corporativo-movil')
   .option('-d, --dir <path>', 'Target directory', '.')
   .option('--dry-run', 'Preview without creating files')
   .option('--force', 'Overwrite existing files')
@@ -48,7 +48,7 @@ program
 
 program
   .command('bring')
-  .argument('[asset]', 'Specific asset to bring (template/component/skill/all)')
+  .argument('[asset]', 'Asset to bring: brand, brand/cipsa, brand/g360, components, templates, skills, all')
   .option('-p, --path <path>', 'Target path', '.')
   .option('--dry-run', 'Preview without copying')
   .option('--force', 'Overwrite existing files')
@@ -56,7 +56,7 @@ program
 
 program
   .command('list')
-  .argument('[type]', 'Type to list (templates/components/skills/all)', 'all')
+  .argument('[type]', 'Type to list (templates/components/skills/snippets/brands/all)', 'all')
   .option('--json', 'Output as JSON')
   .action(list);
 
@@ -100,7 +100,7 @@ program
 program
   .command('convert')
   .argument('[path]', 'Path to convert', '.')
-  .option('-s, --skill <skill>', 'Skill to apply', 'corporativo-movil')
+  .option('-s, --skill <skill>', 'Skill to apply (corporativo, corporativo-movil, moderno, moderno-movil, minimalista, custom, flet-desktop, flet-desktop-corporativo, cipsa, cipsa-movil)', 'corporativo-movil')
   .option('--dry-run', 'Preview without applying')
   .option('--restructure', 'Restructure project files')
   .option('--force', 'Force dangerous changes')

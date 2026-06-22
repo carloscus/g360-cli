@@ -1,0 +1,43 @@
+{
+  "version": "1.1.0",
+  "brands": {
+    "g360": {
+      "name": "G360",
+      "description": "Marca principal del ecosistema G360",
+      "primary_color": "#00d084",
+      "theme": "dark",
+      "default_logo": "logotypes/logo-g360-dark.svg",
+      "assets": {
+        "logotypes": [
+          "logo-g360-dark.svg",
+          "logo-g360-light.svg",
+          "logo_g360_dark_b64.txt",
+          "logo_g360_light_b64.txt"
+        ]
+      },
+      "signature": {
+        "mode": "own",
+        "text": "G360 by ccusi"
+      }
+    },
+    "cipsa": {
+      "name": "CIPSA",
+      "description": "Marca corporativa CIPSA - estilo moderno corporativo",
+      "primary_color": "#00d084",
+      "theme": "dark",
+      "default_logo": "logotypes/Logo_cipsa_solid.svg",
+      "assets": {
+        "logotypes": [
+          "Logo_cipsa_solid.svg",
+          "Logo_cipsa_borde.svg",
+          "Logo_cipsa_solid.png",
+          "Logo_cipsa_borde.png"
+        ]
+      },
+      "signature": {
+        "mode": "powered",
+        "text": "powered by G360"
+      }
+    }
+  }
+}

@@ -53,6 +53,30 @@ Los skills definen el estilo visual, dispositivo y signature del proyecto:
 - `flet-datatable` - Flet DataTable with G360 styling
 - `flet-dialog` - Flet modal dialog
 - `flet-chart-bar` - Flet bar chart for data visualization
+- `flet-chart-line` - LineChart for time series data
+- `flet-kpi-card` - Reusable KPI card for dashboards
+- `flet-drop-zone` - File upload zone with FilePicker
+- `flet-progress-bar` - Styled progress bar for loading states
+- `flet-search-field` - Search field with icon
+- `flet-tabs` - Tabs for multi-view layouts
+- `flet-tooltip` - Rich tooltip on hover
+- `flet-pagination` - Pagination control for large tables
+- `flet-export-menu` - Export dropdown with PopupMenuButton
+
+#### Pandas / Data Processing
+- `pandas-groupby-agg` - Data aggregation with groupby and agg
+- `pandas-nc-normalize` - Normalize Notas de Credito from ERP data
+- `pandas-calculate-kpi` - Calculate derived KPIs from data
+- `pandas-date-range` - Filter DataFrame by date range
+- `pandas-gap-analysis` - Gap analysis between catalog and purchases
+- `pandas-temporal-compare` - Temporal comparison A vs B period
+- `pandas-hhi-index` - Calculate Herfindahl-Hirschman Index
+
+#### Excel / Openpyxl
+- `openpyxl-workbook` - Create Excel workbook with G360 styling
+- `openpyxl-styled-table` - Write styled table to Excel sheet
+- `openpyxl-kpi-sheet` - Create KPI summary sheet with formatting
+- `openpyxl-multi-sheet` - Create multi-sheet Excel report
 
 ### Plantillas de Proyecto
 
@@ -79,6 +103,63 @@ Los skills definen el estilo visual, dispositivo y signature del proyecto:
 - **Imports**: ES6 modules, relative paths preferidos
 - **Naming**: camelCase para funciones/variables, PascalCase para componentes, kebab-case para CSS classes
 - **Exports**: Both named y default exports para componentes
+
+### Flet Desktop
+
+#### Arquitectura Estandar
+```
+proyecto-flet/
+├── src/
+│   ├── core/          # Motor de datos (sin imports de flet)
+│   │   ├── g360_theme.py  # Tema G360 (lee de skill.json)
+│   │   └── processor.py   # Logica de negocio
+│   ├── ui/            # Componentes de interfaz Flet
+│   │   └── main_app.py    # Clase principal
+│   └── export/        # Generacion de reportes (openpyxl)
+│       └── generator.py
+├── assets/            # Imagenes, iconos, templates Excel
+├── skill.json         # Skill G360 aplicado
+├── run.bat            # Ejecutar con uv (crea .venv auto)
+├── build-portable.bat # Build EXE standalone con PyInstaller
+└── requirements.txt   # Dependencias
+```
+
+#### Convenciones de Nombres
+| Elemento | Convencion | Ejemplo |
+|---|---|---|
+| Clases UI | PascalCase | `G360App`, `DropZone` |
+| Clases Core | PascalCase | `G360Theme`, `Processor` |
+| Metodos | camelCase | `_setup_page()`, `_build_ui()` |
+| Variables | snake_case | `venta_bruta`, `df_processed` |
+| Archivos | snake_case | `main_app.py`, `g360_theme.py` |
+| Constantes | UPPER_SNAKE_CASE | `G360_ACCENT`, `DEVOLUCION_THRESHOLD` |
+
+#### Theme Colors (skill flet-desktop)
+| Token | Color | Uso |
+|---|---|---|
+| `bg` | `#0b1220` | Fondo principal |
+| `surface` | `#1a2332` | Cards, contenedores |
+| `accent` | `#00d084` | Verde G360 primary |
+| `text` | `#f0f4f8` | Texto principal |
+| `muted` | `#94a3b8` | Texto secundario |
+| `success` | `#22c55e` | Exito/positivo |
+| `warning` | `#f59e0b` | Advertencia |
+| `error` | `#ef4444` | Error/peligro |
+
+Los colores se leen desde `skill.json` via `G360Theme` - **nunca hardcodear**.
+
+Ver `AGENTS-UIUX.md` para:
+- Patrones de componente por framework (Flet, React, Solid, Svelte, Lit)
+- Convenciones de nomenclatura y estructura de archivos
+- Threading, loading states, responsive design
+- Checklist de calidad UI/UX
+
+#### Build Portable
+- **Herramienta**: PyInstaller (onefile, windowed)
+- **Requisito**: VC++ Redistributable en PC destino
+- **Script**: `build-portable.bat` (auto-detecta/instala uv, Python, VC++ Redist)
+- **Output**: `dist/G360-App.exe` (~50-80 MB)
+- **PC limpias**: `run.bat` instala uv → Python 3.12 → .venv → dependencias automaticamente
 
 ### Formato y Estilo
 
@@ -174,6 +255,20 @@ g360 bring [asset] [opciones]
 # -p, --path <ruta>    Ruta destino
 # --dry-run            Previsualizar
 # --force              Sobrescribir
+
+# Assets disponibles:
+#   brand               Assets de marca (SVGs, logos, iconos)
+#   brand/cipsa         Aplica marca CIPSA + actualiza skill.json
+#   brand/g360          Aplica marca G360 + actualiza skill.json
+#   components          Componentes UI reutilizables
+#   templates           Plantillas de proyecto
+#   skills              Skills de identidad visual
+#   all                 Todo
+
+# Ejemplo: aplicar marca CIPSA a proyecto existente
+#   g360 bring brand/cipsa
+#   -> Copia assets a g360/brand/cipsa/
+#   -> Actualiza skill.json con logo, signature y colores
 ```
 
 ### Listado de Recursos
@@ -328,6 +423,8 @@ Para mantener este skill actualizado:
 
 - **g360-cli README**: Documentación completa de g360-cli
 - **AGENTS.md**: Guías de desarrollo para agentes en el ecosistema G360
+- **AGENTS-UIUX.md**: Lineamientos UI/UX por framework (Flet, React, Solid, Svelte, Lit)
+- **FLET-DESKTOP-FEEDBACK.md**: Lecciones aprendidas de apps Flet reales
 - **G360 Ecosystem**: Documentación del ecosistema G360
 
 ## Notas
