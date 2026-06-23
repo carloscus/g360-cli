@@ -1,6 +1,30 @@
+# Tests
+src/**/*.test.js
+src/**/*.spec.js
+
+# Config
 .git/
 .gitignore
+vitest.config.js
+AGENTS*.md
+ANALISIS-REPOSITORIO.md
+API-DOCUMENTATION.md
+FLET-DESKTOP-FEEDBACK.md
+G360-CLI-SKILL.md
+MEJORAS-IMPLEMENTADAS.md
+opencode-config.json
+stderr.txt
+stdout.txt
+
+# Build artifacts
+dist/
+build/
+*.tgz
+
+# Logs
 *.log
+npm-debug.log*
+
+# OS
 .DS_Store
-node_modules/
-package-lock.json
+Thumbs.db
