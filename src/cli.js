@@ -112,6 +112,8 @@ program
   .argument('<command>', 'Command to execute (install)')
   .option('-p, --path <path>', 'Target project path', '.')
   .option('--force', 'Force reinstall if already exists')
+  .option('-m, --mode <mode>', 'Signature mode: own or powered', 'powered')
+  .option('-v, --version <version>', 'Version to display')
   .action(signature);
 
 program.parse();

@@ -156,20 +156,27 @@ class G360Theme:
 
     def footer_signature(self):
         import flet as ft
-        mode = self.config.get("signature", {}).get("mode", "powered")
-        text = self.config.get("signature", {}).get("text", "powered by G360")
-        return ft.Container(
-            content=ft.Row(
-                [
-                    self.logo_component(height=16),
-                    ft.Container(width=8),
-                    ft.Text(text, size=10, color=self.muted),
-                ],
-                alignment=ft.MainAxisAlignment.CENTER,
-            ),
-            padding=8,
-            bgcolor=self.surface,
-        )
+        try:
+            from core.components.g360_signature import g360_footer
+            mode = self.config.get("signature", {}).get("mode", "powered")
+            version = self.config.get("signature", {}).get("version", None)
+            return g360_footer(version=version)
+        except ImportError:
+            # Fallback si g360_signature no esta instalado
+            mode = self.config.get("signature", {}).get("mode", "powered")
+            text = self.config.get("signature", {}).get("text", "powered by G360")
+            return ft.Container(
+                content=ft.Row(
+                    [
+                        self.logo_component(height=16),
+                        ft.Container(width=8),
+                        ft.Text(text, size=10, color=self.muted),
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                ),
+                padding=8,
+                bgcolor=self.surface,
+            )
 
     @property
     def as_dict(self):
