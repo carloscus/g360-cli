@@ -231,12 +231,29 @@ async function installFlet(targetDir, { force, mode, version, position }) {
         footerCode = `\n    # Firma G360\n    page.add(g360_footer(${versionAttr.trim() ? versionAttr : ''}))\n`;
     }
 
-    if (!mainContent.includes('g360_signature')) {
-      mainContent = mainContent.replace(
-        /(from\s+core\.\w+.*\n)/,
-        `$1${importLine}\n`
-      );
+    if (!mainContent.includes('from core.components.g360_signature')) {
+      // Intentar agregar import despues de otros imports de core
+      const importRegex = /(from\s+core\.\w+.*\n)/;
+      if (importRegex.test(mainContent)) {
+        mainContent = mainContent.replace(importRegex, `$1${importLine}\n`);
+      } else {
+        // Si no hay imports de core, agregar despues del ultimo import
+        const lastImport = mainContent.lastIndexOf('import ');
+        if (lastImport !== -1) {
+          const endOfLine = mainContent.indexOf('\n', lastImport);
+          if (endOfLine !== -1) {
+            mainContent = mainContent.slice(0, endOfLine + 1) + importLine + '\n' + mainContent.slice(endOfLine + 1);
+          } else {
+            mainContent = mainContent + '\n' + importLine + '\n';
+          }
+        } else {
+          // Si no hay imports, agregar al inicio
+          mainContent = importLine + '\n\n' + mainContent;
+        }
+      }
+    }
 
+    if (!mainContent.includes('g360_footer()') && !mainContent.includes('G360Signature')) {
       if (mainContent.includes('page.add')) {
         const lastAdd = mainContent.lastIndexOf('page.add');
         const endOfLine = mainContent.indexOf('\n', lastAdd);
@@ -244,9 +261,9 @@ async function installFlet(targetDir, { force, mode, version, position }) {
       } else {
         mainContent += footerCode;
       }
-
-      fs.writeFileSync(mainPyPath, mainContent, 'utf8');
-      console.log(chalk.gray('  main.py actualizado'));
     }
+
+    fs.writeFileSync(mainPyPath, mainContent, 'utf8');
+    console.log(chalk.gray('  main.py actualizado'));
   }
 }
