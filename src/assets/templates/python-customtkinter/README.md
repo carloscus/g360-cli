@@ -1,47 +1,48 @@
-# G360 CustomTkinter Template
+# G360 Python CustomTkinter App
 
-Modern GUI desktop application with CustomTkinter and G360 theming.
+## Estructura
+
+```
+mi-proyecto/
+├── src/
+│   ├── main.py              # Entry point
+│   └── core/
+│       ├── skill.json       # Configuracion G360
+│       └── g360_theme.py    # Theme engine
+├── assets/images/
+├── skill.json
+├── pyproject.toml
+├── run.bat                  # Ejecutar app
+├── build.bat                # Build EXE (PyInstaller)
+└── README.md
+```
 
 ## Requisitos
 
-- Python 3.8+
-- customtkinter
+- **Python**: 3.11+ (instalado automaticamente por uv)
+- **uv**: https://docs.astral.sh/uv/
 
-## Instalacion
-
-```bash
-pip install -r requirements.txt
-```
-
-## Ejecutar
+## Ejecucion
 
 ```bash
 run.bat
 ```
 
-## Portable
+## Build Windows
 
-Ejecuta `build-portable.bat` - requiere Python instalado en el sistema.
-
-## Estructura
-
-```
-python-customtkinter/
-├── src/
-│   ├── main.py          # App principal
-│   └── core/
-│       └── skill.json  # Configuracion G360
-├── requirements.txt
-├── run.bat             # Ejecutar desarrollo
-└── build-portable.bat  # Version portable
+```bash
+build.bat
 ```
 
-## Caracteristicas
+Genera `dist/G360-App.exe` usando PyInstaller.
 
-- Tema oscuro G360 (#0b1220, #1a2332, #00d084)
-- UI moderna con CustomTkinter
-- Listo para expansion
+## Theme
 
-## License
+Colores definidos en `src/core/skill.json`, cargados via `G360Theme`.
 
-MIT - G360 Ecosystem
+| Token | Color |
+|---|---|
+| `bg` | `#0b1220` |
+| `surface` | `#1a2332` |
+| `accent` | `#00d084` |
+| `text` | `#f0f4f8` |

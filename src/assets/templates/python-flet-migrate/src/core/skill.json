@@ -1,8 +1,9 @@
 {
   "name": "flet-desktop",
-  "description": "G360 Flet Desktop - Migrated",
+  "description": "G360 Flet Migration Application",
   "framework": "flet",
-  "version": "1.1.0",
+  "version": "1.2.0",
+  "python": ">=3.11,<4.0",
   "colors": {
     "bg": "#0b1220",
     "surface": "#1a2332",
@@ -23,11 +24,11 @@
     "text": "powered by G360"
   },
   "build": {
-    "type": "portable",
-    "output": "dist",
-    "name": "G360-Migrated-App",
-    "tool": "pyinstaller",
-    "onefile": true,
-    "windowed": true
+    "tool": "flet",
+    "target": "windows",
+    "name": "G360-App"
+  },
+  "dependencies": {
+    "flet": ">=0.25.0"
   }
 }

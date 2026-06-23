@@ -4,114 +4,94 @@ G360 CustomTkinter Desktop Application
 Modern GUI with G360 theme
 """
 
-import customtkinter as ctk
+import sys
 from pathlib import Path
-import json
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-VERSION = "1.0.0"
-APP_NAME = "G360 Desktop"
-
-
-def load_skill():
-    skill_path = Path(__file__).parent / "core" / "skill.json"
-    if skill_path.exists():
-        with open(skill_path) as f:
-            return json.load(f)
-    return {
-        "colors": {
-            "bg": "#0b1220",
-            "surface": "#1a2332",
-            "accent": "#00d084"
-        }
-    }
+import customtkinter as ctk
+from core.g360_theme import G360Theme
 
 
 class G360App(ctk.CTk):
     def __init__(self):
         super().__init__()
         
-        skill = load_skill()
-        colors = skill.get("colors", {})
+        self.theme = G360Theme()
+        self.theme.apply_ctk()
         
-        ctk.set_appearance_mode("dark")
-        ctk.set_default_color_theme("green")
-        
-        self.title(APP_NAME)
-        self.geometry("800x600")
-        self.configure(fg_color=colors.get("bg", "#0b1220"))
+        self.title(self.theme.build_name())
+        self.geometry("900x700")
+        self.configure(fg_color=self.theme.bg)
         
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
         
-        self.create_header(colors)
-        self.create_content(colors)
-        self.create_footer()
+        self._build_header()
+        self._build_content()
+        self._build_footer()
     
-    def create_header(self, colors):
-        self.header = ctk.CTkFrame(self, fg_color=colors.get("surface", "#1a2332"))
-        self.header.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
+    def _build_header(self):
+        header = self.theme.glass_frame(self)
+        header.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
         
-        title = ctk.CTkLabel(
-            self.header,
-            text=f"{APP_NAME} v{VERSION}",
-            font=("Segoe UI", 20, "bold"),
-            text_color=colors.get("accent", "#00d084")
-        )
-        title.pack(side="left", padx=20, pady=10)
+        self.theme.styled_label(
+            header,
+            text=self.theme.build_name(),
+            size=20,
+            color=self.theme.accent
+        ).pack(side="left", padx=20, pady=10)
         
-        btn_settings = ctk.CTkButton(
-            self.header,
+        self.theme.accent_button(
+            header,
             text="Settings",
-            fg_color="transparent",
-            border_width=1,
-            border_color=colors.get("accent", "#00d084"),
-            text_color=colors.get("accent", "#00d084")
-        )
-        btn_settings.pack(side="right", padx=20)
+            command=self._on_settings
+        ).pack(side="right", padx=20, pady=10)
     
-    def create_content(self, colors):
-        self.content = ctk.CTkFrame(self, fg_color="transparent")
-        self.content.grid(row=1, column=0, sticky="nsew", padx=20, pady=10)
+    def _build_content(self):
+        content = ctk.CTkFrame(self, fg_color="transparent")
+        content.grid(row=1, column=0, sticky="nsew", padx=20, pady=10)
+        content.grid_columnconfigure(0, weight=1)
+        content.grid_rowconfigure(0, weight=1)
         
-        self.content.grid_columnconfigure(0, weight=1)
-        self.content.grid_rowconfigure(0, weight=1)
-        
-        card = ctk.CTkFrame(
-            self.content,
-            fg_color=colors.get("surface", "#1a2332"),
-            corner_radius=12
-        )
+        card = self.theme.glass_frame(content)
         card.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
         
-        label = ctk.CTkLabel(
+        self.theme.styled_label(
             card,
             text="G360 Application\nReady to build",
-            font=("Segoe UI", 16),
-            text_color="#f0f4f8"
-        )
-        label.pack(pady=40)
+            size=18
+        ).pack(pady=40)
         
-        btn_primary = ctk.CTkButton(
+        self.theme.accent_button(
             card,
             text="Start",
-            fg_color=colors.get("accent", "#00d084"),
-            text_color="#0b1220",
-            hover_color="#00b070"
-        )
-        btn_primary.pack(pady=20)
+            command=self._on_start
+        ).pack(pady=20)
     
-    def create_footer(self):
-        self.footer = ctk.CTkFrame(self, fg_color="transparent")
-        self.footer.grid(row=2, column=0, sticky="ew", padx=10, pady=(0, 10))
+    def _build_footer(self):
+        footer = ctk.CTkFrame(self, fg_color="transparent")
+        footer.grid(row=2, column=0, sticky="ew", padx=10, pady=(0, 10))
         
-        status = ctk.CTkLabel(
-            self.footer,
-            text="G360 Desktop App",
-            text_color="#94a3b8",
-            font=("Segoe UI", 12)
-        )
-        status.pack(side="left", padx=20)
+        self.theme.styled_label(
+            footer,
+            text=f"v{self.theme.config.get('version', '1.0.0')}",
+            size=12,
+            color=self.theme.muted
+        ).pack(side="left", padx=20)
+        
+        self.theme.styled_label(
+            footer,
+            text="powered by G360",
+            size=10,
+            color=self.theme.muted
+        ).pack(side="right", padx=20)
+    
+    def _on_settings(self):
+        print("Settings clicked")
+    
+    def _on_start(self):
+        print("Start clicked")
 
 
 def main():

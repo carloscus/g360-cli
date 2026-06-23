@@ -2,7 +2,8 @@
   "name": "customtkinter-desktop",
   "description": "G360 CustomTkinter Desktop Application",
   "framework": "customtkinter",
-  "version": "1.1.0",
+  "version": "1.2.0",
+  "python": ">=3.11,<4.0",
   "colors": {
     "bg": "#0b1220",
     "surface": "#1a2332",
@@ -19,15 +20,16 @@
     "rounded": "12px"
   },
   "signature": {
-    "mode": "own",
-    "text": "G360 Desktop"
+    "mode": "powered",
+    "text": "powered by G360"
   },
   "build": {
-    "type": "portable",
-    "output": "dist",
-    "name": "G360-App",
     "tool": "pyinstaller",
-    "onefile": true,
-    "windowed": true
+    "target": "windows",
+    "name": "G360-App"
+  },
+  "dependencies": {
+    "customtkinter": ">=5.2.0",
+    "pyinstaller": ">=6.0.0"
   }
 }
