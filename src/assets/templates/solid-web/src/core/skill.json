@@ -1,15 +1,22 @@
 {
-  "skill": "corporativo",
-  "device": "movil",
-  "template": "solid-web",
+  "name": "solid-web",
+  "description": "G360 SolidJS Application",
+  "framework": "solid",
   "version": "1.0.0",
-  "createdAt": "2024-01-01T00:00:00.000Z",
   "colors": {
     "bg": "#0b1220",
     "surface": "#151e2e",
     "accent": "#00d084",
     "text": "#f0f4f8",
-    "muted": "#94a3b8"
+    "muted": "#94a3b8",
+    "success": "#22c55e",
+    "warning": "#f59e0b",
+    "error": "#ef4444"
+  },
+  "effects": {
+    "glassmorphism": true,
+    "blur": "12px",
+    "rounded": "12px"
   },
   "signature": {
     "mode": "powered",

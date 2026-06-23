@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 import flet as ft
+from core.g360_theme import G360Theme
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 if str(BASE_DIR) not in sys.path:
@@ -10,60 +11,76 @@ if str(BASE_DIR) not in sys.path:
 class MigratedApp:
     def __init__(self, page: ft.Page):
         self.page = page
-        self.setup_theme()
-        self.create_ui()
+        self.theme = G360Theme()
+        self._setup_page()
+        self._build_ui()
 
-    def setup_theme(self):
-        self.page.title = "G360 - Migrated App"
+    def _setup_page(self):
+        self.page.title = self.theme.build_name()
         self.page.theme_mode = ft.ThemeMode.DARK
-        self.page.padding = 20
-        self.page.bgcolor = "#0b1220"
+        self.page.bgcolor = self.theme.bg
+        self.page.padding = 0
+        self.page.window_width = 900
+        self.page.window_height = 700
+        self.page.window_resizable = True
+        self.page.window_center()
 
-    def create_ui(self):
+    def _build_ui(self):
         self.page.add(
             ft.Column([
-                self.create_header(),
-                self.create_main_content(),
-            ], spacing=20, expand=True)
+                self._build_header(),
+                ft.Container(
+                    content=self._build_content(),
+                    expand=True,
+                    padding=20,
+                ),
+                self.theme.footer_signature(),
+            ], spacing=0, expand=True)
         )
 
-    def create_header(self):
-        return ft.Container(
+    def _build_header(self):
+        return self.theme.container(
             content=ft.Row([
-                ft.Text("G360 Migrated App", size=28, weight=ft.FontWeight.BOLD, color="#00d084"),
+                self.theme.logo_component(height=32),
+                ft.Container(width=8),
+                self.theme.styled_text("Migrated App", size=20, color=self.theme.muted),
                 ft.Container(expand=True),
-                ft.Text("from tkinter/ctkinter", size=14, color="#94a3b8"),
+                ft.Text("from tkinter/ctkinter", size=14, color=self.theme.muted),
             ]),
             padding=20,
-            bgcolor="#151e2e",
-            border_radius=12
+            bgcolor=self.theme.surface,
         )
 
-    def create_main_content(self):
-        return ft.Container(
-            content=ft.Column([
-                ft.Text("Panel de Controles (antes tk.Button)", size=20, color="#f0f4f8"),
-                ft.Row([
-                    ft.ElevatedButton("Aceptar", bgcolor="#00d084", color="#0b1220"),
-                    ft.ElevatedButton("Cancelar", bgcolor="#ef4444", color="#ffffff"),
-                    ft.ElevatedButton("Guardar", bgcolor="#00796B", color="#ffffff"),
-                ], spacing=15),
-                ft.Container(height=30),
-                ft.Text("Campos de Entrada (antes tk.Entry)", size=20, color="#f0f4f8"),
-                ft.Column([
-                    ft.TextField(label="Usuario", hint_text="Ingrese usuario", width=300),
-                    ft.TextField(label="Contraseña", hint_text="Ingrese contraseña", password=True, width=300),
-                ], spacing=15),
-                ft.Container(height=30),
-                ft.Text("Casillas y Opciones (antes tk.Checkbutton/tk.Radiobutton)", size=20, color="#f0f4f8"),
-                ft.Column([
-                    ft.Checkbox(label="Recordarme"),
-                    ft.Checkbox(label="Aceptar términos"),
-                ], spacing=10),
-            ], scroll=ft.ScrollMode.AUTO),
-            expand=True,
-            padding=20
-        )
+    def _build_content(self):
+        return ft.Column([
+            self.theme.styled_text(
+                "Panel de Controles (antes tk.Button)",
+                size=20, weight=ft.FontWeight.BOLD,
+            ),
+            ft.Row([
+                self.theme.accent_button("Aceptar"),
+                ft.ElevatedButton("Cancelar", bgcolor=self.theme.error, color="#ffffff"),
+                ft.ElevatedButton("Guardar", bgcolor="#00796B", color="#ffffff"),
+            ], spacing=15),
+            ft.Container(height=30),
+            self.theme.styled_text(
+                "Campos de Entrada (antes tk.Entry)",
+                size=20, weight=ft.FontWeight.BOLD,
+            ),
+            ft.Column([
+                ft.TextField(label="Usuario", hint_text="Ingrese usuario", width=300),
+                ft.TextField(label="Contraseña", hint_text="Ingrese contraseña", password=True, width=300),
+            ], spacing=15),
+            ft.Container(height=30),
+            self.theme.styled_text(
+                "Casillas y Opciones (antes tk.Checkbutton/tk.Radiobutton)",
+                size=20, weight=ft.FontWeight.BOLD,
+            ),
+            ft.Column([
+                ft.Checkbox(label="Recordarme"),
+                ft.Checkbox(label="Aceptar términos"),
+            ], spacing=10),
+        ], scroll=ft.ScrollMode.AUTO)
 
 
 def main(page: ft.Page):

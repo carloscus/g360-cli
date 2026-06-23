@@ -19,9 +19,9 @@
 
 ### 2. **Funcionalidad Completa**
 - **11 comandos principales**: init, set-skill, bring, list, present, audit, clean, health, update, convert, signature
-- **Sistema de skills**: 10 skills de identidad visual diferentes
-- **Snippets reutilizables**: 19 snippets organizados por categoría
-- **8 plantillas de proyecto**: Web (PWA, Svelte, Solid, Lit) y Python (CLI, Flet, CustomTkinter)
+- **Sistema de skills**: 24 skills (12 identidad visual + 12 agentes funcionales)
+- **Snippets reutilizables**: 52 snippets organizados por categoría (CLI, Flet, CustomTkinter, Pandas, Openpyxl, G360 HTML)
+- **8 plantillas de proyecto**: Web (PWA, Svelte, Solid, Lit) y Python (CLI, Flet, Flet-Migrate, CustomTkinter)
 
 ### 3. **Experiencia de Usuario Excelente**
 - **Interfaz CLI amigable**: Uso de chalk para colores, ora para spinners, inquirer para prompts interactivos
@@ -244,7 +244,7 @@
 - **Líneas de código**: ~2,500 líneas (estimado)
 - **Comandos**: 11 comandos principales
 - **Librerías**: 11 librerías utilitarias
-- **Assets**: 8 plantillas, 10 skills, 19 snippets
+- **Assets**: 8 plantillas, 24 skills, 52 snippets
 
 ### Calidad
 - **Cobertura de tests**: 0% (sin tests)
@@ -254,8 +254,8 @@
 
 ### Funcionalidad
 - **Comandos implementados**: 11/11 (100%)
-- **Skills disponibles**: 10/10 (100%)
-- **Snippets disponibles**: 19/19 (100%)
+- **Skills disponibles**: 24/24 (100%)
+- **Snippets disponibles**: 52/52 (100%)
 - **Plantillas disponibles**: 8/8 (100%)
 
 ---

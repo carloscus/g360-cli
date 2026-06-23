@@ -1,5 +1,5 @@
 {
-  "name": "flet-desktop",
+  "name": "customtkinter-desktop",
   "description": "G360 CustomTkinter Desktop Application",
   "framework": "customtkinter",
   "version": "1.1.0",

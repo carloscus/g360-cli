@@ -63,6 +63,48 @@
       "code": "<span class='g360-badge g360-badge-success'>Active</span>"
     },
     {
+      "name": "ctk-window",
+      "description": "CustomTkinter window setup with G360 theme",
+      "language": "python",
+      "code": "import customtkinter as ctk\nfrom core.g360_theme import G360Theme\n\nclass G360App(ctk.CTk):\n    def __init__(self):\n        super().__init__()\n        self.theme = G360Theme()\n        self.title(self.theme.build_name())\n        self.geometry('900x700')\n        self.configure(fg_color=self.theme.bg)\n        ctk.set_appearance_mode('dark')\n        ctk.set_default_color_theme('green')"
+    },
+    {
+      "name": "ctk-button",
+      "description": "G360 styled CustomTkinter button",
+      "language": "python",
+      "code": "ctk.CTkButton(\n    parent,\n    text='Aceptar',\n    command=on_click,\n    fg_color='#00d084',\n    hover_color='#00b070',\n    text_color='#0b1220',\n    corner_radius=8,\n    height=40,\n    font=('Segoe UI', 14),\n)"
+    },
+    {
+      "name": "ctk-input",
+      "description": "G360 styled CustomTkinter entry",
+      "language": "python",
+      "code": "ctk.CTkEntry(\n    parent,\n    placeholder_text='Ingrese valor...',\n    width=300,\n    height=40,\n    fg_color='#1a2332',\n    border_color='#00d084',\n    text_color='#f0f4f8',\n    placeholder_text_color='#94a3b8',\n    corner_radius=8,\n)"
+    },
+    {
+      "name": "ctk-frame",
+      "description": "G360 glass frame container",
+      "language": "python",
+      "code": "ctk.CTkFrame(\n    parent,\n    fg_color='#1a2332',\n    corner_radius=12,\n    border_width=1,\n    border_color='#00d08440',\n)"
+    },
+    {
+      "name": "ctk-table",
+      "description": "CustomTkinter Treeview table with G360 styling",
+      "language": "python",
+      "code": "import tkinter as tk\nfrom tkinter import ttk\n\nstyle = ttk.Style()\nstyle.theme_use('clam')\nstyle.configure('G360.Treeview',\n    background='#1a2332',\n    foreground='#f0f4f8',\n    fieldbackground='#1a2332',\n    rowheight=35,\n    font=('Segoe UI', 12))\nstyle.configure('G360.Treeview.Heading',\n    background='#00d084',\n    foreground='#0b1220',\n    font=('Segoe UI', 12, 'bold'))\n\ntree = ttk.Treeview(parent, style='G360.Treeview',\n    columns=('sku', 'nombre', 'cantidad'),\n    show='headings')\ntree.heading('sku', text='SKU')\ntree.heading('nombre', text='Nombre')\ntree.heading('cantidad', text='Cantidad')"
+    },
+    {
+      "name": "ctk-dialog",
+      "description": "CustomTkinter message dialog",
+      "language": "python",
+      "code": "import customtkinter as ctk\n\ndef show_info(parent, title, message):\n    dialog = ctk.CTkToplevel(parent)\n    dialog.title(title)\n    dialog.geometry('400x200')\n    dialog.configure(fg_color='#0b1220')\n    dialog.grab_set()\n    \n    ctk.CTkLabel(dialog, text=message, wraplength=350,\n        text_color='#f0f4f8').pack(pady=20)\n    ctk.CTkButton(dialog, text='OK',\n        command=dialog.destroy,\n        fg_color='#00d084').pack(pady=10)"
+    },
+    {
+      "name": "ctk-sidebar",
+      "description": "CustomTkinter sidebar navigation",
+      "language": "python",
+      "code": "class Sidebar(ctk.CTkFrame):\n    def __init__(self, parent, items, on_select):\n        super().__init__(parent, fg_color='#1a2332', width=200)\n        self.on_select = on_select\n        self.buttons = []\n        \n        for i, (text, icon) in enumerate(items):\n            btn = ctk.CTkButton(\n                self, text=text, anchor='w',\n                fg_color='transparent',\n                hover_color='#00d08420',\n                text_color='#94a3b8',\n                command=lambda idx=i: self._select(idx))\n            btn.pack(fill='x', padx=10, pady=2)\n            self.buttons.append(btn)\n    \n    def _select(self, idx):\n        for i, btn in enumerate(self.buttons):\n            btn.configure(\n                fg_color='#00d08420' if i == idx else 'transparent',\n                text_color='#00d084' if i == idx else '#94a3b8')\n        self.on_select(idx)"
+    },
+    {
       "name": "flet-page",
       "description": "Flet page setup with G360 theme",
       "code": "import flet as ft\n\ndef main(page: ft.Page):\n    page.title = 'G360 App'\n    page.theme_mode = ft.ThemeMode.DARK\n    page.bgcolor = '#0b1220'\n    page.padding = 20\n    page.add(ft.Text('G360 Desktop App', size=24, color='#00d084'))"

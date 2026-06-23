@@ -1,127 +1,174 @@
 @echo off
+setlocal enabledelayedexpansion
 chcp 65001 >nul
-title G360 - CustomTkinter App
+cd /d "%~dp0"
+
+set LOG_FILE=run_log.txt
+echo [%DATE% %TIME%] Inicio > %LOG_FILE%
 
 echo.
-echo ==============================================
-echo   G360 - Running Application
-echo ==============================================
+echo ========================================
+echo    G360 CustomTkinter App
+echo    powered by G360
+echo ========================================
 echo.
 
-:: --- 1. Verificar/instalar uv ---
+REM ============================================
+REM [1/6] Verificar / Instalar uv
+echo [%DATE% %TIME%] [1/6] Verificando uv... >> %LOG_FILE%
+echo [1/6] Verificando uv...
+
 where uv >nul 2>&1
 if errorlevel 1 (
-    echo [SETUP] uv no encontrado. Intentando instalar...
-    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-    if errorlevel 1 (
-        echo.
-        echo ERROR: No se pudo instalar uv automaticamente.
-        echo.
-        echo Opcion 1: Instalar Python manualmente desde:
-        echo   https://www.python.org/downloads/
-        echo.
-        echo Opcion 2: Instalar uv manualmente:
-        echo   powershell -ExecutionPolicy ByPass -c ^"irm https://astral.sh/uv/install.ps1 ^| iex^"
-        echo.
-        pause
-        exit /b 1
-    )
-    :: Refrescar PATH
-    for /f "tokens=*" %%a in ('uv --version') do set "UV_OK=%%a"
-)
-echo [CHECK] uv: OK
-
-:: --- 2. Verificar Python via uv ---
-echo [CHECK] Verificando Python...
-uv python find >nul 2>&1
-if errorlevel 1 (
-    echo [SETUP] Python no encontrado. Instalando Python 3.12 con uv...
-    uv python install 3.12
-    if errorlevel 1 (
-        echo ERROR: No se pudo instalar Python.
-        pause
-        exit /b 1
+    if exist "uv.exe" (
+        echo   Usando uv.exe local...
+        set "PATH=%~dp0;%PATH%"
+    ) else (
+        echo   uv no encontrado. Instalando...
+        powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex" >> %LOG_FILE% 2>&1
+        if errorlevel 1 (
+            echo [%DATE% %TIME%] [ERROR] No se pudo instalar uv >> %LOG_FILE%
+            echo   ERROR: No se pudo instalar uv.
+            msg * "G360 App: No se pudo instalar uv. Descarguelo de https://docs.astral.sh/uv/"
+            pause
+            exit /b 1
+        )
+        echo   uv instalado.
     )
 ) else (
-    echo [CHECK] Python: OK
+    echo   uv encontrado.
 )
 
-:: --- 3. Crear .venv desde .python-version ---
-if not exist ".venv" (
-    echo [SETUP] Creando entorno virtual...
-    if exist ".python-version" (
-        uv venv
-    ) else (
-        uv venv --python 3.12
+for /f "tokens=*" %%i in ('where uv 2^>nul') do set "UV_PATH=%%~dpi"
+if defined UV_PATH set "PATH=!UV_PATH!;%PATH%"
+
+where uv >nul 2>&1
+if errorlevel 1 (
+    if exist "%USERPROFILE%\.cargo\bin\uv.exe" (
+        set "PATH=%USERPROFILE%\.cargo\bin;%PATH%"
+    ) else if exist "%USERPROFILE%\.local\bin\uv.exe" (
+        set "PATH=%USERPROFILE%\.local\bin;%PATH%"
     )
 )
-echo [VENV] .venv: OK
 
-:: --- 4. Sincronizar dependencias (lee pyproject.toml o requirements.txt) ---
-echo [SETUP] Sincronizando dependencias...
-uv sync
+echo.
 
-:: --- 5. Verificar VC++ Redist (necesario para Flet en Windows) ---
-echo [CHECK] Verificando Visual C++ Redistributable...
+REM ============================================
+REM [2/6] Verificar / Instalar Python 3.12
+echo [%DATE% %TIME%] [2/6] Verificando Python... >> %LOG_FILE%
+echo [2/6] Verificando Python...
+
+uv python list --only-installed 2>nul | find "3.12" >nul
+if errorlevel 1 (
+    echo   Python 3.12 no encontrado. Instalando...
+    uv python install 3.12 >> %LOG_FILE% 2>&1
+    if errorlevel 1 (
+        echo [%DATE% %TIME%] [ERROR] No se pudo instalar Python 3.12 >> %LOG_FILE%
+        echo   ERROR: No se pudo instalar Python 3.12.
+        msg * "G360 App: No se pudo instalar Python 3.12. Revise %LOG_FILE%"
+        pause
+        exit /b 1
+    )
+    echo   Python 3.12 instalado.
+) else (
+    echo   Python 3.12 encontrado.
+)
+
+echo.
+
+REM ============================================
+REM [3/6] Entorno virtual y dependencias
+echo [%DATE% %TIME%] [3/6] Configurando entorno... >> %LOG_FILE%
+echo [3/6] Configurando entorno virtual...
+
+if not exist ".venv\Scripts\python.exe" (
+    echo   Creando entorno virtual...
+    uv venv .venv --python 3.12 --seed >> %LOG_FILE% 2>&1
+    if errorlevel 1 (
+        echo [%DATE% %TIME%] [ERROR] No se pudo crear .venv >> %LOG_FILE%
+        echo   ERROR: No se pudo crear el entorno virtual.
+        msg * "G360 App: No se pudo crear .venv. Revise %LOG_FILE%"
+        pause
+        exit /b 1
+    )
+    echo   Entorno virtual creado.
+) else (
+    .venv\Scripts\python.exe -c "import sys" 2>> %LOG_FILE%
+    if errorlevel 1 (
+        echo   .venv corrupto, recreando...
+        rd /s /q ".venv" 2>> %LOG_FILE%
+        uv venv .venv --python 3.12 --seed >> %LOG_FILE% 2>&1
+    )
+)
+
+echo   Instalando dependencias...
+uv sync >> %LOG_FILE% 2>&1
+if errorlevel 1 (
+    echo [%DATE% %TIME%] [ERROR] Error en dependencias >> %LOG_FILE%
+    echo   ERROR: No se pudieron instalar las dependencias.
+    msg * "G360 App: Error en dependencias. Revise %LOG_FILE%"
+    pause
+    exit /b 1
+)
+echo [%DATE% %TIME%] [3/6] Dependencias listas >> %LOG_FILE%
+echo   Dependencias instaladas.
+
+echo.
+
+REM ============================================
+REM [4/6] Verificar VC++ Redistributable
+echo [%DATE% %TIME%] [4/6] Verificando VC++ Redist... >> %LOG_FILE%
+echo [4/6] Verificando Visual C++ Redistributable...
+
 REG QUERY "HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" >nul 2>&1
 if errorlevel 1 (
-    echo.
-    echo [ATENCION] Visual C++ Redistributable no detectado.
-    echo             Flet puede fallar sin el.
-    echo.
-    echo Descargalo desde:
-    echo   https://aka.ms/vs/17/release/vc_redist.x64.exe
-    echo.
-    choice /C SN /M "Intentar descargar e instalar ahora? (S/N)"
-    if errorlevel 2 goto :skip_vcredist
-    powershell -Command "
-        Write-Host 'Descargando VC++ Redist...';
-        $url = 'https://aka.ms/vs/17/release/vc_redist.x64.exe';
-        $out = '$env:TEMP\vc_redist.x64.exe';
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;
-        Invoke-WebRequest -Uri $url -OutFile $out;
-        Write-Host 'Instalando...';
-        Start-Process -Wait -FilePath $out -ArgumentList '/install', '/quiet', '/norestart';
-        Remove-Item $out;
-        Write-Host 'Instalacion completada.';
-    "
+    echo   VC++ Redist no detectado. Intentando instalar...
+    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $out = \"$env:TEMP\vc_redist.x64.exe\"; Invoke-WebRequest -Uri 'https://aka.ms/vs/17/release/vc_redist.x64.exe' -OutFile $out; Start-Process -Wait -FilePath $out -ArgumentList '/install', '/quiet', '/norestart'; Remove-Item $out" >> %LOG_FILE% 2>&1
     if errorlevel 1 (
-        echo [WARN] No se pudo instalar VC++ Redist. Continuando de todas formas...
+        echo   [WARN] No se pudo instalar VC++ Redist. Continuando...
     ) else (
-        echo [OK] VC++ Redist instalado
+        echo   VC++ Redist instalado.
     )
-    :skip_vcredist
 ) else (
-    echo [OK] VC++ Redist detectado
+    echo   VC++ Redist detectado.
 )
 
-:: --- 6. Crear acceso directo en escritorio (primera ejecucion) ---
+echo.
+
+REM ============================================
+REM [5/6] Acceso directo en escritorio
+echo [%DATE% %TIME%] [5/6] Acceso directo... >> %LOG_FILE%
+echo [5/6] Creando acceso directo...
+
 if not exist "%USERPROFILE%\Desktop\G360 App.lnk" (
     if exist "create_shortcut.vbs" (
-        echo [SETUP] Creando acceso directo en el escritorio...
-        cscript //nologo create_shortcut.vbs
+        cscript //nologo create_shortcut.vbs >> %LOG_FILE% 2>&1
+        echo   Acceso directo creado en el escritorio.
+    ) else (
+        echo   create_shortcut.vbs no encontrado.
     )
+) else (
+    echo   Acceso directo ya existe.
 )
 
-:: --- 7. Ejecutar la app ---
-echo.
-echo ==============================================
-echo   Iniciando G360 Desktop App...
-echo ==============================================
 echo.
 
-uv run python src/main.py
+REM ============================================
+REM [6/6] Iniciar aplicacion
+echo [%DATE% %TIME%] [6/6] Iniciando G360 App... >> %LOG_FILE%
+echo [6/6] Iniciando aplicacion...
+echo.
+
+.venv\Scripts\python.exe src\main.py
 
 if errorlevel 1 (
+    echo [%DATE% %TIME%] [ERROR] La aplicacion fallo >> %LOG_FILE%
     echo.
-    echo ERROR: La aplicacion cerró con error.
-    echo.
-    echo Posibles causas:
-    echo   - Falta VC++ Redist (ver mensajes anteriores)
-    echo   - Puerto ocupado (Flet usa un puerto local)
-    echo   - Error en el codigo
-    echo.
+    echo La aplicacion fallo. Revise %LOG_FILE% para mas detalles.
+    msg * "G360 App: La aplicacion fallo. Revise %LOG_FILE%"
     pause
 )
 
-pause
+echo [%DATE% %TIME%] App terminada >> %LOG_FILE%
+echo.
+echo ========================================

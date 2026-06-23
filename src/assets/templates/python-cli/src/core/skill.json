@@ -1,6 +1,25 @@
-"""
-G360 Python Skill Configuration
-"""
-SKILL_NAME = "python-cli-template"
-SKILL_VERSION = "1.0.0"
-G360_BRAND = "G360 Ecosystem"
+{
+  "name": "python-cli",
+  "description": "G360 Python CLI Application",
+  "framework": "python-cli",
+  "version": "1.0.0",
+  "colors": {
+    "bg": "#0b1220",
+    "surface": "#1a2332",
+    "accent": "#00d084",
+    "text": "#f0f4f8",
+    "muted": "#94a3b8",
+    "success": "#22c55e",
+    "warning": "#f59e0b",
+    "error": "#ef4444"
+  },
+  "effects": {
+    "glassmorphism": false,
+    "blur": "0px",
+    "rounded": "8px"
+  },
+  "signature": {
+    "mode": "powered",
+    "text": "powered by G360"
+  }
+}
