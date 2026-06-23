@@ -109,11 +109,14 @@ program
 
 program
   .command('signature')
-  .argument('<command>', 'Command to execute (install)')
+  .argument('<command>', 'Command to execute: install, positions')
+  .description('Install g360-signature branding component')
   .option('-p, --path <path>', 'Target project path', '.')
   .option('--force', 'Force reinstall if already exists')
   .option('-m, --mode <mode>', 'Signature mode: own or powered', 'powered')
   .option('-v, --version <version>', 'Version to display')
+  .option('--position <position>', 'Signature position: bottom-right, bottom-left, bottom-center, footer-right, footer-left', 'bottom-right')
+  .option('-i, --interactive', 'Interactive mode with guided suggestions')
   .action(signature);
 
 program.parse();
