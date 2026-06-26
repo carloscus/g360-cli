@@ -93,7 +93,7 @@ class TestEstabilizarExcelCrudo(unittest.TestCase):
     def test_metadata_creada(self):
         df, meta = _patched_ingestion(_SAMPLE_DF)
         self.assertIn("filas_estabilizadas", meta)
-        self.assertIn("columnas", meta)
+        self.assertIn("columnas_finales", meta)
         self.assertEqual(meta["filas_estabilizadas"], 2)
 
     def test_soles_sin_nan(self):
