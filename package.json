@@ -1,7 +1,7 @@
 {
   "name": "g360-cli",
-  "version": "1.7.1",
-  "description": "CLI tool for bootstrapping G360 projects with standardized structure, assets, and identity",
+  "version": "1.9.0",
+  "description": "CLI tool for bootstrapping G360 projects with standardized structure, assets, identity, and ERP data processing",
   "type": "module",
   "main": "src/cli.js",
   "bin": {
@@ -14,19 +14,25 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "build": "npm run build:portable",
-    "build:portable": "pkg . --targets node18-win-x64 --output dist/g360.exe"
+    "build:portable": "pkg . --targets node18-win-x64 --output dist/g360.exe",
+    "postinstall": "echo '✅ g360-cli instalado. Asegúrate de tener Python 3.11+ y pip instalados.'"
   },
   "pkg": {
     "assets": [
-      "src/assets/**/*"
+      "src/assets/**/*",
+      "py/**/*"
     ],
-    "outputPath": "dist"
+    "outputPath": "dist",
+    "scripts": [],
+    "targets": "node18-win-x64"
   },
   "keywords": [
     "g360",
     "cli",
     "scaffolding",
-    "generator"
+    "generator",
+    "erp",
+    "data-processing"
   ],
   "author": "Carlos Cusi",
   "license": "MIT",
@@ -46,5 +52,9 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ccusi/g360-cli.git"
   }
 }

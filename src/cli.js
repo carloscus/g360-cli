@@ -16,6 +16,9 @@ import { health } from './commands/health.js';
 import { update } from './commands/update.js';
 import { convert } from './commands/convert.js';
 import { signature } from './commands/signature.js';
+import { scan } from './commands/scan.js';
+import { validate } from './commands/validate.js';
+import { ingest } from './commands/ingest.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkg = fs.readJsonSync(path.join(__dirname, '../package.json'));
@@ -116,7 +119,27 @@ program
   .option('-m, --mode <mode>', 'Signature mode: own or powered', 'powered')
   .option('-v, --version <version>', 'Version to display')
   .option('--position <position>', 'Signature position: bottom-right, bottom-left, bottom-center, footer-right, footer-left', 'bottom-right')
-  .option('-i, --interactive', 'Interactive mode with guided suggestions')
-  .action(signature);
+   .option('-i, --interactive', 'Interactive mode with guided suggestions')
+   .action(signature);
+
+// Comandos de procesamiento ERP
+program
+  .command('scan')
+  .argument('<directorio>', 'Directorio a escanear')
+  .option('-r, --recursive', 'Buscar recursivamente', true)
+  .option('--min-score <n>', 'Puntuación mínima', '10')
+  .action(scan);
+
+program
+  .command('validate')
+  .argument('<paths...>', 'Archivos o directorios a validar')
+  .option('-r, --recursive', 'Buscar recursivamente en directorios')
+  .action(validate);
+
+program
+  .command('ingest')
+  .argument('<input>', 'Archivo CSV/Excel o directorio con archivos ERP')
+  .option('-o, --output <archivo>', 'Ruta de salida', 'maestro_ventas_crm.csv')
+  .action(ingest);
 
 program.parse();

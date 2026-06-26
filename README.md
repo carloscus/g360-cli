@@ -55,6 +55,8 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 - **Inicialización rápida** - Crea proyectos G360 con estructura estándar
 - **Gestión de assets** - Trae componentes, skills y plantillas embebidas
 - **Ingesta ERP** - Normaliza `.xls/.xlsx` de SAP, StarSoft, Spring con `g360 bring ingestion`
+- **Motor de clasificación comercial** - `commercial_engine` clasifica documentos en VENTA/DEVOLUCION/AJUSTE con subtipos (PRECIO_LINEA, CARGO_FIJO, SIN_BASE)
+- **Precio efectivo** - PRECIO_BASE, RECARGO_UNITARIO y PRECIO_EFECTIVO separan precio físico de ajustes financieros FAE
 - **Paquete Python** - `g360-core` en PyPI para pipelines de datos independientes
 - **Auditoría** - Verifica compliance de proyectos G360
 - **Limpieza** - Elimina assets embebidos antes de deployment
@@ -308,6 +310,35 @@ El paquete pip acompañante `g360-core` se publica en PyPI:
 ```bash
 pip install g360-core
 ```
+
+### `g360-core` — Módulos principales
+
+#### `commercial_engine.py`
+
+Motor de lógica de negocio para clasificación documental. Única fuente de verdad para reglas comerciales.
+
+| Función | Propósito |
+|---------|-----------|
+| `classify_base()` | Clasificación primaria: VENTA, DEVOLUCION, AJUSTE |
+| `build_invoice_index()` | Índice de facturas para cruce de referencias |
+| `resolve_document_relationships()` | Asigna SUBTIPO_AJUSTE (PRECIO_LINEA, CARGO_FIJO, SIN_BASE) |
+| `calculate_prices()` | PRECIO_BASE, RECARGO_UNITARIO, PRECIO_EFECTIVO |
+| `parse_referencia()` | Descompone REFERENCIA "F01/204-56287" en tipo/serie/número |
+
+**Clasificación de documentos:**
+```
+TPO_DOC  CANTIDAD  CANTIDAD_FAE  → CATEGORIA_OP  SUBTIPO_AJUSTE
+F01/BDI     ≠0         =           VENTA            —
+NCR         ≠0         =           DEVOLUCION       —
+NCR          0         ≠0          AJUSTE           PRECIO_LINEA / SIN_BASE
+NDB          0         ≠0          AJUSTE           CARGO_FIJO / SIN_BASE
+```
+
+#### `batch_processor.py`
+
+| Función | Propósito |
+|---------|-----------|
+| `read_erp_file()` | Punto único de lectura: .xls (xlrd), .xlsx (openpyxl), .csv. `dtype=str` preserva ceros a la izquierda |
 
 ---
 
@@ -588,12 +619,15 @@ mi-app/
 └── skill.json
 ```
 
-**Normalización de datos:** La ingesta aplica 16 transformaciones automáticas:
+**Normalización de datos:** La ingesta aplica transformaciones automáticas:
 - Parseo de referencias (`F01/201-243065` → tipo, serie, periodo, número)
 - Separación de sucursales (nombre + dirección)
 - Clasificación de documentos (RUC 11 dígitos / DNI 8 dígitos)
 - Normalización monetaria con auto-detección de formato SAP/Spring
 - Cantidad + Cantidad FAE → cantidad_total + tipo_transaccion
+- **Clasificación comercial**: VENTA / DEVOLUCION / AJUSTE con subtipos PRECIO_LINEA, CARGO_FIJO, SIN_BASE
+- **Precio efectivo**: PRECIO_BASE (físico) y RECARGO_UNITARIO (financiero) separados
+- Cruce de NC/NDB contra facturas referenciadas para determinar ajustes de precio por línea
 - Purga de filas total/general/acumulado
 
 ### python-flet-migrate
@@ -806,7 +840,7 @@ g360-cli/
 │       └── config/      # Configuraciones
 ├── py/                  # Paquete Python publicable en PyPI
 │   ├── pyproject.toml   # g360-core
-│   └── src/g360_core/   # ingestion.py + flet/ingestion_panel.py
+│   └── src/g360_core/   # commercial_engine.py, pipeline.py, processor.py, batch_processor.py, utils.py
 ├── package.json
 ├── README.md
 └── LICENSE
@@ -834,7 +868,7 @@ npm run test:ui     # UI interactiva
 npm run test:coverage
 ```
 
-**Cobertura actual (v1.7.0):**
+**Cobertura actual (v1.9.0):**
 - `commands/`: init, bring, list, audit, set-skill
 - `lib/`: manifest, validator, asset-validator
 - **51 passing / 1 timeout** (init.test.js requiere import pesado de inquirer)
