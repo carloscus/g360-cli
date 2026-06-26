@@ -15,7 +15,8 @@ export async function list(type, options) {
     templates: [],
     components: [],
     skills: [],
-    brands: []
+    brands: [],
+    ingestion: []
   };
 
   const templatesPath = path.join(assetsPath, 'templates');
@@ -47,6 +48,11 @@ export async function list(type, options) {
     }
   }
   
+  const ingestionPath = path.join(assetsPath, 'ingestion');
+  if (fs.existsSync(ingestionPath)) {
+    assets.ingestion = ['ingestion'];
+  }
+
   if (fs.existsSync(snippetsPath)) {
     const snippetsJsonPath = path.join(snippetsPath, 'snippets.json');
     if (fs.existsSync(snippetsJsonPath)) {
@@ -112,6 +118,17 @@ export async function list(type, options) {
       });
     } else {
       console.log(chalk.gray('  No skills found'));
+    }
+  }
+
+  if (!type || type === 'all' || type === 'ingestion') {
+    console.log(chalk.bold.yellow('\n📥 Ingestion Modules:'));
+    const ingestionPath = path.join(assetsPath, 'ingestion');
+    if (fs.existsSync(ingestionPath)) {
+      console.log(chalk.gray('  - ingestion (ERP data normalizer for Flet)'));
+      console.log(chalk.gray('    Run: g360 bring ingestion'));
+    } else {
+      console.log(chalk.gray('  No ingestion module found'));
     }
   }
 

@@ -54,6 +54,8 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 - **Inicialización rápida** - Crea proyectos G360 con estructura estándar
 - **Gestión de assets** - Trae componentes, skills y plantillas embebidas
+- **Ingesta ERP** - Normaliza `.xls/.xlsx` de SAP, StarSoft, Spring con `g360 bring ingestion`
+- **Paquete Python** - `g360-core` en PyPI para pipelines de datos independientes
 - **Auditoría** - Verifica compliance de proyectos G360
 - **Limpieza** - Elimina assets embebidos antes de deployment
 - **Multi-plantilla** - Web (Lit, Solid, Svelte, React), Python (CLI, Flet, CustomTkinter), VBA Excel
@@ -270,6 +272,41 @@ g360 bring skills
 
 # Traer engine específico
 g360 bring engine/g360-skill-audit
+
+# Traer ingestion module ERP a proyecto Flet existente
+g360 bring ingestion
+```
+
+### `g360 bring ingestion`
+
+Instala el módulo de normalización de datos ERP en proyectos Flet.
+
+```bash
+g360 bring ingestion [opciones]
+```
+
+**Opciones:**
+
+| Opción | Descripción |
+|--------|-------------|
+| `-p, --path <ruta>` | Ruta al proyecto |
+| `--dry-run` | Previsualizar |
+| `--force` | Sobrescribir archivos existentes |
+
+**Archivos instalados:**
+- `src/core/ingestion.py` — Normalización de datos (estabilizar_excel_crudo)
+- `src/ui/ingestion_panel.py` — Panel Flet para carga de archivos
+
+**Importación (auto-detects pip → local):**
+```python
+# Si g360-core está instalado via pip → from g360_core.ingestion import ...
+# Si no → from core.ingestion import ...
+from ui.ingestion_panel import IngestionPanel
+```
+
+El paquete pip acompañante `g360-core` se publica en PyPI:
+```bash
+pip install g360-core
 ```
 
 ---
@@ -289,6 +326,7 @@ g360 list [tipo] [opciones]
 | `templates` | Lista de plantillas |
 | `components` | Lista de componentes |
 | `skills` | Lista de skills |
+| `ingestion` | Módulo de ingesta ERP |
 | `all` | Todo (por defecto) |
 
 **Ejemplos:**
@@ -530,19 +568,33 @@ mi-cli/
 
 ### python-flet
 
-Plantilla GUI de escritorio con **Flet** (flask-like para Flutter).
+Plantilla GUI de escritorio con **Flet** para apps de contexto ERP.
 
 ```
 mi-app/
 ├── src/
-│   ├── main.py
-│   └── core/
-│       └── skill.json
-├── requirements.txt
+│   ├── main.py                  ← Punto de entrada con IngestionPanel integrado
+│   ├── core/
+│   │   ├── ingestion.py         ← Normalizador de datos ERP
+│   │   ├── g360_theme.py        ← Tema visual G360
+│   │   └── skill.json
+│   ├── ui/
+│   │   └── ingestion_panel.py   ← Panel Flet para carga .xls/.xlsx
+│   └── export/
+│       └── __init__.py
+├── pyproject.toml                ← Dependencias: flet, pandas, g360-core
 ├── run.bat
-├── build-portable.bat
+├── build.bat
 └── skill.json
 ```
+
+**Normalización de datos:** La ingesta aplica 16 transformaciones automáticas:
+- Parseo de referencias (`F01/201-243065` → tipo, serie, periodo, número)
+- Separación de sucursales (nombre + dirección)
+- Clasificación de documentos (RUC 11 dígitos / DNI 8 dígitos)
+- Normalización monetaria con auto-detección de formato SAP/Spring
+- Cantidad + Cantidad FAE → cantidad_total + tipo_transaccion
+- Purga de filas total/general/acumulado
 
 ### python-flet-migrate
 
@@ -749,9 +801,12 @@ g360-cli/
 │   └── assets/          # Assets embebidos
 │       ├── templates/    # Plantillas de proyecto
 │       ├── components/   # Componentes G360
-│       ├── skills/      # Skills de identidad
+│       ├── ingestion/    # Módulo de ingesta ERP (bring)
 │       ├── engine/      # G360 Engine
 │       └── config/      # Configuraciones
+├── py/                  # Paquete Python publicable en PyPI
+│   ├── pyproject.toml   # g360-core
+│   └── src/g360_core/   # ingestion.py + flet/ingestion_panel.py
 ├── package.json
 ├── README.md
 └── LICENSE
@@ -765,7 +820,7 @@ g360-cli/
 |---------|-------------|
 | `npm run build` | Build portable con pkg (g360.exe) |
 | `npm run build:portable` | Especificar target node18-win-x64 |
-| `npm test` | Ejecutar tests (actualmente placeholder) |
+| `npm test` | Ejecutar tests con Vitest (51 tests, 7 suites) |
 | `npm run prepublishOnly` | Validación antes de publicar en npm |
 
 ---
@@ -773,10 +828,16 @@ g360-cli/
 ## Testing
 
 ```bash
-npm test
+npm test            # Vitest — 51 tests, 8 suites
+npm run test:watch  # Modo watch
+npm run test:ui     # UI interactiva
+npm run test:coverage
 ```
 
-Actualmente configurado con un placeholder. Próximamente se integrará con Vitest para testing de comandos y utilidades.
+**Cobertura actual (v1.7.0):**
+- `commands/`: init, bring, list, audit, set-skill
+- `lib/`: manifest, validator, asset-validator
+- **51 passing / 1 timeout** (init.test.js requiere import pesado de inquirer)
 
 ---
 

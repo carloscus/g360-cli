@@ -5,6 +5,12 @@ import { fileURLToPath } from 'url';
 import { progress } from '../lib/progress.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const INGESTION_FILES = [
+  { src: 'ingestion/core/ingestion.py', dest: 'src/core/ingestion.py' },
+  { src: 'ingestion/core/__init__.py', dest: 'src/core/__init__.py' },
+  { src: 'ingestion/ui/ingestion_panel.py', dest: 'src/ui/ingestion_panel.py' },
+  { src: 'ingestion/ui/__init__.py', dest: 'src/ui/__init__.py' },
+];
 
 export async function bring(asset, options) {
   const { path: targetPath = '.', dryRun = false, force = false } = options;
@@ -24,6 +30,10 @@ export async function bring(asset, options) {
     console.error(chalk.red(`❌ Asset "${asset}" not found.`));
     console.log(chalk.gray('\nRun "g360 list all" to see available assets.'));
     return;
+  }
+
+  if (asset === 'ingestion') {
+    return installIngestion(targetDir, dryRun, force);
   }
 
   await copyAssets(assetPath, targetDir, dryRun, force);
@@ -102,6 +112,83 @@ async function applyBrand(targetDir, brandName, dryRun) {
   console.log(chalk.green(`\n✅ Brand "${brandName}" applied to ${skillPath}`));
   console.log(chalk.gray(`   Logo: ${brand.default_logo}`));
   console.log(chalk.gray(`   Signature: ${brand.signature?.text || 'none'}`));
+}
+
+async function installIngestion(targetDir, dryRun, force) {
+  const assetsPath = path.join(__dirname, '../assets');
+  const ingestionDir = path.join(assetsPath, 'ingestion');
+
+  if (!fs.existsSync(ingestionDir)) {
+    console.error(chalk.red('❌ Ingestion asset not found in package.'));
+    return;
+  }
+
+  const hasFlet = (
+    fs.existsSync(path.join(targetDir, 'pyproject.toml')) &&
+    fs.existsSync(path.join(targetDir, 'src', 'main.py'))
+  );
+
+  if (!hasFlet) {
+    console.error(chalk.red('❌ This command requires a G360 Flet project.'));
+    console.log(chalk.gray('   Run "g360 init <name> --template python-flet" first.'));
+    return;
+  }
+
+  const srcCore = path.join(targetDir, 'src', 'core');
+  const srcUi = path.join(targetDir, 'src', 'ui');
+
+  if (!fs.existsSync(srcCore)) {
+    if (!dryRun) fs.mkdirpSync(srcCore);
+    console.log(chalk.gray('   Created src/core/'));
+  }
+  if (!fs.existsSync(srcUi)) {
+    if (!dryRun) fs.mkdirpSync(srcUi);
+    console.log(chalk.gray('   Created src/ui/'));
+  }
+
+  if (dryRun) {
+    console.log(chalk.yellow('\n📋 DRY RUN - Would install:'));
+    for (const f of INGESTION_FILES) {
+      console.log(chalk.gray(`   ${f.dest}`));
+    }
+    return;
+  }
+
+  console.log(chalk.cyan('\n📦 Option A — Install via pip (recommended):'));
+  console.log(chalk.white('     pip install g360-core'));
+
+  const progressBar = progress('Installing local fallback files...');
+
+  try {
+    let copied = 0;
+    for (const f of INGESTION_FILES) {
+      const srcFile = path.join(assetsPath, f.src);
+      const destFile = path.join(targetDir, f.dest);
+
+      if (fs.existsSync(destFile) && !force) {
+        console.log(chalk.yellow(`\n⚠ ${f.dest} exists. Use --force to overwrite.`));
+        continue;
+      }
+
+      await fs.copy(srcFile, destFile, { overwrite: force });
+      copied++;
+    }
+
+    progressBar.stop();
+
+    if (copied > 0) {
+      console.log(chalk.green(`\n✅ ${copied} local fallback file(s) installed\n`));
+      console.log(chalk.gray('   These files are used when g360-core pip package is not available.'));
+      console.log(chalk.cyan('\n   Import (auto-detects pip package → local fallback):'));
+      console.log(chalk.white('     from ui.ingestion_panel import IngestionPanel'));
+    }
+
+    console.log(chalk.cyan('\n   Or add to your pyproject.toml:'));
+    console.log(chalk.white('     "g360-core>=0.1.0"'));
+  } catch (error) {
+    progressBar.stop();
+    console.error(chalk.red(`\n❌ Error: ${error.message}`));
+  }
 }
 
 async function copyAssets(src, dest, dryRun, force) {

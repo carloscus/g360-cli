@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 import flet as ft
 from core.g360_theme import G360Theme
+from ui.ingestion_panel import IngestionPanel
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 if str(BASE_DIR) not in sys.path:
@@ -12,8 +13,14 @@ class G360App:
     def __init__(self, page: ft.Page):
         self.page = page
         self.theme = G360Theme()
+        self.df = None
+        self.metadata = None
         self._setup_page()
         self._build_ui()
+
+    def _on_data_loaded(self, df, metadata):
+        self.df = df
+        self.metadata = metadata
 
     def _setup_page(self):
         self.page.title = self.theme.build_name()
@@ -27,6 +34,10 @@ class G360App:
 
     def _build_ui(self):
         self.loading = self.theme.loading_overlay()
+        self.ingestion_panel = IngestionPanel(
+            self.theme, on_data_loaded=self._on_data_loaded
+        )
+        self.page.overlay.append(self.ingestion_panel.file_picker)
         self.page.add(
             ft.Stack(
                 controls=[
@@ -88,21 +99,29 @@ class G360App:
         return ft.Column(
             controls=[
                 self.theme.styled_text(
-                    "Bienvenido a G360 Desktop",
+                    "Ingesta de Datos - Escudo de Saneamiento",
                     size=24,
                     weight=ft.FontWeight.BOLD,
                 ),
+                ft.Container(height=8),
+                self.theme.styled_text(
+                    "Carga tu archivo .xls/.xlsx del ERP. Los datos se normalizan automaticamente.",
+                    size=14,
+                    color=self.theme.muted,
+                ),
+                ft.Container(height=16),
+                self.ingestion_panel,
                 ft.Container(height=20),
                 ft.Row(
                     controls=[
                         self._build_card(
-                            "Usuarios", "Gestión de usuarios", ft.icons.PEOPLE
+                            "Usuarios", "Gestion de usuarios", ft.icons.PEOPLE
                         ),
                         self._build_card(
                             "Reportes", "Ver reportes", ft.icons.ANALYTICS
                         ),
                         self._build_card(
-                            "Configuración", "Ajustes del sistema", ft.icons.SETTINGS
+                            "Configuracion", "Ajustes del sistema", ft.icons.SETTINGS
                         ),
                     ],
                     spacing=20,

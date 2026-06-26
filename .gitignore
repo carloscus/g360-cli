@@ -4,5 +4,10 @@ node_modules/
 .env
 .env.local
 dist/
+py/build/
+py/dist/
+*.egg-info/
+__pycache__/
+*.pyc
 build/
 .cache/
