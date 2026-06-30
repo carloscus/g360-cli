@@ -13,7 +13,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /**
  * Retorna la ruta al directorio src/g360_core del módulo Python.
  */
-export function getPythonModulePath(): string {
+export function getPythonModulePath() {
   // Ruta de desarrollo: py/src/g360_core relativo a este archivo
   const devPath = path.join(__dirname, '..', 'py', 'src');
   if (fs.existsSync(devPath)) {
@@ -39,7 +39,7 @@ export function getPythonModulePath(): string {
 /**
  * Genera código Python que configura sys.path correctamente.
  */
-export function wrapPythonCode(pyCode: string): string {
+export function wrapPythonCode(pyCode) {
   const modulePath = getPythonModulePath().replace(/\\/g, '\\\\');
 
   return `
@@ -58,7 +58,7 @@ ${pyCode}
 /**
  * Ejecuta código Python y retorna su salida.
  */
-export async function runPython(pyCode: string): Promise<{ stdout: string; stderr: string }> {
+export async function runPython(pyCode) {
   const fullCode = wrapPythonCode(pyCode);
   const pyExec = process.env.PYTHON || 'python3';
 
@@ -71,16 +71,16 @@ export async function runPython(pyCode: string): Promise<{ stdout: string; stder
   let stdout = '';
   let stderr = '';
 
-  await new Promise<void>((resolve, reject) => {
-    proc.stdout?.on('data', (data: Buffer) => { stdout += data.toString(); });
-    proc.stderr?.on('data', (data: Buffer) => { stderr += data.toString(); });
+  await new Promise((resolve, reject) => {
+    proc.stdout?.on('data', (data) => { stdout += data.toString(); });
+    proc.stderr?.on('data', (data) => { stderr += data.toString(); });
 
     proc.on('close', (code) => {
       if (code === 0) resolve();
       else reject(new Error(stderr || `Python código ${code}`));
     });
 
-    proc.on('error', (err: Error) => {
+    proc.on('error', (err) => {
       reject(new Error(`Python no disponible: ${err.message}`));
     });
   });

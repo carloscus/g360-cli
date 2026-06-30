@@ -854,7 +854,7 @@ g360-cli/
 |---------|-------------|
 | `npm run build` | Build portable con pkg (g360.exe) |
 | `npm run build:portable` | Especificar target node18-win-x64 |
-| `npm test` | Ejecutar tests con Vitest (51 tests, 7 suites) |
+ | `npm test` | Ejecutar tests con Vitest (53 tests, 9 suites) |
 | `npm run prepublishOnly` | Validación antes de publicar en npm |
 
 ---
@@ -862,16 +862,16 @@ g360-cli/
 ## Testing
 
 ```bash
-npm test            # Vitest — 51 tests, 8 suites
+npm test            # Vitest — 53 tests, 9 suites
 npm run test:watch  # Modo watch
 npm run test:ui     # UI interactiva
 npm run test:coverage
 ```
 
-**Cobertura actual (v1.9.0):**
-- `commands/`: init, bring, list, audit, set-skill
-- `lib/`: manifest, validator, asset-validator
-- **51 passing / 1 timeout** (init.test.js requiere import pesado de inquirer)
+**Cobertura actual (v1.10.0):**
+- `commands/`: init, bring, list, audit, set-skill, addon
+- `lib/`: manifest, validator, asset-validator, python_runner
+- **53 passing / 1 timeout** (init.test.js requiere import pesado de inquirer)
 
 ---
 
@@ -908,6 +908,47 @@ Este proyecto forma parte de la familia de microherramientas **G360** para apoyo
 - **[g360-order-xlsx](https://github.com/carloscus/g360-order-xlsx)**: Procesador de cotizaciones Excel
 - **[g360-day-calculator](https://github.com/carloscus/g360-day-calculator)**: Calculadora de días laborables
 - **[g360-master-data](https://github.com/carloscus/g360-master-data)**: Gestión de datos maestros
+
+---
+
+### `g360 addon`
+
+Gestión de addons y paquetes de desarrollo.
+
+```bash
+g360 addon <comando> [paquete] [opciones]
+```
+
+**Comandos:**
+- `install <package>` - Instala un addon (core o dev-tool)
+- `list` - Lista addons instalados
+- `remove <package>` - Desinstala un addon
+
+**Opciones:**
+| Opción | Descripción |
+|--------|-------------|
+| `-p, --path <ruta>` | Ruta destino (default: `.`) |
+| `--dry-run` | Previsualizar cambios |
+| `--force` | Forzar reinstalación/remoción |
+
+**Ejemplos:**
+```bash
+# Instalar paquete de diseño (core)
+g360 addon install @google/design.md
+
+# Instalar kit de testing (dev)
+g360 addon install @g360/testing
+
+# Listar addons
+g360 addon list
+
+# Remover addon
+g360 addon remove @google/design.md
+```
+
+**Registro de addons:**
+- 🏛️ Core Dev: Van a `dependencies` (producción)
+- 🛠️ Dev Tools: Van a `devDependencies` (desarrollo)
 
 ---
 

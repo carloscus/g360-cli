@@ -19,6 +19,7 @@ import { signature } from './commands/signature.js';
 import { scan } from './commands/scan.js';
 import { validate } from './commands/validate.js';
 import { ingest } from './commands/ingest.js';
+import { addon } from './commands/addon.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkg = fs.readJsonSync(path.join(__dirname, '../package.json'));
@@ -141,5 +142,14 @@ program
   .argument('<input>', 'Archivo CSV/Excel o directorio con archivos ERP')
   .option('-o, --output <archivo>', 'Ruta de salida', 'maestro_ventas_crm.csv')
   .action(ingest);
+
+program
+  .command('addon')
+  .argument('<command>', 'Command: install, list, remove')
+  .argument('[package]', 'Package name to install')
+  .option('-p, --path <path>', 'Target path', '.')
+  .option('--dry-run', 'Preview without installing')
+  .option('--force', 'Force reinstall/remove')
+  .action(addon);
 
 program.parse();

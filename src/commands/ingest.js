@@ -4,7 +4,6 @@
  * Procesa archivos ERP y genera maestro_ventas_crm.csv
  */
 
-import { Command } from 'commander';
 import chalk from 'chalk';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -13,87 +12,83 @@ import fs from 'fs-extra';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export = (program: Command) => {
-  program
-    .command('ingest')
-    .argument('<input>', 'Archivo CSV/Excel o directorio con archivos ERP')
-    .option('-o, --output <archivo>', 'Ruta de salida', 'maestro_ventas_crm.csv')
-    .action(async (input, options) => {
-      console.log(chalk.blue(`\n🚀 Iniciando ingesta: ${input}`));
+export async function ingest(input, options) {
+  const { output = 'maestro_ventas_crm.csv' } = options;
+  
+  console.log(chalk.blue(`\n🚀 Iniciando ingesta: ${input}`));
 
-      const inputPath = path.resolve(input);
-      const outputPath = path.resolve(options.output);
+  const inputPath = path.resolve(input);
+  const outputPath = path.resolve(output);
 
-      // Determinar si es archivo o directorio
-      try {
-        await fs.access(inputPath);
-      } catch {
-        console.error(chalk.red(`❌ Ruta no encontrada: ${inputPath}`));
-        process.exit(1);
+  // Determinar si es archivo o directorio
+  try {
+    await fs.access(inputPath);
+  } catch {
+    console.error(chalk.red(`❌ Ruta no encontrada: ${inputPath}`));
+    process.exit(1);
+  }
+
+  const stat = await fs.stat(inputPath);
+  let filepaths;
+
+  if (stat.isFile()) {
+    filepaths = [inputPath];
+  } else if (stat.isDirectory()) {
+    console.log(chalk.gray(`📁 Escaneando directorio...`));
+    const result = await scanDirectory(inputPath);
+    filepaths = result.valid.map(info => info.path);
+    if (filepaths.length === 0) {
+      console.error(chalk.red('❌ No se encontraron archivos ERP válidos en el directorio'));
+      process.exit(1);
+    }
+    console.log(chalk.green(`   Encontrados ${filepaths.length} archivos válidos`));
+  } else {
+    console.error(chalk.red(`❌ Ruta no válida: ${inputPath}`));
+    process.exit(1);
+  }
+
+  // Procesar archivos
+  console.log(chalk.blue(`\n⚙️  Procesando ${filepaths.length} archivo(s)...`));
+
+  try {
+    const combinedCsv = await runBatchIngest(filepaths);
+
+    // Escribir salida
+    await fs.ensureDir(path.dirname(outputPath));
+    await fs.writeFile(outputPath, combinedCsv, 'utf-8');
+    console.log(chalk.green(`\n✅ Ingesta completada: ${outputPath}`));
+
+    // Resumen por archivo
+    const lines = combinedCsv.split('\n');
+    const header = lines[0];
+    const dataLines = lines.filter(l => l && l !== header);
+    console.log(chalk.gray(`   Total filas: ${dataLines.length}`));
+
+    // Conteo por ARCHIVO_ORIGEN
+    const counts = new Map();
+    for (const line of dataLines) {
+      const cols = line.split(',');
+      const idx = header.split(',').indexOf('ARCHIVO_ORIGEN');
+      if (idx !== -1 && cols[idx]) {
+        counts.set(cols[idx], (counts.get(cols[idx]) || 0) + 1);
       }
-
-      const stat = await fs.stat(inputPath);
-      let filepaths: string[];
-
-      if (stat.isFile()) {
-        filepaths = [inputPath];
-      } else if (stat.isDirectory()) {
-        console.log(chalk.gray(`📁 Escaneando directorio...`));
-        const { valid } = await scanDirectory(inputPath);
-        filepaths = valid.map((info: any) => info.path);
-        if (filepaths.length === 0) {
-          console.error(chalk.red('❌ No se encontraron archivos ERP válidos en el directorio'));
-          process.exit(1);
-        }
-        console.log(chalk.green(`   Encontrados ${filepaths.length} archivos válidos`));
-      } else {
-        console.error(chalk.red(`❌ Ruta no válida: ${inputPath}`));
-        process.exit(1);
+    }
+    if (counts.size > 0) {
+      console.log(chalk.cyan('\n📊 Resumen por archivo:'));
+      for (const [file, count] of counts) {
+        console.log(`   ${file}: ${count} filas`);
       }
+    }
 
-      // Procesar archivos
-      console.log(chalk.blue(`\n⚙️  Procesando ${filepaths.length} archivo(s)...`));
+  } catch (err) {
+    console.error(chalk.red('\n❌ Error durante la ingesta:'), err.message);
+    if (err.stdout) console.error(chalk.gray(err.stdout));
+    if (err.stderr) console.error(chalk.red(err.stderr));
+    process.exit(1);
+  }
+}
 
-      try {
-        const combinedCsv = await runBatchIngest(filepaths);
-
-        // Escribir salida
-        await fs.ensureDir(path.dirname(outputPath));
-        await fs.writeFile(outputPath, combinedCsv, 'utf-8');
-        console.log(chalk.green(`\n✅ Ingesta completada: ${outputPath}`));
-
-        // Resumen por archivo
-        const lines = combinedCsv.split('\n');
-        const header = lines[0];
-        const dataLines = lines.filter(l => l && l !== header);
-        console.log(chalk.gray(`   Total filas: ${dataLines.length}`));
-
-        // Conteo por ARCHIVO_ORIGEN
-        const counts = new Map<string, number>();
-        for (const line of dataLines) {
-          const cols = line.split(',');
-          const idx = header.split(',').indexOf('ARCHIVO_ORIGEN');
-          if (idx !== -1 && cols[idx]) {
-            counts.set(cols[idx], (counts.get(cols[idx]) || 0) + 1);
-          }
-        }
-        if (counts.size > 0) {
-          console.log(chalk.cyan('\n📊 Resumen por archivo:'));
-          for (const [file, count] of counts) {
-            console.log(`   ${file}: ${count} filas`);
-          }
-        }
-
-      } catch (err: any) {
-        console.error(chalk.red('\n❌ Error durante la ingesta:'), err.message);
-        if (err.stdout) console.error(chalk.gray(err.stdout));
-        if (err.stderr) console.error(chalk.red(err.stderr));
-        process.exit(1);
-      }
-    });
-};
-
-async function scanDirectory(dir: string): Promise<{ valid: any[]; invalid: any[] }> {
+async function scanDirectory(dir) {
   const pyCode = `
 import sys
 sys.path.insert(0, '${path.join(__dirname, '..', 'py', 'src')}')
@@ -109,8 +104,8 @@ for i in invalid[:10]:
 
   const result = await runPython(pyCode);
   const lines = result.stdout.split('\n').filter(l => l.trim());
-  const valid: any[] = [];
-  const invalid: any[] = [];
+  const valid = [];
+  const invalid = [];
 
   for (const line of lines) {
     if (line.startsWith('VALID::')) {
@@ -125,7 +120,7 @@ for i in invalid[:10]:
   return { valid, invalid };
 }
 
-async function runBatchIngest(filepaths: string[]): Promise<string> {
+async function runBatchIngest(filepaths) {
   const pyCode = `
 import sys
 sys.path.insert(0, '${path.join(__dirname, '..', 'py', 'src')}')
@@ -135,7 +130,6 @@ import pandas as pd
 
 filepaths = [${JSON.stringify(filepaths).replace(/"/g, "'")}]
 df = batch_process_files([Path(p) for p in filepaths], merge_results=True)
-# Output as CSV to stdout
 sys.stdout.write(df.to_csv(index=False))
 `;
 
@@ -165,7 +159,7 @@ sys.stdout.write(df.to_csv(index=False))
   });
 }
 
-function runPython(code: string): Promise<{ stdout: string; stderr: string }> {
+function runPython(code) {
   return new Promise((resolve, reject) => {
     const pyExec = process.env.PYTHON || 'python3';
     const proc = spawn(pyExec, ['-c', code], {

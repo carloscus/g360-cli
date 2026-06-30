@@ -1,6 +1,6 @@
 {
   "name": "g360-cli",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "CLI tool for bootstrapping G360 projects with standardized structure, assets, identity, and ERP data processing",
   "type": "module",
   "main": "src/cli.js",

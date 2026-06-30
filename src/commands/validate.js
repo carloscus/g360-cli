@@ -4,88 +4,86 @@
  * Valida archivos ERP sin procesar completamente.
  */
 
-import { Command } from 'commander';
 import chalk from 'chalk';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
 import fs from 'fs-extra';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export = (program: Command) => {
-  program
-    .command('validate')
-    .argument('<paths...>', 'Archivos o directorios a validar')
-    .option('-r, --recursive', 'Buscar recursivamente en directorios')
-    .action(async (paths, options) => {
-      console.log(chalk.blue('\n🔍 Validando archivos ERP\n'));
+export async function validate(paths, options) {
+  const { recursive = false } = options;
+  
+  console.log(chalk.blue('\n🔍 Validando archivos ERP\n'));
 
-      const filesToCheck: string[] = [];
-      for (const rawPath of paths) {
-        const p = path.resolve(rawPath);
-        try {
-          const stat = await fs.stat(p);
-          if (stat.isFile()) {
-            if (p.match(/\.(xls|xlsx|csv)$/i)) {
-              filesToCheck.push(p);
-            }
-          } else if (stat.isDirectory()) {
-            const pattern = options.recursive ? '**/*' : '*';
-            const extPattern = /\.(xls|xlsx|csv)$/i;
-            const entries = await fs.readdir(p, { withFileTypes: true });
-            for (const entry of entries) {
-              const fullPath = path.join(p, entry.name);
-              if (entry.isFile() && extPattern.test(entry.name)) {
-                filesToCheck.push(fullPath);
-              } else if (entry.isDirectory() && options.recursive) {
-                // Simplificado: escaneo recursivo básico
-                const sub = await fs.readdir(fullPath, { withFileTypes: true });
-                for (const subEntry of sub) {
-                  if (subEntry.isFile() && extPattern.test(subEntry.name)) {
-                    filesToCheck.push(path.join(fullPath, subEntry.name));
-                  }
-                }
+  const filesToCheck = [];
+  for (const rawPath of paths) {
+    const p = path.resolve(rawPath);
+    try {
+      const stat = await fs.stat(p);
+      if (stat.isFile()) {
+        if (/\.(xls|xlsx|csv)$/i.test(p)) {
+          filesToCheck.push(p);
+        }
+      } else if (stat.isDirectory()) {
+        const pattern = recursive ? '**/*' : '*';
+        const extPattern = /\.(xls|xlsx|csv)$/i;
+        const entries = await fs.readdir(p, { withFileTypes: true });
+        for (const entry of entries) {
+          const fullPath = path.join(p, entry.name);
+          if (entry.isFile() && extPattern.test(entry.name)) {
+            filesToCheck.push(fullPath);
+          } else if (entry.isDirectory() && recursive) {
+            // Simplificado: escaneo recursivo básico
+            const sub = await fs.readdir(fullPath, { withFileTypes: true });
+            for (const subEntry of sub) {
+              if (subEntry.isFile() && extPattern.test(subEntry.name)) {
+                filesToCheck.push(path.join(fullPath, subEntry.name));
               }
             }
           }
-        } catch (err) {
-          console.warn(chalk.yellow(`  ⚠ No se pudo acceder a ${p}: ${err.message}`));
         }
       }
+    } catch (err) {
+      console.warn(chalk.yellow(`  ⚠ No se pudo acceder a ${p}: ${err.message}`));
+    }
+  }
 
-      if (filesToCheck.length === 0) {
-        console.warn(chalk.yellow('  No se encontraron archivos para validar'));
-        return;
-      }
+  if (filesToCheck.length === 0) {
+    console.warn(chalk.yellow('  No se encontraron archivos para validar'));
+    return;
+  }
 
-      const results: Array<{ path: string; valid: boolean; missing: string[] }> = [];
+  const results = [];
 
-      for (const file of filesToCheck) {
-        try {
-          const validation = await validateSingleFile(file);
-          results.push(validation);
-        } catch (err: any) {
-          results.push({ path: file, valid: false, missing: [`ERROR: ${err.message}`] });
-        }
-      }
+  for (const file of filesToCheck) {
+    try {
+      const validation = await validateSingleFile(file);
+      results.push(validation);
+    } catch (err) {
+      results.push({ path: file, valid: false, missing: [`ERROR: ${err.message}`] });
+    }
+  }
 
-      let validCount = 0;
-      for (const res of results) {
-        const status = res.valid ? chalk.green('✅') : chalk.red('❌');
-        const filename = path.basename(res.path);
-        console.log(`${status} ${filename} (${res.valid ? 'OK' : 'FALLÓ'})`);
-        if (!res.valid && res.missing.length > 0) {
-          console.log(chalk.gray(`   Faltan: ${res.missing.join(', ')}`));
-        }
-        if (res.valid) validCount++;
-      }
+  let validCount = 0;
+  for (const res of results) {
+    const status = res.valid ? chalk.green('✅') : chalk.red('❌');
+    const filename = path.basename(res.path);
+    console.log(`${status} ${filename} (${res.valid ? 'OK' : 'FALLÓ'})`);
+    if (!res.valid && res.missing.length > 0) {
+      console.log(chalk.gray(`   Faltan: ${res.missing.join(', ')}`));
+    }
+    if (res.valid) validCount++;
+  }
 
-      console.log(chalk.gray(`\n📊 Resumen: ${validCount}/${results.length} archivos válidos`));
-    });
-};
+  console.log(chalk.gray(`\n📊 Resumen: ${validCount}/${results.length} archivos válidos`));
+}
 
-async function validateSingleFile(filepath: string): Promise<{ path: string; valid: boolean; missing: string[] }> {
+async function validateSingleFile(filepath) {
   const pyCode = `
+import sys
+sys.path.insert(0, '${path.join(__dirname, '..', 'py', 'src')}')
 from g360_core.scanner import ERPScanner
 from pathlib import Path
 
@@ -102,12 +100,11 @@ except Exception as e:
 `;
 
   try {
-    const { runPython } = await import('../lib/python_runner.js');
     const result = await runPython(pyCode);
     const lines = result.stdout.split('\n').filter(l => l.trim());
 
     let valid = false;
-    let missing: string[] = [];
+    let missing = [];
 
     for (const line of lines) {
       if (line.startsWith('VALID=')) {
@@ -120,7 +117,34 @@ except Exception as e:
     }
 
     return { path: filepath, valid, missing };
-  } catch (err: any) {
+  } catch (err) {
     return { path: filepath, valid: false, missing: [err.message] };
   }
+}
+
+function runPython(code) {
+  return new Promise((resolve, reject) => {
+    const pyExec = process.env.PYTHON || 'python3';
+    const proc = spawn(pyExec, ['-c', code], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    proc.stdout?.on('data', (data) => { stdout += data.toString(); });
+    proc.stderr?.on('data', (data) => { stderr += data.toString(); });
+
+    proc.on('close', (code) => {
+      if (code === 0) {
+        resolve({ stdout, stderr });
+      } else {
+        reject(new Error(stderr || `Python terminó con código ${code}`));
+      }
+    });
+
+    proc.on('error', (err) => {
+      reject(new Error(`No se pudo ejecutar Python: ${err.message}`));
+    });
+  });
 }
