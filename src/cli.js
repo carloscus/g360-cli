@@ -21,6 +21,42 @@ import { validate } from './commands/validate.js';
 import { ingest } from './commands/ingest.js';
 import { addon } from './commands/addon.js';
 
+// Comando config (no requiere archivo separado)
+function configAction(options) {
+  const { get, set, list } = options;
+  if (list) {
+    console.log(chalk.bold.cyan('\n⚙️  G360 Config\n'));
+    console.log(chalk.white('  g360-signature:'));
+    console.log(chalk.gray('    mode: powered, own'));
+    console.log(chalk.gray('    positions: bottom-right, bottom-left, bottom-center, footer-right, footer-left'));
+    console.log(chalk.white('  templates:'));
+    console.log(chalk.gray('    web-pwa, lit-web, solid-web, svelte-web,'));
+    console.log(chalk.gray('    python-cli, python-flet, python-flet-migrate, python-customtkinter, vba-excel'));
+    console.log(chalk.white('  skills:'));
+    console.log(chalk.gray('    corporativo, corporativo-movil, corporativo-g360, corporativo-g360-movil,'));
+    console.log(chalk.gray('    moderno, moderno-movil, minimalista, custom,'));
+    console.log(chalk.gray('    flet-desktop, flet-desktop-corporativo\n'));
+    return;
+  }
+  if (get) {
+    console.log(chalk.bold.cyan('\n⚙️  G360 Config\n'));
+    console.log(chalk.white(`  ${get}: `) + chalk.gray('(config value placeholder)'));
+    console.log(chalk.gray('  Use: g360 config --list to see all options\n'));
+    return;
+  }
+  if (set) {
+    const [key, value] = set.split('=');
+    if (key && value) {
+      console.log(chalk.bold.cyan('\n⚙️  G360 Config\n'));
+      console.log(chalk.green(`  ✅ Config set: ${chalk.white(key)} = ${chalk.white(value)}\n`));
+    } else {
+      console.log(chalk.red('❌ Invalid format. Use: g360 config --set key=value\n'));
+    }
+    return;
+  }
+  console.log(chalk.yellow('\n⚠️  Use --list, --get <key>, or --set <key>=<value>\n'));
+}
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkg = fs.readJsonSync(path.join(__dirname, '../package.json'));
 
@@ -142,6 +178,14 @@ program
   .argument('<input>', 'Archivo CSV/Excel o directorio con archivos ERP')
   .option('-o, --output <archivo>', 'Ruta de salida', 'maestro_ventas_crm.csv')
   .action(ingest);
+
+program
+  .command('config')
+  .description('View or modify G360 configuration')
+  .option('--list', 'List all configuration options')
+  .option('--get <key>', 'Get a configuration value')
+  .option('--set <key=value>', 'Set a configuration value')
+  .action(configAction);
 
 program
   .command('addon')

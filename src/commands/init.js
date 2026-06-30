@@ -40,10 +40,21 @@ export async function init(name, options) {
 
   const targetDir = path.join(process.cwd(), dir, name);
 
+  // Leer version del CLI desde package.json
+  const cliPkgPath = path.join(__dirname, '..', '..', 'package.json');
+  let cliVersion = '1.0.0';
+  try {
+    const cliPkg = fs.readJsonSync(cliPkgPath);
+    cliVersion = cliPkg.version || '1.0.0';
+  } catch {
+    // fallback si no se puede leer
+  }
+
   console.log(chalk.bold.cyan('\n🚀 G360 Project Initialization\n'));
   console.log(`Project: ${chalk.yellow(name)}`);
   console.log(`Template: ${chalk.blue(template)}`);
   console.log(`Skill: ${chalk.magenta(skill)}`);
+  console.log(`CLI Version: ${chalk.gray(cliVersion)}`);
   console.log(`Target: ${chalk.gray(targetDir)}\n`);
 
   let wantPortable = false;

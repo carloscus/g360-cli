@@ -2,8 +2,9 @@
 
 > CLI tool for bootstrapping G360 projects with standardized structure, assets, and identity
 
-[![npm version](https://img.shields.io/npm/v/g360-cli)](https://www.npmjs.com/package/g360-cli)
+[![npm version](https://img.shields.io/npm/v/g360-cli?color=00d084&label=version)](https://www.npmjs.com/package/g360-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm downloads](https://img.shields.io/npm/dm/g360-cli?color=94a3b8)](https://www.npmjs.com/package/g360-cli)
 
 ## Tabla de Contenidos
 
@@ -67,6 +68,12 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 ---
 
+## Versión
+
+**Current: v1.10.0** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
+
+---
+
 ## Instalación
 
 ### Requisitos
@@ -84,7 +91,17 @@ npm install -g g360-cli
 
 ```bash
 g360 --version
+# → 1.10.0
+
 g360 health
+```
+
+### Publicar nueva versión
+
+```bash
+npm version patch   # o minor / major
+git push --tags
+npm publish
 ```
 
 ---

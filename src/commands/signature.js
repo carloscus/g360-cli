@@ -1,10 +1,13 @@
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
+import inquirer from 'inquirer';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SIGNATURE_ASSETS = path.join(__dirname, '..', 'assets', 'signature');
+
+const VALID_COMMANDS = ['install', 'positions'];
 
 const POSITIONS = {
   'bottom-right': 'position: fixed; bottom: 16px; right: 16px; z-index: 99999;',
@@ -22,6 +25,18 @@ const FLET_POSITIONS = {
 };
 
 export async function signature(command, options) {
+  // Validacion del comando
+  if (!VALID_COMMANDS.includes(command)) {
+    console.error(chalk.red(`❌ Comando invalido: "${command}"`));
+    console.log(chalk.gray('Comandos disponibles:'));
+    console.log(chalk.gray('  install   - Instalar g360-signature en un proyecto'));
+    console.log(chalk.gray('  positions - Mostrar posiciones disponibles'));
+    console.log(chalk.gray('\nEjemplo:'));
+    console.log(chalk.gray('  g360 signature install'));
+    console.log(chalk.gray('  g360 signature positions'));
+    return;
+  }
+
   const {
     path: targetPath = '.',
     force = false,
@@ -43,22 +58,45 @@ export async function signature(command, options) {
       return;
     }
 
-    // Modo interactivo: guiar al usuario
+    // Modo interactivo: guiar al usuario con inquirer
+    let resolvedPosition = position;
+    let resolvedMode = mode;
+
     if (interactive) {
-      const selectedPosition = await interactivePosition(projectType);
-      if (selectedPosition) {
-        options.position = selectedPosition;
-      }
+      const answers = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'mode',
+          message: 'Selecciona el modo de la firma:',
+          choices: [
+            { name: 'Powered by G360 (recomendado)', value: 'powered' },
+            { name: 'Own (G360 by ccusi)', value: 'own' },
+          ],
+          default: 'powered',
+        },
+        {
+          type: 'list',
+          name: 'position',
+          message: 'Selecciona la posicion de la firma:',
+          choices: projectType === 'flet'
+            ? Object.entries(FLET_POSITIONS).map(([key, desc]) => ({ name: `${key}: ${desc}`, value: key }))
+            : Object.entries(POSITIONS).map(([key, desc]) => ({ name: `${key}: ${desc}`, value: key })),
+          default: 'bottom-right',
+        },
+      ]);
+
+      resolvedMode = answers.mode;
+      resolvedPosition = answers.position;
     }
 
     if (projectType === 'flet') {
-      await installFlet(targetDir, { force, mode, version, position: options.position });
+      await installFlet(targetDir, { force, mode: resolvedMode, version, position: resolvedPosition });
     } else if (projectType === 'web') {
-      await installWeb(targetDir, { force, mode, version, position: options.position });
+      await installWeb(targetDir, { force, mode: resolvedMode, version, position: resolvedPosition });
     }
 
     console.log(chalk.green('\n✅ g360-signature instalado exitosamente!'));
-    showUsageTips(projectType, options.position);
+    showUsageTips(projectType, resolvedPosition);
   }
 
   if (command === 'positions') {
@@ -94,24 +132,6 @@ function showPositions() {
   });
 
   console.log(chalk.gray('\nEjemplo: g360 signature install --position bottom-left\n'));
-}
-
-async function interactivePosition(projectType) {
-  console.log(chalk.bold.cyan('\n📍 Selecciona la posicion de la firma:\n'));
-
-  const options = projectType === 'flet'
-    ? Object.entries(FLET_POSITIONS)
-    : Object.entries(POSITIONS);
-
-  options.forEach(([key, value], index) => {
-    console.log(chalk.white(`  ${index + 1}. ${key.padEnd(18)} ${chalk.gray(value)}`));
-  });
-
-  console.log(chalk.gray('\n  Presiona Enter para usar la posicion por defecto (bottom-right)'));
-  console.log(chalk.gray('  O escribe el nombre de la posicion\n'));
-
-  // En modo no-interactivo, retornar default
-  return null;
 }
 
 function showUsageTips(projectType, position) {

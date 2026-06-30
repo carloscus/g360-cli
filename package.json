@@ -7,6 +7,15 @@
   "bin": {
     "g360": "src/cli.js"
   },
+  "files": [
+    "src/",
+    "!src/assets/templates/**/node_modules",
+    "!src/assets/templates/**/package-lock.json",
+    "py/",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
   "scripts": {
     "prepublishOnly": "node -e \"console.log('Use: npm install -g g360-cli')\"",
     "test": "vitest",
@@ -15,7 +24,7 @@
     "test:coverage": "vitest --coverage",
     "build": "npm run build:portable",
     "build:portable": "pkg . --targets node18-win-x64 --output dist/g360.exe",
-    "postinstall": "echo '✅ g360-cli instalado. Asegúrate de tener Python 3.11+ y pip instalados.'"
+    "postinstall": "node -e \"try{require('child_process').execSync('python --version',{encoding:'utf8',stdio:'pipe'})}catch{console.log('⚠️  Python no detectado. Instala Python 3.11+ para funcionalidad completa.')}\""
   },
   "pkg": {
     "assets": [

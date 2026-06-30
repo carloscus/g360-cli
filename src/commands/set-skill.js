@@ -12,11 +12,13 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SKILLS_PATH = path.resolve(__dirname, '../assets/config/g360-skills.json');
 
-export async function setSkill(skillName, options) {
-  const { verbose = false, cwd = process.cwd() } = options;
+export async function setSkill(skillName, options = {}) {
+  const { verbose = false, cwd = process.cwd(), force = false } = options;
   const isInternalCall = options.cwd !== undefined;
   
-  console.log(chalk.bold.cyan('\n🎨 G360 Skill Selector\n'));
+  if (!isInternalCall) {
+    console.log(chalk.bold.cyan('\n🎨 G360 Skill Selector\n'));
+  }
   
   // Cargar skills disponibles
   let skillsConfig;
@@ -43,9 +45,9 @@ export async function setSkill(skillName, options) {
   const skillJsonPath = path.join(cwd, 'skill.json');
   
   if (fs.existsSync(skillJsonPath)) {
-    console.log(chalk.yellow('⚠️  El proyecto ya tiene un skill configurado.'));
-    console.log(chalk.gray('Usar --force para sobrescribir'));
-    if (!options.force) {
+    if (!force) {
+      console.log(chalk.yellow('⚠️  El proyecto ya tiene un skill configurado.'));
+      console.log(chalk.gray('Usar --force para sobrescribir'));
       console.log(chalk.cyan('\nPara cambiar el skill:'));
       console.log(chalk.cyan('  g360 set-skill ') + skillName + chalk.cyan(' --force'));
       return;
@@ -65,17 +67,19 @@ export async function setSkill(skillName, options) {
     
     await fs.writeJson(skillJsonPath, skillData, { spaces: 2 });
     
-    console.log(chalk.green(`\n✅ Skill "${skillName}" configurado correctamente`));
-    console.log(chalk.gray('\nDetalles:'));
-    console.log(`  Device: ${skill.device}`);
-    console.log(`  Accent: ${skill.colors.accent}`);
-    console.log(`  Signature: ${skill.signature.mode}`);
-    
-    if (verbose) {
-      console.log(chalk.gray('\nColores:'));
-      Object.entries(skill.colors).forEach(([key, value]) => {
-        console.log(`  ${key}: ${value}`);
-      });
+    if (!isInternalCall) {
+      console.log(chalk.green(`\n✅ Skill "${skillName}" configurado correctamente`));
+      console.log(chalk.gray('\nDetalles:'));
+      console.log(`  Device: ${skill.device}`);
+      console.log(`  Accent: ${skill.colors.accent}`);
+      console.log(`  Signature: ${skill.signature.mode}`);
+
+      if (verbose) {
+        console.log(chalk.gray('\nColores:'));
+        Object.entries(skill.colors).forEach(([key, value]) => {
+          console.log(`  ${key}: ${value}`);
+        });
+      }
     }
     
   } catch (error) {

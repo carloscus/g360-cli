@@ -19,10 +19,22 @@ export async function update(options) {
   if (check) {
     try {
       console.log(chalk.gray(`Current version: ${currentVersion}`));
-      console.log(chalk.gray('Check npm for latest version...'));
-      console.log(chalk.yellow('\nUse: npm install -g g360-cli@latest to update'));
+      console.log(chalk.gray('Checking npm for latest version...\n'));
+
+      const latestVersion = execSync('npm view g360-cli version', { encoding: 'utf8' }).trim();
+      
+      if (latestVersion === currentVersion) {
+        console.log(chalk.green(`✅ You have the latest version (${currentVersion})`));
+      } else {
+        console.log(chalk.yellow(`📦 Latest version: ${latestVersion}`));
+        console.log(chalk.yellow(`📦 Current version: ${currentVersion}`));
+        console.log(chalk.cyan('\nTo update:'));
+        console.log(chalk.gray('  npm install -g g360-cli@latest'));
+      }
     } catch (error) {
       console.error(chalk.red(`Error checking version: ${error.message}`));
+      console.log(chalk.gray('\nTry manually:'));
+      console.log(chalk.gray('  npm view g360-cli version'));
     }
     return;
   }
