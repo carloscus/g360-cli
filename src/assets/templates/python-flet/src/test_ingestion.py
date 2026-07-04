@@ -46,9 +46,12 @@ _SAMPLE_DF = pd.DataFrame({
     "ANHO": [2026.0, 2026.0, np.nan],
     "ID_ARTICULO": ["11030", "78456", np.nan],
     "NOM_CLIENTE": ["  CLIENTE A  ", "CLIENTE B", np.nan],
+    "ID_CLIENTE": ["001", "002", np.nan],
+    "DOC_CLIENTE": ["20491653745", "12345678", np.nan],
     "SOLES": [1172.10, "S/.2,500.50", np.nan],
     "FECHA_ORIG": ["24/06/2026", "20/06/2026", np.nan],
     "ID_LINEA": ["0111", "0178", np.nan],
+    "NOM_LINEA": ["LINEA A", "LINEA B", np.nan],
 })
 
 
@@ -103,6 +106,17 @@ class TestEstabilizarExcelCrudo(unittest.TestCase):
     def test_archivo_no_existe(self):
         with self.assertRaises(FileNotFoundError):
             estabilizar_excel_crudo("no_existe_archivo_falso_999.xls")
+
+    def test_cliente_full_label_creado(self):
+        df, _ = _patched_ingestion(_SAMPLE_DF)
+        self.assertIn("cliente_full_label", df.columns)
+        self.assertEqual(df["cliente_full_label"].iloc[0], "001 - 20491653745 - CLIENTE A")
+
+    def test_labels_generados(self):
+        df, meta = _patched_ingestion(_SAMPLE_DF)
+        self.assertIn("cliente_label", df.columns)
+        self.assertIn("linea_label", df.columns)
+        self.assertIn("cliente_full_label", df.columns)
 
 
 class TestColumnasDuplicadas(unittest.TestCase):

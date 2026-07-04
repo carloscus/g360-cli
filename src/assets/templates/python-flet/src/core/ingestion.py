@@ -25,6 +25,17 @@ _KEYWORDS_CANTIDAD = [
 ]
 _KEYWORDS_FECHA = ["fecha", "fec_", "venc"]
 
+_ENTITY_LABELS = {
+    ("id_cliente", "nom_cliente"): "cliente_label",
+    ("id_vendedor", "nom_vendedor"): "vendedor_label",
+    ("id_articulo", "nom_articulo"): "articulo_label",
+    ("id_linea", "nom_linea"): "linea_label",
+    ("id_grupo", "nom_grupo"): "grupo_label",
+    ("id_tipo", "nom_tipo"): "tipo_label",
+    ("id_familia", "nom_familia"): "familia_label",
+    ("cod_sucursal", "nom_sucursal"): "sucursal_label",
+}
+
 _MAPA_TPO_DOC = {
     "NCR": "NOTA DE CREDITO",
     "NDB": "NOTA DE DEBITO",
@@ -247,6 +258,26 @@ def _clasificar_transaccion(row: dict) -> str:
     return "indefinido"
 
 
+def _build_entity_labels(df: pd.DataFrame) -> pd.DataFrame:
+    for (id_col, name_col), label_col in _ENTITY_LABELS.items():
+        id_exists = id_col in df.columns
+        name_exists = name_col in df.columns
+        
+        if id_exists and name_exists:
+            id_vals = df[id_col].fillna("").astype(str).str.strip()
+            name_vals = df[name_col].fillna("").astype(str).str.strip()
+            df[label_col] = np.where(
+                (id_vals != "") & (name_vals != ""),
+                id_vals + " - " + name_vals,
+                np.where(id_vals != "", id_vals, name_vals)
+            )
+        elif id_exists:
+            df[label_col] = df[id_col].astype(str).str.strip()
+        elif name_exists:
+            df[label_col] = df[name_col].astype(str).str.strip()
+    return df
+
+
 def estabilizar_excel_crudo(ruta_archivo: str | Path) -> tuple[pd.DataFrame, dict]:
     ruta = Path(ruta_archivo)
     if not ruta.exists():
@@ -359,6 +390,22 @@ def estabilizar_excel_crudo(ruta_archivo: str | Path) -> tuple[pd.DataFrame, dic
             f"{col}: normalizado ({ruc_count} RUC, {dni_count} DNI, "
             f"{(~df[tipo_col].isin(['RUC','DNI'])).sum()} otros)"
         )
+    
+    # ── 9b. CLIENTE_FULL_LABEL = ID + DOC_CLIENTE_CLEAN + NOMBRE ──
+    if "id_cliente" in df.columns and "doc_cliente_clean" in df.columns:
+        id_vals = df["id_cliente"].fillna("").astype(str).str.strip()
+        doc_vals = df["doc_cliente_clean"].fillna("").astype(str).str.strip()
+        name_vals = df["nom_cliente"].fillna("").astype(str).str.strip() if "nom_cliente" in df.columns else None
+        
+        if name_vals is not None:
+            df["cliente_full_label"] = np.where(
+                (id_vals != "") & (doc_vals != "") & (name_vals != ""),
+                id_vals + " - " + doc_vals + " - " + name_vals,
+                np.where((id_vals != "") & (doc_vals != ""), id_vals + " - " + doc_vals, id_vals)
+            )
+        else:
+            df["cliente_full_label"] = id_vals + " - " + doc_vals
+        transformaciones.append("cliente_full_label: ID + DOC_CLIENTE_CLEAN + NOM_CLIENTE")
 
     # ── 10. Columnas TEXTO ──
     for col in df.columns:
@@ -386,6 +433,18 @@ def estabilizar_excel_crudo(ruta_archivo: str | Path) -> tuple[pd.DataFrame, dic
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
         transformaciones.append(f"{col}: forzado a float64, NaN → 0.0")
 
+    # ── 12b. PRECIO_BASE (precio unitario por fila) ──
+    if "soles" in df.columns and cols_cantidad:
+        cant_col = cols_cantidad[0]
+        cant = df[cant_col].fillna(0)
+        soles = df["soles"].fillna(0)
+        df["precio_base"] = np.where(
+            cant != 0,
+            np.round(soles / cant.abs(), 4),
+            np.nan
+        )
+        transformaciones.append(f"precio_base: SOLES / {cant_col}")
+
     # ── 13. cantidad + cantidad_fae → cantidad_total, tipo_transaccion ──
     if "cantidad" in df.columns:
         if "cantidad_fae" in df.columns:
@@ -396,6 +455,13 @@ def estabilizar_excel_crudo(ruta_archivo: str | Path) -> tuple[pd.DataFrame, dic
         df["tipo_transaccion"] = df.apply(_clasificar_transaccion, axis=1)
         t_counts = df["tipo_transaccion"].value_counts().to_dict()
         transformaciones.append(f"tipo_transaccion: {t_counts}")
+
+    # ── 13b. Construir columnas _LABEL (ID - Nombre) para UI ──
+    cols_before_labels = list(df.columns)
+    df = _build_entity_labels(df)
+    label_cols_added = [c for c in df.columns if c.endswith("_label") and c not in cols_before_labels]
+    if label_cols_added:
+        transformaciones.append(f"labels: {', '.join(label_cols_added)} generados")
 
     # ── 14. Columnas FECHA ──
     for col in df.columns:

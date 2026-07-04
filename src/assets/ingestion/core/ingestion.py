@@ -25,6 +25,17 @@ _KEYWORDS_CANTIDAD = [
 ]
 _KEYWORDS_FECHA = ["fecha", "fec_", "venc"]
 
+_ENTITY_LABELS = {
+    ("id_cliente", "nom_cliente"): "cliente_label",
+    ("id_vendedor", "nom_vendedor"): "vendedor_label",
+    ("id_articulo", "nom_articulo"): "articulo_label",
+    ("id_linea", "nom_linea"): "linea_label",
+    ("id_grupo", "nom_grupo"): "grupo_label",
+    ("id_tipo", "nom_tipo"): "tipo_label",
+    ("id_familia", "nom_familia"): "familia_label",
+    ("cod_sucursal", "nom_sucursal"): "sucursal_label",
+}
+
 _MAPA_TPO_DOC = {
     "NCR": "NOTA DE CREDITO",
     "NDB": "NOTA DE DEBITO",
@@ -247,6 +258,26 @@ def _clasificar_transaccion(row: dict) -> str:
     return "indefinido"
 
 
+def _build_entity_labels(df: pd.DataFrame) -> pd.DataFrame:
+    for (id_col, name_col), label_col in _ENTITY_LABELS.items():
+        id_exists = id_col in df.columns
+        name_exists = name_col in df.columns
+        
+        if id_exists and name_exists:
+            id_vals = df[id_col].fillna("").astype(str).str.strip()
+            name_vals = df[name_col].fillna("").astype(str).str.strip()
+            df[label_col] = np.where(
+                (id_vals != "") & (name_vals != ""),
+                id_vals + " - " + name_vals,
+                np.where(id_vals != "", id_vals, name_vals)
+            )
+        elif id_exists:
+            df[label_col] = df[id_col].astype(str).str.strip()
+        elif name_exists:
+            df[label_col] = df[name_col].astype(str).str.strip()
+    return df
+
+
 def estabilizar_excel_crudo(ruta_archivo: str | Path) -> tuple[pd.DataFrame, dict]:
     ruta = Path(ruta_archivo)
     if not ruta.exists():
@@ -359,6 +390,22 @@ def estabilizar_excel_crudo(ruta_archivo: str | Path) -> tuple[pd.DataFrame, dic
             f"{col}: normalizado ({ruc_count} RUC, {dni_count} DNI, "
             f"{(~df[tipo_col].isin(['RUC','DNI'])).sum()} otros)"
         )
+    
+    # ── 9b. CLIENTE_FULL_LABEL = ID + DOC_CLIENTE_CLEAN + NOMBRE ──
+    if "id_cliente" in df.columns and "doc_cliente_clean" in df.columns:
+        id_vals = df["id_cliente"].fillna("").astype(str).str.strip()
+        doc_vals = df["doc_cliente_clean"].fillna("").astype(str).str.strip()
+        name_vals = df["nom_cliente"].fillna("").astype(str).str.strip() if "nom_cliente" in df.columns else None
+        
+        if name_vals is not None:
+            df["cliente_full_label"] = np.where(
+                (id_vals != "") & (doc_vals != "") & (name_vals != ""),
+                id_vals + " - " + doc_vals + " - " + name_vals,
+                np.where((id_vals != "") & (doc_vals != ""), id_vals + " - " + doc_vals, id_vals)
+            )
+        else:
+            df["cliente_full_label"] = id_vals + " - " + doc_vals
+        transformaciones.append("cliente_full_label: ID + DOC_CLIENTE_CLEAN + NOM_CLIENTE")
 
     # ── 10. Columnas TEXTO ──
     for col in df.columns:

@@ -70,7 +70,7 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 ## Versión
 
-**Current: v1.10.0** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
+**Current: v1.11.0** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
 
 ---
 
@@ -91,7 +91,7 @@ npm install -g g360-cli
 
 ```bash
 g360 --version
-# → 1.10.0
+# → 1.11.0
 
 g360 health
 ```
@@ -646,6 +646,10 @@ mi-app/
 - **Precio efectivo**: PRECIO_BASE (físico) y RECARGO_UNITARIO (financiero) separados
 - Cruce de NC/NDB contra facturas referenciadas para determinar ajustes de precio por línea
 - Purga de filas total/general/acumulado
+- **Columnas derivadas para UI**: `cliente_label`, `vendedor_label`, `articulo_label`, `linea_label`, etc. (ID - NOMBRE)
+- **Cliente completo**: `cliente_full_label` = ID_CLIENTE - DOC_CLIENTE_CLEAN - NOM_CLIENTE
+- **Código de factura**: `doc_completo` = TPO_DOC + SERIE_DOC + NRO_DOC (ej: "F204-56287")
+- **Precio unitario**: `precio_base` = SOLES / CANTIDAD
 
 ### python-flet-migrate
 
