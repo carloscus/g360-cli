@@ -61,7 +61,8 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 - **Paquete Python** - `g360-core` en PyPI para pipelines de datos independientes
 - **Auditoría** - Verifica compliance de proyectos G360
 - **Limpieza** - Elimina assets embebidos antes de deployment
-- **Multi-plantilla** - Web (Lit, Solid, Svelte, React), Python (CLI, Flet, CustomTkinter), VBA Excel
+- **Multi-plantilla** - Web (Lit, Solid, Svelte, PWA), Python (CLI, Flet, CustomTkinter)
+- **Brand System v2.0.0** - Sistema de marca unificado con favicons, PWA icons, logotypes para G360 y CIPSA
 - **Modo portable** - Proyectos Python con ejecución directa (sin PyInstaller)
 - **Modo offline** - Funciona sin conexión usando assets cacheados
 - **Preview** - Dry-run para previsualizar cambios
@@ -70,7 +71,7 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 ## Versión
 
-**Current: v1.11.0** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
+**Current: v1.12.0** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
 
 ---
 
@@ -91,7 +92,7 @@ npm install -g g360-cli
 
 ```bash
 g360 --version
-# → 1.11.0
+# → 1.12.0
 
 g360 health
 ```
@@ -529,6 +530,124 @@ g360 update
 
 ---
 
+### `g360 config`
+
+Visualiza o modifica la configuración de g360-cli.
+
+```bash
+g360 config [opciones]
+```
+
+**Opciones:**
+
+| Opción | Descripción |
+|--------|-------------|
+| `--list` | Listar todas las opciones de configuración |
+| `--get <key>` | Obtener valor de una configuración |
+| `--set <key=value>` | Establecer un valor de configuración |
+
+**Ejemplos:**
+
+```bash
+# Listar configuración disponible
+g360 config --list
+
+# Verificar skill actual
+g360 config --get skill
+```
+
+---
+
+### `g360 scan`
+
+Escanea un directorio para detectar archivos ERP válidos (.xls, .xlsx, .csv).
+
+```bash
+g360 scan <directorio> [opciones]
+```
+
+**Opciones:**
+
+| Opción | Descripción | Valor por defecto |
+|--------|-------------|-------------------|
+| `-r, --recursive` | Buscar recursivamente | `true` |
+| `--min-score <n>` | Puntuación mínima de coincidencia | `10` |
+
+**Ejemplos:**
+
+```bash
+# Escanear directorio actual
+g360 scan .
+
+# Escanear recursivamente con puntuación mínima
+g360 scan ./data --min-score 20
+
+# Solo directorio actual (sin recursión)
+g360 scan ./exports --no-recursive
+```
+
+---
+
+### `g360 validate`
+
+Valida archivos ERP (.xls, .xlsx, .csv) sin procesar completamente.
+
+```bash
+g360 validate <archivos...> [opciones]
+```
+
+**Opciones:**
+
+| Opción | Descripción |
+|--------|-------------|
+| `-r, --recursive` | Buscar recursivamente en directorios |
+
+**Ejemplos:**
+
+```bash
+# Validar un archivo
+g360 validate factura.xlsx
+
+# Validar múltiples archivos
+g360 validate *.xlsx *.xls
+
+# Validar todos los archivos ERP en un directorio
+g360 validate ./exports --recursive
+```
+
+---
+
+### `g360 ingest`
+
+Procesa archivos ERP y genera un CSV maestro normalizado.
+
+```bash
+g360 ingest <input> [opciones]
+```
+
+**Opciones:**
+
+| Opción | Descripción | Valor por defecto |
+|--------|-------------|-------------------|
+| `-o, --output <archivo>` | Ruta de salida CSV | `maestro_ventas_crm.csv` |
+
+**Archivos de entrada soportados:** `.xls`, `.xlsx`, `.csv`
+
+**Ejemplos:**
+
+```bash
+# Procesar un archivo Excel
+g360 ingest ventas_sap.xlsx
+
+# Procesar directorio completo
+g360 ingest ./exports/ -o consolidado.csv
+
+# Procesar con nombre de salida personalizado
+g360 ingest reporte.xlsx -o mi_reporte.csv
+```
+
+---
+
 ## Plantillas
 
 ### lit-web
@@ -679,19 +798,6 @@ mi-app/
 └── build-portable.bat
 ```
 
-### vba-excel
-
-Plantilla VBA para Excel.
-
-```
-mi-excel/
-├── src/
-│   ├── Module_Main.bas
-│   ├── g360-datamap.bas
-│   └── skill.json
-└── skill.json
-```
-
 ---
 
 ## Componentes
@@ -782,6 +888,14 @@ Aplicaciones de escritorio Flet - estilo moderno G360 (PC).
 
 Aplicaciones Flet para clientes - estilo corporativo conservador.
 
+### cipsa
+
+Proyectos con marca CIPSA - favicon CIPSA rojo, logo corporativo, signature "powered by G360".
+
+### cipsa-movil
+
+Apps móviles con marca CIPSA - favicon CIPSA rojo, logo corporativo, enfoque móvil.
+
 ### Ejemplos de uso
 
 ```bash
@@ -851,18 +965,22 @@ await g360.clean({ path: '.', force: true });
 g360-cli/
 ├── src/
 │   ├── cli.js           # Entrada principal CLI
-│   ├── commands/         # Comandos (init, bring, audit, etc.)
-│   ├── lib/             # Utilidades (assets, auditor, config)
+│   ├── commands/         # Comandos (init, bring, audit, scan, validate, ingest, etc.)
+│   ├── lib/             # Utilidades (assets, auditor, config, logger, validator, etc.)
+│   ├── schemas/         # Schemas de validación
 │   └── assets/          # Assets embebidos
 │       ├── templates/    # Plantillas de proyecto
 │       ├── components/   # Componentes G360
+│       ├── brand/        # Sistema de marca v2.0.0 (G360 + CIPSA)
 │       ├── ingestion/    # Módulo de ingesta ERP (bring)
 │       ├── engine/      # G360 Engine
-│       └── config/      # Configuraciones
+│       ├── snippets/    # Snippets de código reutilizables
+│       └── config/      # Configuraciones (g360-skills.json, project-types.json)
 ├── py/                  # Paquete Python publicable en PyPI
 │   ├── pyproject.toml   # g360-core
 │   └── src/g360_core/   # commercial_engine.py, pipeline.py, processor.py, batch_processor.py, utils.py
 ├── package.json
+├── CHANGELOG.md
 ├── README.md
 └── LICENSE
 ```
@@ -889,7 +1007,7 @@ npm run test:ui     # UI interactiva
 npm run test:coverage
 ```
 
-**Cobertura actual (v1.10.0):**
+**Cobertura actual (v1.12.0):**
 - `commands/`: init, bring, list, audit, set-skill, addon
 - `lib/`: manifest, validator, asset-validator, python_runner
 - **53 passing / 1 timeout** (init.test.js requiere import pesado de inquirer)
@@ -1057,6 +1175,8 @@ OpenCode: "Ejecutaré g360 audit para verificar compliance y te reportaré cualq
 - `custom` - Configuración personalizada - colores ajustables
 - `flet-desktop` - Aplicaciones de escritorio Flet - estilo moderno G360 (PC)
 - `flet-desktop-corporativo` - Aplicaciones Flet para clientes - estilo corporativo conservador
+- `cipsa` - Proyectos con marca CIPSA - favicon CIPSA rojo, logo corporativo
+- `cipsa-movil` - Apps móviles con marca CIPSA - enfoque móvil
 
 #### Snippets de Código
 

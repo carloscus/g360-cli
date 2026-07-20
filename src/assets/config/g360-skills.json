@@ -249,7 +249,7 @@
       "guidelines": {
         "logo": "Logo_cipsa_solid.svg",
         "logo_alt": "Logo_cipsa_borde.svg",
-        "app_icon": "favicon_cipsa.ico",
+        "app_icon": "cipsa/favicons/cipsa.ico",
         "description": "Usar logo CIPSA + signature 'powered by G360'. El verde fluorescente #00d084 se mantiene como acento principal."
       }
     },

@@ -42,6 +42,7 @@ export async function bring(asset, options) {
     const brandName = asset.split('/')[1];
     if (brandName) {
       await applyBrand(targetDir, brandName, dryRun);
+      await applyBrandFavicons(targetDir, brandName, dryRun);
     }
   }
 }
@@ -112,6 +113,89 @@ async function applyBrand(targetDir, brandName, dryRun) {
   console.log(chalk.green(`\n✅ Brand "${brandName}" applied to ${skillPath}`));
   console.log(chalk.gray(`   Logo: ${brand.default_logo}`));
   console.log(chalk.gray(`   Signature: ${brand.signature?.text || 'none'}`));
+}
+
+async function applyBrandFavicons(targetDir, brandName, dryRun) {
+  const brandConfigPath = path.join(targetDir, 'g360', 'brand', 'brand.json');
+  if (!fs.existsSync(brandConfigPath)) return;
+
+  let brandConfig;
+  try {
+    brandConfig = fs.readJsonSync(brandConfigPath);
+  } catch {
+    return;
+  }
+
+  const brand = brandConfig.brands?.[brandName];
+  if (!brand?.assets) return;
+
+  const brandDir = path.join(targetDir, 'g360', 'brand', brandName);
+
+  const isWebProject = (
+    fs.existsSync(path.join(targetDir, 'public')) ||
+    fs.existsSync(path.join(targetDir, 'static'))
+  );
+
+  const isDesktopProject = (
+    fs.existsSync(path.join(targetDir, 'src', 'main.py')) &&
+    fs.existsSync(path.join(targetDir, 'pyproject.toml'))
+  );
+
+  if (isWebProject) {
+    const publicDir = fs.existsSync(path.join(targetDir, 'public'))
+      ? path.join(targetDir, 'public')
+      : path.join(targetDir, 'static');
+
+    if (brand.assets.favicons) {
+      for (const [, srcFile] of Object.entries(brand.assets.favicons)) {
+        const srcPath = path.join(brandDir, srcFile);
+        const destPath = path.join(publicDir, path.basename(srcFile));
+        if (fs.existsSync(srcPath) && !fs.existsSync(destPath)) {
+          if (!dryRun) await fs.copy(srcPath, destPath);
+          console.log(chalk.gray(`   + ${path.basename(srcFile)}`));
+        }
+      }
+    }
+
+    if (brand.assets.pwa) {
+      for (const [, srcFile] of Object.entries(brand.assets.pwa)) {
+        const srcPath = path.join(brandDir, srcFile);
+        const destPath = path.join(publicDir, path.basename(srcFile));
+        if (fs.existsSync(srcPath) && !fs.existsSync(destPath)) {
+          if (!dryRun) await fs.copy(srcPath, destPath);
+          console.log(chalk.gray(`   + ${path.basename(srcFile)}`));
+        }
+      }
+    }
+  }
+
+  if (isDesktopProject) {
+    const imagesDir = path.join(targetDir, 'assets', 'images');
+    if (!fs.existsSync(imagesDir)) {
+      if (!dryRun) fs.mkdirpSync(imagesDir);
+    }
+
+    if (brand.assets.favicons?.ico) {
+      const srcPath = path.join(brandDir, brand.assets.favicons.ico);
+      const destPath = path.join(imagesDir, path.basename(brand.assets.favicons.ico));
+      if (fs.existsSync(srcPath) && !fs.existsSync(destPath)) {
+        if (!dryRun) await fs.copy(srcPath, destPath);
+        console.log(chalk.gray(`   + ${path.basename(brand.assets.favicons.ico)}`));
+      }
+    }
+
+    if (brand.assets.logotypes) {
+      for (const logoFile of brand.assets.logotypes) {
+        const srcPath = path.join(brandDir, logoFile);
+        const fileName = path.basename(logoFile).toLowerCase().replace(/-/g, '_');
+        const destPath = path.join(imagesDir, fileName);
+        if (fs.existsSync(srcPath) && !fs.existsSync(destPath)) {
+          if (!dryRun) await fs.copy(srcPath, destPath);
+          console.log(chalk.gray(`   + ${fileName}`));
+        }
+      }
+    }
+  }
 }
 
 async function installIngestion(targetDir, dryRun, force) {

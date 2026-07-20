@@ -1,6 +1,6 @@
 {
   "name": "g360-cli",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "CLI tool for bootstrapping G360 projects with standardized structure, assets, identity, and ERP data processing",
   "type": "module",
   "main": "src/cli.js",
@@ -11,6 +11,8 @@
     "src/",
     "!src/assets/templates/**/node_modules",
     "!src/assets/templates/**/package-lock.json",
+    "!src/assets/templates/**/__pycache__",
+    "!src/assets/templates/**/.pytest_cache",
     "py/",
     "README.md",
     "LICENSE",
