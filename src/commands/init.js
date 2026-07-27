@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { manifest } from '../lib/manifest.js';
 import { progress } from '../lib/progress.js';
 import { setSkill } from './set-skill.js';
+import { bring } from './bring.js';
 import inquirer from 'inquirer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -35,7 +36,8 @@ export async function init(name, options) {
     dir = '.',
     dryRun = false,
     force = false,
-    portable = null
+    portable = null,
+    brand = false,
   } = options;
 
   const targetDir = path.join(process.cwd(), dir, name);
@@ -127,13 +129,53 @@ export async function init(name, options) {
     if (wantPortable) {
       console.log(chalk.yellow('📦 Versión portable habilitada\n'));
     }
-    console.log(chalk.gray('Next steps:'));
+
+    let appliedBrand = false;
+    if (brand) {
+      appliedBrand = true;
+      console.log(chalk.bold.cyan('\n🔖 Aplicando marca G360\n'));
+      await applyBrandToProject(targetDir, skill, dryRun);
+    } else if (!dryRun) {
+      const answers = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'applyBrand',
+          message: '¿Deseas aplicar la marca G360 (logo, colores, firma) al proyecto?',
+          default: true,
+        },
+      ]);
+      if (answers.applyBrand) {
+        appliedBrand = true;
+        console.log(chalk.bold.cyan('\n🔖 Aplicando marca G360\n'));
+        await applyBrandToProject(targetDir, skill, dryRun);
+      }
+    }
+
+    console.log(chalk.gray('\nNext steps:'));
     console.log(`  ${chalk.cyan('cd')} ${name}`);
-    console.log(`  ${chalk.cyan('g360 bring')}`);
-    console.log(`  ${chalk.cyan('g360 present')}\n`);
+    console.log(`  ${chalk.cyan('g360 present')}`);
+    if (!appliedBrand) {
+      console.log(`  ${chalk.cyan('g360 bring brand')}    # Aplicar marca G360`);
+    }
+    console.log(`  ${chalk.cyan('g360 audit')}`);
+    console.log();
 } catch (error) {
     progressBar.stop();
     console.error(chalk.red(`\n❌ Error: ${error.message}`));
+  }
+}
+
+async function applyBrandToProject(targetDir, skill, dryRun) {
+  const brandName = skill?.includes('cipsa') ? 'cipsa' : 'g360';
+  if (dryRun) {
+    console.log(chalk.gray(`  [dry-run] Would apply brand: ${brandName}`));
+    return;
+  }
+  try {
+    await bring(brandName, { path: targetDir, dryRun: false, force: false });
+    console.log(chalk.green(`  ✅ Marca "${brandName}" aplicada`));
+  } catch (error) {
+    console.log(chalk.yellow(`  ⚠ No se pudo aplicar la marca: ${error.message}`));
   }
 }
 

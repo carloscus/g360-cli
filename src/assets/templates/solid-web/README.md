@@ -1,31 +1,29 @@
-# Mi Proyecto G360 Migracion
+# Mi Proyecto G360
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="g360/brand/g360/logotypes/logo-g360-light.svg">
   <img alt="G360" height="64" src="g360/brand/g360/logotypes/logo-g360-dark.svg">
 </picture>
 
-> Migracion de tkinter/CustomTkinter a Flet con el ecosistema G360
+> Aplicacion web G360 con SolidJS
 
 ## Quick Start
 
 ```bash
-uv sync
-uv run python src/main.py
+npm install
+npm run dev
 ```
 
 ## Estructura del Proyecto
 
 ```mermaid
 flowchart TD
-    UI["UI<br/>Flet widgets"]
-    Migrate["Migration<br/>migrate_tkinter.py"]
-    Core["Core<br/>business logic"]
-    Theme["Theme<br/>G360Theme"]
+    Frontend["Frontend<br/>SolidJS"]
+    Assets["Assets<br/>brand · signature · favicon"]
+    Config["Config<br/>skill.json"]
 
-    UI --> Core
-    UI --> Theme
-    Migrate --> UI
+    Frontend --> Assets
+    Frontend --> Config
 ```
 
 ## Identidad de Marca
@@ -39,9 +37,8 @@ flowchart TD
 
 ## Footer
 
-```python
-from core.components.g360_signature import g360_footer
-page.add(g360_footer())
+```html
+<g360-signature mode="powered"></g360-signature>
 ```
 
 ---

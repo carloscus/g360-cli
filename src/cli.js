@@ -20,6 +20,8 @@ import { scan } from './commands/scan.js';
 import { validate } from './commands/validate.js';
 import { ingest } from './commands/ingest.js';
 import { addon } from './commands/addon.js';
+import { docs } from './commands/docs.js';
+import { lint } from './commands/lint.js';
 
 // Comando config (no requiere archivo separado)
 function configAction(options) {
@@ -77,6 +79,7 @@ program
   .option('--force', 'Overwrite existing files')
   .option('--portable', 'Create portable version (for python-flet, python-cli)')
   .option('--no-portable', 'Skip portable version creation')
+  .option('--brand', 'Apply G360 branding (logo, colors, signature) after init')
   .action(init);
 
 program
@@ -195,5 +198,18 @@ program
   .option('--dry-run', 'Preview without installing')
   .option('--force', 'Force reinstall/remove')
   .action(addon);
+
+program
+  .command('docs')
+  .argument('[level]', 'Documentation level: readme, architecture, business-rules, api, dependencies, classes, code-graph, all', 'readme')
+  .option('--project <path>', 'Project path', '.')
+  .option('--dry-run', 'Preview without writing files')
+  .action(docs);
+
+program
+  .command('lint')
+  .argument('[level]', 'Lint level: naming, duplicates, syntax, structure, all', 'all')
+  .option('--project <path>', 'Project path', '.')
+  .action(lint);
 
 program.parse();

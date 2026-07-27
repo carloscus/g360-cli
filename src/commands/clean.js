@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getAllFiles } from '../lib/file-utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -343,28 +344,6 @@ function findEmptyDirectories(dir, baseDir = dir) {
   return empty;
 }
 
-async function getAllFiles(dir, baseDir = dir) {
-  const files = [];
-  const ignoreDirs = ['node_modules', '.git', 'dist', 'build', '.next', 'out', '.nuxt', 'coverage', '.cache', '.svelte-kit'];
-  
-  if (!fs.existsSync(dir)) return files;
-  
-  const items = fs.readdirSync(dir, { withFileTypes: true });
-  
-  for (const item of items) {
-    if (ignoreDirs.includes(item.name)) continue;
-    
-    const fullPath = path.join(dir, item.name);
-    const relativePath = path.relative(baseDir, fullPath).replace(/\\/g, '/');
-    
-    if (item.isDirectory()) {
-      files.push(...await getAllFiles(fullPath, baseDir));
-    } else {
-      files.push(relativePath);
-    }
-  }
-  
-  return files;
-}
+
 
 export default { clean };

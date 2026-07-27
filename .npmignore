@@ -1,30 +1,31 @@
-# Tests
-src/**/*.test.js
-src/**/*.spec.js
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
 
-# Config
-.git/
-.gitignore
-vitest.config.js
-AGENTS*.md
-ANALISIS-REPOSITORIO.md
-API-DOCUMENTATION.md
-FLET-DESKTOP-FEEDBACK.md
-G360-CLI-SKILL.md
-MEJORAS-IMPLEMENTADAS.md
-opencode-config.json
-stderr.txt
-stdout.txt
+# Node modules
+node_modules/
+package-lock.json
 
 # Build artifacts
 dist/
 build/
-*.tgz
+.svelte-kit/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Logs
 *.log
 npm-debug.log*
 
-# OS
-.DS_Store
-Thumbs.db
+# Test artifacts
+coverage/
+.vitest/

@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getAllFiles } from '../lib/file-utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -360,29 +361,6 @@ async function createBackupFolder(projectPath) {
     filter: (src) => !src.includes('node_modules') && !src.includes('.git')
   });
   console.log(chalk.gray(`  Backup en: ${backupDir}`));
-}
-
-async function getAllFiles(dir, baseDir = dir) {
-  const files = [];
-  
-  if (!fs.existsSync(dir)) return files;
-  
-  const items = fs.readdirSync(dir, { withFileTypes: true });
-  
-  for (const item of items) {
-    const fullPath = path.join(dir, item.name);
-    const relativePath = path.relative(baseDir, fullPath);
-    
-    if (item.name === 'node_modules' || item.name === '.git') continue;
-    
-    if (item.isDirectory()) {
-      files.push(...await getAllFiles(fullPath, baseDir));
-    } else {
-      files.push(relativePath);
-    }
-  }
-  
-  return files;
 }
 
 export default { convert };

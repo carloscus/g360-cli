@@ -1,31 +1,29 @@
-# Mi Proyecto G360 Migracion
+# Mi Proyecto G360 CLI
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="g360/brand/g360/logotypes/logo-g360-light.svg">
   <img alt="G360" height="64" src="g360/brand/g360/logotypes/logo-g360-dark.svg">
 </picture>
 
-> Migracion de tkinter/CustomTkinter a Flet con el ecosistema G360
+> Aplicacion CLI G360 con Python y argparse
 
 ## Quick Start
 
 ```bash
 uv sync
-uv run python src/main.py
+uv run python src/main.py --help
 ```
 
 ## Estructura del Proyecto
 
 ```mermaid
 flowchart TD
-    UI["UI<br/>Flet widgets"]
-    Migrate["Migration<br/>migrate_tkinter.py"]
+    CLI["CLI<br/>argparse"]
     Core["Core<br/>business logic"]
-    Theme["Theme<br/>G360Theme"]
+    Config["Config<br/>skill.json"]
 
-    UI --> Core
-    UI --> Theme
-    Migrate --> UI
+    CLI --> Core
+    CLI --> Config
 ```
 
 ## Identidad de Marca
@@ -39,9 +37,8 @@ flowchart TD
 
 ## Footer
 
-```python
-from core.components.g360_signature import g360_footer
-page.add(g360_footer())
+```
+G360 by ccusi
 ```
 
 ---

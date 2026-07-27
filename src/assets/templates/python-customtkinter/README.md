@@ -1,48 +1,59 @@
-# G360 Python CustomTkinter App
+# Mi Proyecto G360 CustomTkinter
 
-## Estructura
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="g360/brand/g360/logotypes/logo-g360-light.svg">
+  <img alt="G360" height="64" src="g360/brand/g360/logotypes/logo-g360-dark.svg">
+</picture>
 
-```
-mi-proyecto/
-├── src/
-│   ├── main.py              # Entry point
-│   └── core/
-│       ├── skill.json       # Configuracion G360
-│       └── g360_theme.py    # Theme engine
-├── assets/images/
-├── skill.json
-├── pyproject.toml
-├── run.bat                  # Ejecutar app
-├── build.bat                # Build EXE (PyInstaller)
-└── README.md
-```
+> Aplicacion de escritorio G360 con CustomTkinter (tema oscuro)
 
-## Requisitos
-
-- **Python**: 3.11+ (instalado automaticamente por uv)
-- **uv**: https://docs.astral.sh/uv/
-
-## Ejecucion
+## Quick Start
 
 ```bash
-run.bat
+uv sync
+uv run python src/main.py
 ```
 
-## Build Windows
+## Estructura del Proyecto
 
-```bash
-build.bat
+```mermaid
+flowchart TD
+    UI["UI<br/>CustomTkinter"]
+    Core["Core<br/>business logic"]
+    Theme["Theme<br/>G360Theme"]
+
+    UI --> Core
+    UI --> Theme
 ```
 
-Genera `dist/G360-App.exe` usando PyInstaller.
+## Theme y Colores
 
-## Theme
+| Token | Color | Uso |
+|---|---|---|
+| `bg` | `#0b1220` | Fondo principal |
+| `surface` | `#1a2332` | Cards, contenedores |
+| `accent` | `#00d084` | Verde G360 primary |
+| `text` | `#f0f4f8` | Texto principal |
 
-Colores definidos en `src/core/skill.json`, cargados via `G360Theme`.
+## Identidad de Marca
 
-| Token | Color |
+| Elemento | Valor |
 |---|---|
-| `bg` | `#0b1220` |
-| `surface` | `#1a2332` |
-| `accent` | `#00d084` |
-| `text` | `#f0f4f8` |
+| Marca | G360 |
+| Color primario | `#00d084` |
+| Signature mode | `powered` |
+| Signature text | "powered by G360" |
+
+## Footer
+
+```python
+# Logo embebido como base64 (sin archivos externos)
+from core.g360_theme import G360Theme
+theme = G360Theme()
+logo = theme.logo_base64()
+```
+
+---
+
+**Marca**: G360 · **Isotipo**: 3 puntos + chevron `>`
+**Signature**: powered by G360 · **Powered by**: [g360-signature](https://github.com/carloscus/g360-signature)

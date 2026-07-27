@@ -1,10 +1,33 @@
 # g360-cli
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="src/assets/brand/g360/logotypes/logo-g360-light.svg">
+  <img alt="G360" height="64" src="src/assets/brand/g360/logotypes/logo-g360-dark.svg">
+</picture>
+
 > CLI tool for bootstrapping G360 projects with standardized structure, assets, and identity
 
 [![npm version](https://img.shields.io/npm/v/g360-cli?color=00d084&label=version)](https://www.npmjs.com/package/g360-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm downloads](https://img.shields.io/npm/dm/g360-cli?color=94a3b8)](https://www.npmjs.com/package/g360-cli)
+
+## ¿Cómo está organizado el proyecto?
+
+```mermaid
+flowchart TD
+    CLI["g360 CLI<br/>cli.js"]
+    CMD["Comandos<br/>init · bring · audit · ingest · scan · validate"]
+    LIB["Librerías<br/>manifest · auditor · validator · logger"]
+    ASSETS["Assets<br/>templates · brand · signature · ingestion"]
+    PY["g360-core (PyPI)<br/>commercial_engine · pipeline · batch_processor"]
+    ERP["Datos ERP<br/>.xls · .xlsx · .csv"]
+
+    CLI --> CMD
+    CMD --> LIB
+    CMD --> ASSETS
+    CMD --> PY
+    PY --> ERP
+```
 
 ## Tabla de Contenidos
 
@@ -20,6 +43,7 @@
 - [Configuración](#configuración)
 - [API](#api)
 - [Estructura](#estructura)
+- [Reglas de negocio](#reglas-de-negocio)
 - [Scripts](#scripts)
 - [Testing](#testing)
 - [Contribución](#contribución)
@@ -71,7 +95,7 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 ## Versión
 
-**Current: v1.12.0** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
+**Current: v1.13.0** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
 
 ---
 
@@ -92,7 +116,7 @@ npm install -g g360-cli
 
 ```bash
 g360 --version
-# → 1.12.0
+# → 1.13.0
 
 g360 health
 ```
@@ -150,6 +174,7 @@ g360 init <nombre> [opciones]
 | `-d, --dir <ruta>` | Directorio destino | `.` |
 | `--dry-run` | Previsualizar sin crear | `false` |
 | `--force` | Sobrescribir existente | `false` |
+| `--brand` | Aplicar marca G360 (logo, colores, firma) después de init | `false` |
 
 **Ejemplos:**
 
@@ -165,6 +190,9 @@ g360 init mi-script --template svelte-web --skill minimalista
 
 # Preview sin crear
 g360 init mi-proyecto --dry-run
+
+# Crear proyecto con marca G360 aplicada automáticamente
+g360 init mi-proyecto --brand
 ```
 
 ---
@@ -343,14 +371,25 @@ Motor de lógica de negocio para clasificación documental. Única fuente de ver
 | `calculate_prices()` | PRECIO_BASE, RECARGO_UNITARIO, PRECIO_EFECTIVO |
 | `parse_referencia()` | Descompone REFERENCIA "F01/204-56287" en tipo/serie/número |
 
-**Clasificación de documentos:**
+**Clasificación de documentos** (`classify_base` → primero, `resolve_document_relationships` → después para AJUSTE):
 ```
-TPO_DOC  CANTIDAD  CANTIDAD_FAE  → CATEGORIA_OP  SUBTIPO_AJUSTE
-F01/BDI     ≠0         =           VENTA            —
-NCR         ≠0         =           DEVOLUCION       —
-NCR          0         ≠0          AJUSTE           PRECIO_LINEA / SIN_BASE
-NDB          0         ≠0          AJUSTE           CARGO_FIJO / SIN_BASE
+TPO_DOC          CANTIDAD   →  CATEGORIA_OP   SUBTIPO_AJUSTE (cruce vs índice)
+F01/BDI/F03/...  cualquiera →  VENTA          —
+NC*              ≠ 0        →  DEVOLUCION     —
+NC*              = 0        →  AJUSTE         (ver reglas de cruce abajo)
+ND*              cualquiera →  AJUSTE         (ver reglas de cruce abajo)
 ```
+Subtipos de AJUSTE (`resolve_document_relationships` cruza `REFERENCIA` contra `build_invoice_index`):
+```
+Clave con SKU coincide   CANTIDAD_FAE = 0            → CARGO_FIJO
+Clave con SKU coincide   CANTIDAD_FAE ≈ CANT_FACT    → PRECIO_LINEA
+Clave con SKU coincide   CANTIDAD_FAE < CANT_FACT    → PRECIO_PARCIAL
+Clave con SKU coincide   CANTIDAD_FAE > CANT_FACT    → SIN_BASE
+Clave no coincide        CANTIDAD_FAE = 1            → CARGO_FIJO
+Clave no coincide        CANTIDAD_FAE ≠ 1            → SIN_BASE
+Sin facturas en dataset  —                            → SIN_BASE (todo AJUSTE)
+```
+> Ver detalle completo en [`BUSINESS_RULES.md`](./BUSINESS_RULES.md).
 
 #### `batch_processor.py`
 
@@ -1091,6 +1130,94 @@ g360 addon remove @google/design.md
 
 ---
 
+### `g360 docs`
+
+Genera o actualiza la documentación del proyecto.
+
+```bash
+g360 docs [level] [opciones]
+```
+
+**Niveles:**
+
+| Nivel | Archivo generado | Descripción |
+|---|---|---|
+| `readme` (default) | `README.md` | Logo, diagrama Mermaid, quick start, identidad, firma |
+| `architecture` | `ARCHITECTURE.md` | Diagrama de arquitectura general + flujo de datos |
+| `business-rules` | `BUSINESS_RULES.md` | Reglas de negocio (solo Python con commercial_engine) |
+| `dependencies` | `docs/generated/dependencies.mmd` | Dependencias entre módulos |
+| `classes` | `docs/generated/classes.mmd` | Relaciones entre clases e interfaces |
+| `code-graph` | `docs/generated/code_graph.mmd` | Grafo de código (proyectos grandes) |
+| `all` | Todos los anteriores | Todos los niveles aplicables |
+
+**Opciones:**
+
+| Opción | Descripción | Valor por defecto |
+|--------|-------------|-------------------|
+| `--level <nivel>` | Nivel de documentación | `readme` |
+| `--project <ruta>` | Ruta del proyecto | `.` |
+| `--dry-run` | Previsualizar sin escribir | `false` |
+
+**Ejemplos:**
+
+```bash
+# Generar README con diagrama
+g360 docs
+
+# Generar toda la documentación
+g360 docs --level all
+
+# Generar BUSINESS_RULES para un proyecto Python
+g360 docs --level business-rules --project ./mi-proyecto
+
+# Previsualizar sin escribir
+g360 docs --level all --dry-run
+```
+
+---
+
+### `g360 lint`
+
+Revisa la consistencia de nomenclatura, detecta funciones duplicadas y verifica la sintaxis del proyecto.
+
+```bash
+g360 lint [level] [opciones]
+```
+
+**Niveles:**
+
+| Nivel | Qué revisa |
+|---|---|
+| `naming` | Nomenclatura de funciones, clases, variables y archivos |
+| `duplicates` | Funciones duplicadas con nombres iguales o diferentes |
+| `syntax` | Errores de sintaxis en archivos JS y Python |
+| `structure` | Archivos faltantes (README.md, skill.json, manifest) |
+| `all` (default) | Todas las anteriores |
+
+**Opciones:**
+
+| Opción | Descripción | Valor por defecto |
+|--------|-------------|-------------------|
+| `--level <nivel>` | Nivel de lint | `all` |
+| `--project <ruta>` | Ruta del proyecto | `.` |
+
+**Ejemplos:**
+
+```bash
+# Revisar todo el proyecto
+g360 lint
+
+# Solo revisar nomenclatura
+g360 lint --level naming
+
+# Revisar un proyecto específico
+g360 lint --project ./mi-proyecto
+```
+
+**Puntaje:** `g360 lint` asigna un puntaje de 0 a 100 basado en la cantidad de hallazgos.
+
+---
+
 ## Integración con OpenCode
 
 g360-cli incluye integración con **OpenCode** para desarrollo asistido por IA. Esta integración permite que los agentes de IA tengan acceso a los recursos de g360-cli durante el desarrollo.
@@ -1220,10 +1347,12 @@ Para mantener la integración con OpenCode actualizada:
 - [GitHub](https://github.com/carloscus/g360-cli)
 - [Documentación](#)
 - [Reportar Issue](https://github.com/carloscus/g360-cli/issues)
-
 ---
-**Marca**: G360
+
+**Marca**: G360 · Microherramientas para apoyo CRM y datos en escritorio
 **Isotipo**: 3 puntos verticales paralelos (gris-verde-gris) + chevron `>`
-**Autor**: Carlos Cusi
-**Desarrollo**: Con asistencia de herramientas de código IA (Vibe Code)
+**Signature**: G360 by ccusi (`mode: own`, definido en `brand/g360/signature`)
 **Powered by**: [g360-signature](https://github.com/carloscus/g360-signature)
+
+> Identidad generada desde `src/assets/brand/brand.json` (Brand System v2.0.0).
+> El logo arriba usa `<picture>` con `prefers-color-scheme` para light/dark.

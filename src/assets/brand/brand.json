@@ -10,9 +10,7 @@
       "assets": {
         "logotypes": [
           "logotypes/logo-g360-dark.svg",
-          "logotypes/logo-g360-light.svg",
-          "logotypes/logo_g360_dark_b64.txt",
-          "logotypes/logo_g360_light_b64.txt"
+          "logotypes/logo-g360-light.svg"
         ],
         "favicons": {
           "svg": "favicons/favicon.svg",
