@@ -7,6 +7,55 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.14.0] - 2026-08-13
+
+### Added
+- **Template `python-flet-polished`**: Nueva plantilla estandar de Flet con patrones de UI avanzados heredados de produccion (g360-erp-stock-monitor)
+  - Dual theme (dark/light) con persistencia en `~/.g360/`
+  - Auto-refresh con lock thread-safe, hash diff cache
+  - Search overlay con debounce 250ms
+  - KPI cards con glow backlight
+  - G360 Signature widget detecta tema automaticamente
+  - Custom fonts (Inter + JetBrains Mono) embebidas
+  - Launcher auto-instalable de 5 pasos (run.bat)
+  - Sistema portable completo (sync_portable.py, launch.vbs, build-portable.bat)
+  - Logger RotatingFileHandler con traceback captura
+- **Skill `flet-desktop-polished`**: Nuevo skill con 10 features listadas
+- **Auto-resolucion de template**: g360 init ahora resuelve template automaticamente segun skill (`g360 init mi-app --skill flet-desktop-polished` usa `python-flet-polished` por defecto)
+- **`TEMPLATE_DEFAULTS`**: Mapeo skill→template en init.js
+- **`WEAKNESSES.md`**: Registro de debilidades y areas de mejora futura
+
+### Changed
+- **`python-flet`**: Marcado como **legacy/deprecated**. Usar `--template python-flet` muestra advertencia y redirige a `python-flet-polished`
+- **`pyproject.toml` del template python-flet**: Removida dependencia ficticia `g360-core>=0.1.0`
+- **`project-types.json`**: `python-flet-polished` marcado `default: true`, `python-flet` marcado `deprecated: true`
+- **`cli.js`**: `--template` default cambiado a `auto` (resuelve segun skill), `--help` actualizado
+- **Arquitectura en G360-CLI-SKILL.md**: Documentada nueva estructura python-flet-polished con `src/config/theme.py`, `src/core/processor.py`, `src/ui/search_overlay.py`, `g360_flet/g360_signature.py`
+
+### Deprecated
+- Template `python-flet` — usar `python-flet-polished` para nuevos proyectos
+
+---
+
+## [1.13.0] - 2026-06-15
+
+### Added
+- Template `python-flet-polished` preparado como base para patrones avanzados
+
+### Changed
+- `g360-skills.json`: Mejoras en estructura de skills
+- `AGENTS-UIUX.md`: Actualizaciones de lineamientos
+
+---
+
+## [1.13.1] - 2026-06-30
+
+### Changed
+- chore: bump version for npm publish
+- Correcciones menores en documentacion
+
+---
+
 ## [1.12.0] - 2026-07-20
 
 ### Added

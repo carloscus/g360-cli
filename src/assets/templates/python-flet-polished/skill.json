@@ -1,0 +1,28 @@
+{
+  "name": "g360-flet-polished",
+  "device": "pc",
+  "version": "1.0.0",
+  "updatedAt": "2026-08-13",
+  "brand": "g360",
+  "description": "G360 Flet Polished - Plantilla base con patrones de UI avanzada",
+  "framework": "flet",
+  "portable": true,
+  "colors": {
+    "bg": "#0b1220",
+    "surface": "#1a2333",
+    "accent": "#34d399",
+    "text": "#f0f6fc",
+    "muted": "#8b949e",
+    "success": "#34d399",
+    "warning": "#f59e0b",
+    "error": "#ef4444"
+  },
+  "effects": {
+    "glassmorphism": true,
+    "rounded": "12px"
+  },
+  "signature": {
+    "mode": "powered",
+    "text": "powered by G360"
+  }
+}

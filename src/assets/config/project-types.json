@@ -22,12 +22,23 @@
       "features": ["cli", "argparse", "rich"]
     },
     {
-      "id": "python-flet",
-      "name": "Python Flet Desktop",
-      "description": "Python desktop app with Flet framework",
+      "id": "python-flet-polished",
+      "name": "Python Flet Polished",
+      "description": "Python desktop app with Flet — estandar actual (dual theme, auto-refresh, hash cache, search debounce, KPI glow, G360 signature)",
       "framework": "flet",
-      "features": ["desktop", "gui", "cross-platform", "portable"],
-      "portable": true
+      "features": ["desktop", "gui", "cross-platform", "portable", "dual-theme", "auto-refresh", "search-debounce", "kpi-glow", "g360-signature"],
+      "portable": true,
+      "default": true
+    },
+    {
+      "id": "python-flet",
+      "name": "Python Flet (Legacy)",
+      "description": "Python desktop app with Flet framework — LEGACY: usar python-flet-polished para nuevos proyectos",
+      "framework": "flet",
+      "features": ["desktop", "gui", "cross-platform"],
+      "portable": true,
+      "deprecated": true,
+      "deprecationNote": "Usa 'python-flet-polished' en su lugar. Este template se mantiene solo por compatibilidad con proyectos existentes."
     },
     {
       "id": "python-flet-migrate",

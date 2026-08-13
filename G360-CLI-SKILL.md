@@ -27,6 +27,7 @@ Los skills definen el estilo visual, dispositivo y signature del proyecto:
 - **custom** - Configuración personalizada - colores ajustables
 - **flet-desktop** - Aplicaciones de escritorio Flet - estilo moderno G360 (PC)
 - **flet-desktop-corporativo** - Aplicaciones Flet para clientes - estilo corporativo conservador
+- **flet-desktop-polished** - Aplicaciones Flet con patrones UI avanzados (theme dual, auto-refresh, hash cache, search debounce, KPI glow)
 
 ### Snippets de Código
 
@@ -85,7 +86,8 @@ Los skills definen el estilo visual, dispositivo y signature del proyecto:
 - **solid-web** - SolidJS web application
 - **lit-web** - Lit web application
 - **python-cli** - Python command-line tool
-- **python-flet** - Python desktop app with Flet framework
+- **python-flet-polished** ⭐ - Python desktop app con Flet — **ESTANDAR ACTUAL** (dual theme, auto-refresh, hash cache, search debounce, KPI glow, G360 signature widget, portable launcher 5 pasos)
+- **python-flet** (legacy) - Python desktop app basico con Flet — us `python-flet-polished` para nuevos proyectos
 - **python-flet-migrate** - Migrate tkinter/ctkinter app to Flet
 - **python-customtkinter** - Python desktop app with CustomTkinter
 
@@ -106,22 +108,33 @@ Los skills definen el estilo visual, dispositivo y signature del proyecto:
 
 ### Flet Desktop
 
-#### Arquitectura Estandar
+#### Arquitectura Estandar (python-flet-polished)
 ```
 proyecto-flet/
 ├── src/
 │   ├── core/          # Motor de datos (sin imports de flet)
-│   │   ├── g360_theme.py  # Tema G360 (lee de skill.json)
-│   │   └── processor.py   # Logica de negocio
-│   ├── ui/            # Componentes de interfaz Flet
-│   │   └── main_app.py    # Clase principal
-│   └── export/        # Generacion de reportes (openpyxl)
-│       └── generator.py
-├── assets/            # Imagenes, iconos, templates Excel
-├── skill.json         # Skill G360 aplicado
-├── run.bat            # Ejecutar con uv (crea .venv auto)
-├── build-portable.bat # Build EXE standalone con PyInstaller
-└── requirements.txt   # Dependencias
+│   │   ├── constants.py   # URL, rutas, ventana, version
+│   │   ├── processor.py   # Logica de negocio (heredar BaseProcessor)
+│   │   └── skill.json     # Config del skill aplicado
+│   ├── config/
+│   │   └── theme.py       # Paleta dual dark/light + persistencia
+│   ├── ui/
+│   │   ├── dashboard.py   # Layout base: sidebar, KPIs, search overlay
+│   │   ├── kpi_card.py    # Card reutilizable con glow backlight
+│   │   └── search_overlay.py  # Buscador flotante con debounce
+│   └── app.py             # Orquestador: cache, auto-refresh, shutdown
+├── g360_flet/
+│   └── g360_signature.py  # Widget isotipo G360 (detecta tema auto)
+├── assets/
+│   ├── fonts/             # Inter + JetBrains Mono Variable
+│   ├── images/            # Logos e iconos
+│   └── data/              # Datos de muestra + cache runtime
+├── skill.json             # Skill G360 aplicado
+├── run.bat                # Launcher 5 pasos auto-instalable
+├── launch.vbs             # Lanzador minimizado (sin consola)
+├── build-portable.bat     # Build EXE standalone con PyInstaller
+├── sync_portable.py       # Sincroniza a carpeta portable
+└── requirements.txt       # Dependencias
 ```
 
 #### Convenciones de Nombres
@@ -159,7 +172,30 @@ Ver `AGENTS-UIUX.md` para:
 - **Requisito**: VC++ Redistributable en PC destino
 - **Script**: `build-portable.bat` (auto-detecta/instala uv, Python, VC++ Redist)
 - **Output**: `dist/G360-App.exe` (~50-80 MB)
-- **PC limpias**: `run.bat` instala uv → Python 3.12 → .venv → dependencias automaticamente
+- **PC limpias**: `run.bat` instala uv → Python 3.11 → .venv → dependencias automaticamente
+
+#### Plantilla python-flet-polished (UI Avanzada)
+Herada de patrones probados en production (stock-monitor CIPSA). Incluye:
+
+| Patrón | Implementacion | Archivo |
+|--------|---------------|---------|
+| Dual theme + persistencia | `src/config/theme.py` | `get_colors()`, `load_theme_preference()`, `save_theme_preference()` |
+| Auto-refresh con lock | `src/app.py` | `threading.Lock()`, `threading.Event()`, `_auto_refresh_loop()` |
+| Cache con hash diff | `src/app.py` | `_hash_data()`, `_data_changed()` — skip rebuild si no cambio |
+| Logger RotatingFileHandler | `main.py` | `RotatingFileHandler(maxBytes=2MB, backupCount=3)` |
+| Search con debounce 250ms | `src/ui/search_overlay.py` | `asyncio.sleep(0.25)`, flechas ↑↓, Enter selecciona |
+| KPI cards con glow | `src/ui/kpi_card.py` | `BoxShadow` + `border` inferior por color semantico |
+| G360 Signature widget | `g360_flet/g360_signature.py` | Detecta tema auto (dark/light), isotipo 3 puntos + chevron |
+| Launcher 5 pasos | `run.bat` | Verif internet → uv → Python 3.11 → .venv → shortcut → app |
+| Sync portable | `sync_portable.py` | Diferencial por mtime/size, elimina obsoletos |
+| Fonts embebidas | `assets/fonts/` | Inter + JetBrains Mono Variable |
+| Stale data badge | `src/ui/dashboard.py` | Indicador visual cuando datos vienen de cache |
+| Shutdown limpio | `main.py` | `page.on_close` → `_auto_refresh_stop.set()` + `join(timeout=3)` |
+
+Uso:
+```bash
+g360 init mi-app --template python-flet-polished --skill flet-desktop-polished --portable
+```
 
 ### Formato y Estilo
 

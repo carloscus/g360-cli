@@ -33,7 +33,7 @@ function configAction(options) {
     console.log(chalk.gray('    positions: bottom-right, bottom-left, bottom-center, footer-right, footer-left'));
     console.log(chalk.white('  templates:'));
     console.log(chalk.gray('    web-pwa, lit-web, solid-web, svelte-web,'));
-    console.log(chalk.gray('    python-cli, python-flet, python-flet-migrate, python-customtkinter, vba-excel'));
+    console.log(chalk.gray('    python-cli, python-flet-polished (default), python-flet-legacy, python-flet-migrate, python-customtkinter, vba-excel'));
     console.log(chalk.white('  skills:'));
     console.log(chalk.gray('    corporativo, corporativo-movil, corporativo-g360, corporativo-g360-movil,'));
     console.log(chalk.gray('    moderno, moderno-movil, minimalista, custom,'));
@@ -72,8 +72,8 @@ program
 program
   .command('init')
   .argument('<name>', 'Project name')
-  .option('-t, --template <type>', 'Project template type', 'web-pwa')
-  .option('-s, --skill <skill>', 'Skill to use (corporativo, corporativo-movil, moderno, moderno-movil, minimalista, custom, flet-desktop, flet-desktop-corporativo, cipsa, cipsa-movil)', 'corporativo-movil')
+    .option('-t, --template <type>', 'Project template type (default: auto segun skill — python-flet-polished para Flet)', 'auto')
+    .option('-s, --skill <skill>', 'Skill to use (corporativo, corporativo-movil, moderno, moderno-movil, minimalista, custom, flet-desktop, flet-desktop-corporativo, flet-desktop-polished, cipsa, cipsa-movil)', 'corporativo-movil')
   .option('-d, --dir <path>', 'Target directory', '.')
   .option('--dry-run', 'Preview without creating files')
   .option('--force', 'Overwrite existing files')
@@ -143,7 +143,7 @@ program
 program
   .command('convert')
   .argument('[path]', 'Path to convert', '.')
-  .option('-s, --skill <skill>', 'Skill to apply (corporativo, corporativo-movil, moderno, moderno-movil, minimalista, custom, flet-desktop, flet-desktop-corporativo, cipsa, cipsa-movil)', 'corporativo-movil')
+    .option('-s, --skill <skill>', 'Skill to apply (corporativo, corporativo-movil, moderno, moderno-movil, minimalista, custom, flet-desktop, flet-desktop-corporativo, flet-desktop-polished, cipsa, cipsa-movil)', 'corporativo-movil')
   .option('--dry-run', 'Preview without applying')
   .option('--restructure', 'Restructure project files')
   .option('--force', 'Force dangerous changes')

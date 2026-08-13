@@ -10,7 +10,24 @@ import inquirer from 'inquirer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const PORTABLE_TEMPLATES = ['python-flet', 'python-flet-migrate', 'python-cli', 'python-customtkinter'];
+const PORTABLE_TEMPLATES = ['python-flet', 'python-flet-migrate', 'python-flet-polished', 'python-cli', 'python-customtkinter'];
+
+// Templates por defecto segun skill (mapeo automatico)
+const TEMPLATE_DEFAULTS = {
+  'flet-desktop': 'python-flet-polished',
+  'flet-desktop-corporativo': 'python-flet-polished',
+  'flet-desktop-polished': 'python-flet-polished',
+  'cipsa': 'python-flet-polished',
+  'cipsa-movil': 'python-flet-polished',
+  'corporativo': 'web-pwa',
+  'corporativo-movil': 'web-pwa',
+  'corporativo-g360': 'web-pwa',
+  'corporativo-g360-movil': 'web-pwa',
+  'moderno': 'web-pwa',
+  'moderno-movil': 'web-pwa',
+  'minimalista': 'python-cli',
+  'custom': 'web-pwa',
+};
 
 async function askPortableOption(template) {
   if (!PORTABLE_TEMPLATES.includes(template)) {
@@ -31,7 +48,7 @@ async function askPortableOption(template) {
 
 export async function init(name, options) {
   const {
-    template = 'web-pwa',
+    template: rawTemplate,
     skill = 'corporativo-movil',
     dir = '.',
     dryRun = false,
@@ -39,6 +56,20 @@ export async function init(name, options) {
     portable = null,
     brand = false,
   } = options;
+
+  // Resolver template: usar default segun skill si no se especifico
+  let template = rawTemplate || TEMPLATE_DEFAULTS[skill] || 'web-pwa';
+
+  // Advertir si se usa template legacy
+  if (template === 'python-flet') {
+    console.log(chalk.yellow('⚠️  Template "python-flet" esta deprecado. Se usara "python-flet-polished" (estandar actual).\n'));
+    template = 'python-flet-polished';
+  }
+
+  // Si el template es auto, usar default segun skill
+  if (template === 'auto') {
+    template = TEMPLATE_DEFAULTS[skill] || 'web-pwa';
+  }
 
   const targetDir = path.join(process.cwd(), dir, name);
 

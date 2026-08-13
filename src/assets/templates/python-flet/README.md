@@ -1,5 +1,8 @@
 # Mi Proyecto G360 Flet
 
+> ⚠️ **LEGACY** — Este template fue reemplazado por `python-flet-polished` (estandar actual).
+> Para nuevos proyectos usar: `g360 init <name> --template python-flet-polished --skill flet-desktop-polished`
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="g360/brand/g360/logotypes/logo-g360-light.svg">
   <img alt="G360" height="64" src="g360/brand/g360/logotypes/logo-g360-dark.svg">
@@ -64,6 +67,8 @@ page.add(g360_footer())
 ```
 
 ---
+
+> **Nota**: Este es el template base original. Para proyectos nuevos se recomienda `python-flet-polished` que incluye: dual theme, auto-refresh con hash cache, search debounce, KPI glow cards, G360 signature widget y launcher auto-instalable de 5 pasos.
 
 **Marca**: G360 · **Isotipo**: 3 puntos + chevron `>`
 **Signature**: G360 Desktop · **Powered by**: [g360-signature](https://github.com/carloscus/g360-signature)
