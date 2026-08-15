@@ -45,21 +45,25 @@
     {
       "name": "g360-header",
       "description": "Standard G360 header",
+      "language": "html",
       "code": "<header class='g360-header'>...</header>"
     },
     {
       "name": "g360-button",
       "description": "G360 styled button",
+      "language": "html",
       "code": "<button class='g360-btn'>Click</button>"
     },
     {
       "name": "g360-card",
       "description": "G360 card component",
+      "language": "html",
       "code": "<div class='g360-card'>...</div>"
     },
     {
       "name": "g360-badge",
       "description": "G360 status badge",
+      "language": "html",
       "code": "<span class='g360-badge g360-badge-success'>Active</span>"
     },
     {

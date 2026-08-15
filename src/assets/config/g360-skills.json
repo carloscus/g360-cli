@@ -318,6 +318,132 @@
         "kpi-glow-cards",
         "rotating-logger"
       ]
+    },
+    {
+      "name": "react-web",
+      "description": "Aplicaciones web con React/JSX - estilo G360 moderno",
+      "device": "pc",
+      "colors": {
+        "bg": "#0b1220",
+        "surface": "#1a2332",
+        "accent": "#00d084",
+        "text": "#f0f4f8",
+        "muted": "#94a3b8",
+        "success": "#22c55e",
+        "warning": "#f59e0b",
+        "error": "#ef4444"
+      },
+      "effects": {
+        "glassmorphism": true,
+        "blur": "12px",
+        "rounded": "12px"
+      },
+      "signature": {
+        "mode": "powered",
+        "text": "powered by G360"
+      },
+      "framework": "react"
+    },
+    {
+      "name": "solid-web",
+      "description": "Aplicaciones web con SolidJS - estilo G360 moderno",
+      "device": "pc",
+      "colors": {
+        "bg": "#0b1220",
+        "surface": "#1a2332",
+        "accent": "#00d084",
+        "text": "#f0f4f8",
+        "muted": "#94a3b8",
+        "success": "#22c55e",
+        "warning": "#f59e0b",
+        "error": "#ef4444"
+      },
+      "effects": {
+        "glassmorphism": true,
+        "blur": "12px",
+        "rounded": "12px"
+      },
+      "signature": {
+        "mode": "powered",
+        "text": "powered by G360"
+      },
+      "framework": "solid"
+    },
+    {
+      "name": "svelte-web",
+      "description": "Aplicaciones web con Svelte/SvelteKit - estilo G360 moderno",
+      "device": "pc",
+      "colors": {
+        "bg": "#0b1220",
+        "surface": "#1a2332",
+        "accent": "#00d084",
+        "text": "#f0f4f8",
+        "muted": "#94a3b8",
+        "success": "#22c55e",
+        "warning": "#f59e0b",
+        "error": "#ef4444"
+      },
+      "effects": {
+        "glassmorphism": true,
+        "blur": "12px",
+        "rounded": "12px"
+      },
+      "signature": {
+        "mode": "powered",
+        "text": "powered by G360"
+      },
+      "framework": "svelte"
+    },
+    {
+      "name": "lit-web",
+      "description": "Aplicaciones web con Lit Web Components - estilo G360 moderno",
+      "device": "pc",
+      "colors": {
+        "bg": "#0b1220",
+        "surface": "#1a2332",
+        "accent": "#00d084",
+        "text": "#f0f4f8",
+        "muted": "#94a3b8",
+        "success": "#22c55e",
+        "warning": "#f59e0b",
+        "error": "#ef4444"
+      },
+      "effects": {
+        "glassmorphism": true,
+        "blur": "12px",
+        "rounded": "12px"
+      },
+      "signature": {
+        "mode": "powered",
+        "text": "powered by G360"
+      },
+      "framework": "lit"
+    },
+    {
+      "name": "customtkinter",
+      "description": "Aplicaciones desktop con CustomTkinter - estilo G360 moderno",
+      "device": "pc",
+      "colors": {
+        "bg": "#0b1220",
+        "surface": "#1a2332",
+        "accent": "#00d084",
+        "text": "#f0f4f8",
+        "muted": "#94a3b8",
+        "success": "#22c55e",
+        "warning": "#f59e0b",
+        "error": "#ef4444"
+      },
+      "effects": {
+        "glassmorphism": true,
+        "blur": "12px",
+        "rounded": "12px"
+      },
+      "signature": {
+        "mode": "powered",
+        "text": "powered by G360"
+      },
+      "framework": "customtkinter",
+      "portable": true
     }
   ]
 }

@@ -54,6 +54,14 @@
       "description": "Excel VBA macros",
       "framework": "vba",
       "features": ["excel", "macros", "forms"]
+    },
+    {
+      "id": "python-customtkinter",
+      "name": "Python CustomTkinter Desktop",
+      "description": "Python desktop app with CustomTkinter framework",
+      "framework": "customtkinter",
+      "features": ["desktop", "gui", "cross-platform"],
+      "portable": true
     }
   ]
 }

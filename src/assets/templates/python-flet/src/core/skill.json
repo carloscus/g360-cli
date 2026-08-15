@@ -29,7 +29,7 @@
     "name": "G360-App"
   },
   "dependencies": {
-    "flet": ">=0.25.0"
+    "flet": ">=0.28.3"
   },
   "guidelines": {
     "architecture": "src/core (logica), src/ui (componentes), src/export (reportes)",

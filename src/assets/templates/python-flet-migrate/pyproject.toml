@@ -7,9 +7,7 @@ authors = [
 ]
 requires-python = ">=3.11,<4.0"
 dependencies = [
-    "flet>=0.25.0",
-    "openpyxl>=3.1.0",
-    "pandas>=2.0.0",
+    "flet>=0.28.3",
 ]
 
 [project.optional-dependencies]
