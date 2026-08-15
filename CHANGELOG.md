@@ -7,6 +7,25 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.14.1] - 2026-08-13
+
+### Fixed
+- **B-01**: `docs.js` — brand.json path incorrecto (`../..` → `..`) — `loadBrand()` siempre retornaba `null`
+- **B-03**: `lint.js` — `checkJsSyntax()` usaba `new Function()` que fallaba en ES modules (import/export). Ahora skipea archivos ESM automaticamente
+- **B-04**: `lint.js` — `checkPySyntax()` detectaba errores de indentacion pero nunca los registraba. Ahora genera findings con severidad WARNING
+- **B-05**: `solid-web/App.jsx` — usaba `<slot />` (concepto Svelte/Web Components) en vez de `{props.children}` (SolidJS). Template roto corregido
+- **B-06**: `lit-web/index.js` — import path incorrecto `./src/components/app-root.js` (path duplicado). Corregido a `./components/app-root.js`
+- **B-07**: `docs.js` — nivel `api` aceptado por CLI pero sin handler (silenciosamente no hacia nada). Agregada funcion `generateApi()` que detecta exports publicos de Python/JS
+- **B-02**: `lint.js` — `lint()` ignoraba su parametro `targetPath`, siempre usaba `options.project`
+
+### Removed
+- Dead code: `structureRules` en `clean.js` (declarado pero nunca usado)
+- Dead code: `__dirname` no utilizado en `clean.js` y `lint.js`
+- Artifact: `.pytest_cache/` en template `python-flet` (no debe estar en distribucion)
+- Artifact: `__pycache__/*.pyc` en templates y directorio `py/` (22 archivos limpiados)
+
+---
+
 ## [1.14.0] - 2026-08-13
 
 ### Added

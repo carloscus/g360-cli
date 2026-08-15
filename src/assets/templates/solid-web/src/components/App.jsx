@@ -5,7 +5,7 @@
  * @version 1.0.0
  */
 
-export default function App() {
+export default function App(props) {
   const titulo = 'Mi Proyecto G360';
   
   return (
@@ -14,7 +14,7 @@ export default function App() {
         <h1>{titulo}</h1>
       </header>
       <main>
-        <slot />
+        {props.children}
       </main>
     </div>
   );

@@ -1,9 +1,6 @@
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const SEVERITY = {
   CRITICAL: 'critical',
@@ -30,8 +27,8 @@ const PYTHON_NAMING_RULES = {
 const GENERIC_NAMES = ['result', 'data', 'info', 'val', 'obj', 'tmp', 'aux', 'value', 'x', 'y', 'z', 'item', 'elem', 'entry', 'output', 'input', 'res', 'dt'];
 
 export async function lint(targetPath, options) {
-  const { project = '.', level = 'all' } = options;
-  const targetDir = path.join(process.cwd(), project);
+  const { level = 'all', project } = options;
+  const targetDir = project ? path.join(process.cwd(), project) : path.resolve(targetPath || '.');
 
   if (!fs.existsSync(targetDir)) {
     console.error(chalk.red(`❌ Directorio no encontrado: ${targetDir}`));
@@ -440,8 +437,13 @@ function checkSyntaxErrors(dir) {
 
 function checkJsSyntax(filePath, projectDir, findings) {
   const relPath = path.relative(projectDir, filePath);
+  const content = fs.readFileSync(filePath, 'utf8');
+
+  // Skip ES modules (import/export) — new Function() no puede parsearlos
+  if (/^(?:import|export)\s/m.test(content)) return;
+
   try {
-    new Function(fs.readFileSync(filePath, 'utf8'));
+    new Function(content);
   } catch (error) {
     findings.push({
       severity: SEVERITY.CRITICAL,
@@ -491,6 +493,20 @@ function checkPySyntax(filePath, projectDir, findings) {
     } else if (indent < indentStack[indentStack.length - 1]) {
       while (indentStack.length > 1 && indentStack[indentStack.length - 1] > indent) {
         indentStack.pop();
+      }
+      // Verificar que la indentacion actual este en el stack
+      if (indentStack.length > 0 && indent !== indentStack[indentStack.length - 1]) {
+        const indentUnit = indentStack.length > 1 ? indentStack[1] - indentStack[0] : 4;
+        if (indent % indentUnit !== 0) {
+          findings.push({
+            severity: SEVERITY.WARNING,
+            file: relPath,
+            type: 'indentation-error',
+            message: `Indentacion inconsistente en linea ${i + 1}: ${indent} espacios (esperado multiplo de ${indentUnit})`,
+            current: `${indent} espacios`,
+            recommended: `Multiplo de ${indentUnit} espacios`,
+          });
+        }
       }
     }
   }

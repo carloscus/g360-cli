@@ -7,10 +7,7 @@
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { getAllFiles } from '../lib/file-utils.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const DEAD_PATTERNS = [
   'backup', 'backup-old', 'backups',
@@ -292,15 +289,6 @@ async function findOrphanFiles(projectDir, allFiles) {
 
 function analyzeFileOrganization(files) {
   const misplaced = [];
-  const structureRules = {
-    'src/components': ['.js', '.jsx', '.ts', '.tsx', '.svelte', '.vue'],
-    'src/pages': ['.js', '.jsx', '.ts', '.tsx', '.svelte', '.vue'],
-    'src/utils': ['.js', '.ts'],
-    'src/hooks': ['.js', '.ts'],
-    'src/services': ['.js', '.ts'],
-    'src/styles': ['.css', '.scss', '.less'],
-    'src/assets': ['.png', '.jpg', '.svg', '.gif', '.webp']
-  };
 
   const components = files.filter(f => {
     const name = path.basename(f);

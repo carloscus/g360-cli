@@ -5,4 +5,4 @@
  * @version 1.0.0
  */
 
-import './src/components/app-root.js';
+import './components/app-root.js';

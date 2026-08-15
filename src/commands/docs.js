@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const BRAND_PATH = path.join(__dirname, '..', '..', 'assets', 'brand', 'brand.json');
+const BRAND_PATH = path.join(__dirname, '..', 'assets', 'brand', 'brand.json');
 
 const LEVELS = ['readme', 'architecture', 'business-rules', 'api', 'dependencies', 'classes', 'code-graph', 'all'];
 
@@ -176,6 +176,7 @@ async function generateLevel(lvl, dir, projectInfo, brand, manifest, skill, dryR
     case 'dependencies': return await generateDependencies(dir, projectInfo, dryRun);
     case 'classes': return await generateClasses(dir, projectInfo, dryRun);
     case 'code-graph': return await generateCodeGraph(dir, projectInfo, dryRun);
+    case 'api': return await generateApi(dir, projectInfo, dryRun);
     default: return null;
   }
 }
@@ -535,6 +536,109 @@ async function generateCodeGraph(dir, projectInfo, dryRun) {
   await fs.ensureDir(outputDir);
   await fs.writeFile(outputPath, diagram, 'utf8');
   return 'docs/generated/code_graph.mmd';
+}
+
+async function generateApi(dir, projectInfo, dryRun) {
+  const scan = scanProject(dir);
+  const pyFiles = scan.pyFiles.filter(f => !f.endsWith('__init__.py'));
+  const jsFiles = scan.jsFiles.filter(f => !f.endsWith('.test.js') && !f.endsWith('.spec.js'));
+
+  const exportedFunctions = [];
+  const exportedClasses = [];
+
+  // Python: detectar def y class exportados
+  for (const file of pyFiles) {
+    const filePath = path.join(dir, file);
+    try {
+      const content = fs.readFileSync(filePath, 'utf8');
+      const funcMatches = content.match(/^(?:def|async\s+def)\s+(\w+)\s*\(/gm);
+      if (funcMatches) {
+        for (const m of funcMatches) {
+          const name = m.replace(/^(?:async\s+)?def\s+/, '').replace(/\s*\(.*/, '');
+          if (!name.startsWith('_')) {
+            exportedFunctions.push({ file, name, type: 'python' });
+          }
+        }
+      }
+      const classMatches = content.match(/^(?:class)\s+(\w+)/gm);
+      if (classMatches) {
+        for (const m of classMatches) {
+          const name = m.replace(/class\s+/, '').replace(/\s*[:(\{].*/, '');
+          if (!name.startsWith('_')) {
+            exportedClasses.push({ file, name, type: 'python' });
+          }
+        }
+      }
+    } catch { /* skip unreadable */ }
+  }
+
+  // JS/TS: detectar export function y export class
+  for (const file of jsFiles) {
+    const filePath = path.join(dir, file);
+    try {
+      const content = fs.readFileSync(filePath, 'utf8');
+      const funcMatches = content.match(/^export\s+(?:async\s+)?function\s+(\w+)/gm);
+      if (funcMatches) {
+        for (const m of funcMatches) {
+          const name = m.replace(/^export\s+(?:async\s+)?function\s+/, '');
+          exportedFunctions.push({ file, name, type: 'javascript' });
+        }
+      }
+      const classMatches = content.match(/^export\s+class\s+(\w+)/gm);
+      if (classMatches) {
+        for (const m of classMatches) {
+          const name = m.replace(/^export\s+class\s+/, '');
+          exportedClasses.push({ file, name, type: 'javascript' });
+        }
+      }
+    } catch { /* skip unreadable */ }
+  }
+
+  if (exportedFunctions.length === 0 && exportedClasses.length === 0) {
+    console.log(chalk.gray('  ⚠ No se encontraron exports publicos. Generando API basica.'));
+  }
+
+  // Generar markdown
+  let md = `# API Reference\n\n`;
+  md += `> Generado automaticamente por \`g360 docs api\`\n\n`;
+
+  if (exportedClasses.length > 0) {
+    md += `## Clases\n\n`;
+    md += `| Clase | Archivo | Tipo |\n`;
+    md += `|-------|---------|------|\n`;
+    for (const c of exportedClasses) {
+      md += `| \`${c.name}\` | \`${c.file}\` | ${c.type} |\n`;
+    }
+    md += `\n`;
+  }
+
+  if (exportedFunctions.length > 0) {
+    md += `## Funciones\n\n`;
+    md += `| Funcion | Archivo | Tipo |\n`;
+    md += `|---------|---------|------|\n`;
+    for (const f of exportedFunctions) {
+      md += `| \`${f.name}\` | \`${f.file}\` | ${f.type} |\n`;
+    }
+    md += `\n`;
+  }
+
+  if (exportedFunctions.length === 0 && exportedClasses.length === 0) {
+    md += `_No se encontraron exports publicos en el proyecto._\n`;
+  }
+
+  const outputDir = path.join(dir, 'docs', 'generated');
+  const outputPath = path.join(outputDir, 'api.md');
+
+  if (dryRun) {
+    console.log(chalk.gray(`  [dry-run] docs/generated/api.md`));
+    console.log(chalk.gray(`  Funciones: ${exportedFunctions.length} | Clases: ${exportedClasses.length}`));
+    return null;
+  }
+
+  await fs.ensureDir(outputDir);
+  await fs.writeFile(outputPath, md, 'utf8');
+  console.log(chalk.green(`  ✅ docs/generated/api.md (${exportedFunctions.length} funciones, ${exportedClasses.length} clases)`));
+  return 'docs/generated/api.md';
 }
 
 function scanProject(dir) {
