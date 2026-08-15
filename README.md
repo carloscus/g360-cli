@@ -85,7 +85,8 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 - **Paquete Python** - `g360-core` en PyPI para pipelines de datos independientes
 - **Auditoría** - Verifica compliance de proyectos G360
 - **Limpieza** - Elimina assets embebidos antes de deployment
-- **Multi-plantilla** - Web (Lit, Solid, Svelte, PWA), Python (CLI, Flet, CustomTkinter)
+- **Multi-plantilla** - Web (Lit, Solid, Svelte, PWA, React), Python (CLI, Flet ⭐, Flet Polished ⭐, CustomTkinter, Migration)
+- **Flet Polished** - Template estandar con dual theme, auto-refresh, hash cache, search debounce, KPI glow, G360 signature, portable launcher
 - **Brand System v2.0.0** - Sistema de marca unificado con favicons, PWA icons, logotypes para G360 y CIPSA
 - **Modo portable** - Proyectos Python con ejecución directa (sin PyInstaller)
 - **Modo offline** - Funciona sin conexión usando assets cacheados
@@ -95,7 +96,7 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 ## Versión
 
-**Current: v1.13.0** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
+**Current: v1.15.0** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
 
 ---
 
@@ -116,7 +117,7 @@ npm install -g g360-cli
 
 ```bash
 g360 --version
-# → 1.13.0
+# → 1.15.0
 
 g360 health
 ```
@@ -169,7 +170,7 @@ g360 init <nombre> [opciones]
 
 | Opción | Descripción | Valor por defecto |
 |--------|-------------|-------------------|
-| `-t, --template <tipo>` | Tipo de plantilla | `web-pwa` |
+| `-t, --template <tipo>` | Tipo de plantilla (default: auto segun skill) | `auto` |
 | `-s, --skill <skill>` | Skill a usar | `corporativo-movil` |
 | `-d, --dir <ruta>` | Directorio destino | `.` |
 | `--dry-run` | Previsualizar sin crear | `false` |
@@ -689,6 +690,45 @@ g360 ingest reporte.xlsx -o mi_reporte.csv
 
 ## Plantillas
 
+### python-flet-polished ⭐ (Estandar actual)
+
+Plantilla desktop Python con Flet — patrones de UI avanzados heredados de produccion.
+
+```
+mi-proyecto/
+├── main.py
+├── src/
+│   ├── app.py
+│   ├── config/theme.py
+│   ├── core/constants.py, processor.py
+│   └── ui/dashboard.py, kpi_card.py, search_overlay.py
+├── g360_flet/g360_signature.py
+├── assets/fonts/, images/, data/
+├── run.bat, launch.vbs, build-portable.bat
+├── skill.json, pyproject.toml
+└── sync_portable.py
+```
+
+### web-pwa
+
+Plantilla Progressive Web App con React.
+
+```
+mi-proyecto/
+├── index.html
+├── src/
+│   ├── main.jsx
+│   ├── App.jsx
+│   ├── components/
+│   │   ├── Header.jsx
+│   │   ├── FooterSignature.jsx
+│   │   └── LoadingOverlay.jsx
+│   └── styles/main.css
+├── vite.config.js
+├── package.json
+└── skill.json
+```
+
 ### lit-web
 
 Plantilla Web Components con Lit.
@@ -772,7 +812,9 @@ mi-cli/
 └── skill.json
 ```
 
-### python-flet
+### python-flet (LEGACY)
+
+> ⚠️ **Deprecado** — Usar `python-flet-polished` para nuevos proyectos.
 
 Plantilla GUI de escritorio con **Flet** para apps de contexto ERP.
 
@@ -935,6 +977,30 @@ Proyectos con marca CIPSA - favicon CIPSA rojo, logo corporativo, signature "pow
 
 Apps móviles con marca CIPSA - favicon CIPSA rojo, logo corporativo, enfoque móvil.
 
+### flet-desktop-polished
+
+App Flet desktop con patrones UI avanzados: dual theme, auto-refresh, hash cache, search debounce, KPI glow, G360 signature widget. **Estandar actual para Flet.**
+
+### react-web
+
+Aplicaciones web con React/JSX - estilo G360 moderno.
+
+### solid-web
+
+Aplicaciones web con SolidJS - estilo G360 moderno.
+
+### svelte-web
+
+Aplicaciones web con Svelte/SvelteKit - estilo G360 moderno.
+
+### lit-web
+
+Aplicaciones web con Lit Web Components - estilo G360 moderno.
+
+### customtkinter
+
+Aplicaciones desktop con CustomTkinter - estilo G360 moderno.
+
 ### Ejemplos de uso
 
 ```bash
@@ -1014,7 +1080,7 @@ g360-cli/
 │       ├── ingestion/    # Módulo de ingesta ERP (bring)
 │       ├── engine/      # G360 Engine
 │       ├── snippets/    # Snippets de código reutilizables
-│       └── config/      # Configuraciones (g360-skills.json, project-types.json)
+│       └── config/      # Configuraciones (g360-skills.json, agent-skills.json, project-types.json)
 ├── py/                  # Paquete Python publicable en PyPI
 │   ├── pyproject.toml   # g360-core
 │   └── src/g360_core/   # commercial_engine.py, pipeline.py, processor.py, batch_processor.py, utils.py
