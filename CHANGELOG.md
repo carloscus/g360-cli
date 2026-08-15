@@ -7,6 +7,14 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.15.1] - 2026-08-15
+
+### Fixed
+- README actualizado: version v1.15.1, plantilla python-flet-polished, 5 skills nuevos, LEGACY notice, agent-skills.json
+- `opencode-config.json`: JSON malformado corregido (bug preexistente — llave faltante)
+
+---
+
 ## [1.15.0] - 2026-08-13
 
 ### Added

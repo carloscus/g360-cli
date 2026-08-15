@@ -1,6 +1,6 @@
 {
   "name": "g360-cli",
-  "version": "1.15.0",
+  "version": "1.15.1",
   "description": "CLI tool for bootstrapping G360 projects with standardized structure, assets, and identity",
   "opencode": {
     "skill": "G360-CLI-SKILL.md",
