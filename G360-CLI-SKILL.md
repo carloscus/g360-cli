@@ -426,9 +426,10 @@ Los recursos de g360-cli se encuentran en:
 ```
 C:\Users\ccusi\Documents\Proyect_Coder\G360-ecosystem\projects\g360-cli\src\assets\
 ├── config/
-│   ├── g360-skills.json    # Skills disponibles
-│   ├── skills.json          # Skills base
-│   └── project-types.json   # Tipos de proyecto
+│   ├── g360-skills.json    # Skills visuales/branding (corporativo, flet-desktop, etc.)
+│   ├── agent-skills.json   # Skills funcionales/agentes (code-audit, backend, data, etc.)
+│   ├── snippets.json       # Snippets de codigo
+│   └── project-types.json  # Tipos de proyecto
 ├── snippets/
 │   └── snippets.json       # Snippets de código
 ├── templates/               # Plantillas de proyecto

@@ -222,7 +222,7 @@ async function createG360Structure(projectPath, assetsDir) {
     
     const skillJsonPath = path.join(g360Dir, 'skill.json');
     if (!fs.existsSync(skillJsonPath)) {
-      const exampleSkillPath = path.join(assetsDir, 'config/skills.json');
+      const exampleSkillPath = path.join(assetsDir, 'config/agent-skills.json');
       if (fs.existsSync(exampleSkillPath)) {
         await fs.copy(exampleSkillPath, skillJsonPath);
       }

@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
  * Comando: g360 scan <directorio>
- * Escanea un directorio para detectar archivos ERP válidos.
+ * Escanea un directorio para detectar archivos ERP validos.
  */
 
 import chalk from 'chalk';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
+import { runPythonStdout, g360CorePath } from '../lib/python-runner.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -17,8 +17,7 @@ export async function scan(directory, options) {
   console.log(chalk.blue(`\n🔍 Escaneando directorio: ${directory}`));
 
   const pyCode = `
-import sys
-sys.path.insert(0, '${path.join(__dirname, '..', 'py', 'src')}')
+${g360CorePath(__dirname)}
 from g360_core.scanner import find_erp_files_in_dir
 from pathlib import Path
 import json
@@ -33,22 +32,22 @@ print(json.dumps(result, indent=2))
 `;
 
   try {
-    const result = await runPython(pyCode);
-    const data = JSON.parse(result.stdout);
+    const stdout = await runPythonStdout(pyCode);
+    const data = JSON.parse(stdout);
     
     console.log(chalk.gray(`\n   Total archivos: ${data.stats.total}`));
-    console.log(chalk.green(`   Válidos: ${data.stats.valid}`));
-    console.log(chalk.red(`   Inválidos: ${data.stats.invalid}`));
+    console.log(chalk.green(`   Validos: ${data.stats.valid}`));
+    console.log(chalk.red(`   Invalidos: ${data.stats.invalid}`));
     
     if (data.valid.length > 0) {
-      console.log(chalk.cyan('\n📋 Archivos válidos:'));
+      console.log(chalk.cyan('\n📋 Archivos validos:'));
       data.valid.forEach(f => {
         console.log(chalk.gray(`   ${f.path} (${f.erp_type})`));
       });
     }
     
     if (data.invalid.length > 0) {
-      console.log(chalk.yellow('\n⚠️  Archivos inválidos:'));
+      console.log(chalk.yellow('\n⚠️  Archivos invalidos:'));
       data.invalid.forEach(f => {
         console.log(chalk.red(`   ${f.path}: ${f.error_msg}`));
       });
@@ -60,31 +59,4 @@ print(json.dumps(result, indent=2))
     if (err.stderr) console.error(chalk.red(err.stderr));
     process.exit(1);
   }
-}
-
-function runPython(code) {
-  return new Promise((resolve, reject) => {
-    const pyExec = process.env.PYTHON || 'python3';
-    const proc = spawn(pyExec, ['-c', code], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-
-    let stdout = '';
-    let stderr = '';
-
-    proc.stdout?.on('data', (data) => { stdout += data.toString(); });
-    proc.stderr?.on('data', (data) => { stderr += data.toString(); });
-
-    proc.on('close', (code) => {
-      if (code === 0) {
-        resolve({ stdout, stderr });
-      } else {
-        reject(new Error(stderr || `Python terminó con código ${code}`));
-      }
-    });
-
-    proc.on('error', (err) => {
-      reject(new Error(`No se pudo ejecutar Python: ${err.message}`));
-    });
-  });
 }

@@ -7,7 +7,7 @@
 import chalk from 'chalk';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
+import { runPython, g360CorePath } from '../lib/python-runner.js';
 import fs from 'fs-extra';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -27,7 +27,6 @@ export async function validate(paths, options) {
           filesToCheck.push(p);
         }
       } else if (stat.isDirectory()) {
-        const pattern = recursive ? '**/*' : '*';
         const extPattern = /\.(xls|xlsx|csv)$/i;
         const entries = await fs.readdir(p, { withFileTypes: true });
         for (const entry of entries) {
@@ -35,7 +34,6 @@ export async function validate(paths, options) {
           if (entry.isFile() && extPattern.test(entry.name)) {
             filesToCheck.push(fullPath);
           } else if (entry.isDirectory() && recursive) {
-            // Simplificado: escaneo recursivo básico
             const sub = await fs.readdir(fullPath, { withFileTypes: true });
             for (const subEntry of sub) {
               if (subEntry.isFile() && extPattern.test(subEntry.name)) {
@@ -70,20 +68,19 @@ export async function validate(paths, options) {
   for (const res of results) {
     const status = res.valid ? chalk.green('✅') : chalk.red('❌');
     const filename = path.basename(res.path);
-    console.log(`${status} ${filename} (${res.valid ? 'OK' : 'FALLÓ'})`);
+    console.log(`${status} ${filename} (${res.valid ? 'OK' : 'FALLO'})`);
     if (!res.valid && res.missing.length > 0) {
       console.log(chalk.gray(`   Faltan: ${res.missing.join(', ')}`));
     }
     if (res.valid) validCount++;
   }
 
-  console.log(chalk.gray(`\n📊 Resumen: ${validCount}/${results.length} archivos válidos`));
+  console.log(chalk.gray(`\n📊 Resumen: ${validCount}/${results.length} archivos validos`));
 }
 
 async function validateSingleFile(filepath) {
   const pyCode = `
-import sys
-sys.path.insert(0, '${path.join(__dirname, '..', 'py', 'src')}')
+${g360CorePath(__dirname)}
 from g360_core.scanner import ERPScanner
 from pathlib import Path
 
@@ -100,8 +97,8 @@ except Exception as e:
 `;
 
   try {
-    const result = await runPython(pyCode);
-    const lines = result.stdout.split('\n').filter(l => l.trim());
+    const { stdout } = await runPython(pyCode);
+    const lines = stdout.split('\n').filter(l => l.trim());
 
     let valid = false;
     let missing = [];
@@ -120,31 +117,4 @@ except Exception as e:
   } catch (err) {
     return { path: filepath, valid: false, missing: [err.message] };
   }
-}
-
-function runPython(code) {
-  return new Promise((resolve, reject) => {
-    const pyExec = process.env.PYTHON || 'python3';
-    const proc = spawn(pyExec, ['-c', code], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-
-    let stdout = '';
-    let stderr = '';
-
-    proc.stdout?.on('data', (data) => { stdout += data.toString(); });
-    proc.stderr?.on('data', (data) => { stderr += data.toString(); });
-
-    proc.on('close', (code) => {
-      if (code === 0) {
-        resolve({ stdout, stderr });
-      } else {
-        reject(new Error(stderr || `Python terminó con código ${code}`));
-      }
-    });
-
-    proc.on('error', (err) => {
-      reject(new Error(`No se pudo ejecutar Python: ${err.message}`));
-    });
-  });
 }

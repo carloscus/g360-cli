@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
+import { walkProject } from '../lib/file-utils.js';
 
 const SEVERITY = {
   CRITICAL: 'critical',
@@ -90,30 +91,10 @@ function checkNamingConventions(dir) {
   const jsFiles = [];
   const pyFiles = [];
 
-  function walk(d) {
-    const items = fs.readdirSync(d, { withFileTypes: true });
-    for (const item of items) {
-      if (item.name.startsWith('.')) continue;
-      if (item.name === 'node_modules') continue;
-      if (item.name === '__pycache__') continue;
-      if (item.name === '.pytest_cache') continue;
-      if (item.name === 'g360') continue;
-
-      const fullPath = path.join(d, item.name);
-      if (item.isDirectory()) {
-        walk(fullPath);
-      } else if (item.isFile()) {
-        if (item.name.endsWith('.js') && !item.name.endsWith('.test.js')) {
-          jsFiles.push(fullPath);
-        }
-        if (item.name.endsWith('.py') && !item.name.endsWith('__pycache__')) {
-          pyFiles.push(fullPath);
-        }
-      }
-    }
-  }
-
-  walk(dir);
+  walkProject(dir, {
+    onJs: (fullPath) => jsFiles.push(fullPath),
+    onPy: (fullPath) => pyFiles.push(fullPath),
+  });
 
   for (const file of jsFiles) {
     findings.push(...checkJsFileNaming(file, dir));
@@ -268,30 +249,10 @@ function checkDuplicateFunctions(dir) {
   const findings = [];
   const functionMap = new Map();
 
-  function walk(d) {
-    const items = fs.readdirSync(d, { withFileTypes: true });
-    for (const item of items) {
-      if (item.name.startsWith('.')) continue;
-      if (item.name === 'node_modules') continue;
-      if (item.name === '__pycache__') continue;
-      if (item.name === '.pytest_cache') continue;
-      if (item.name === 'g360') continue;
-
-      const fullPath = path.join(d, item.name);
-      if (item.isDirectory()) {
-        walk(fullPath);
-      } else if (item.isFile()) {
-        if (item.name.endsWith('.js') && !item.name.endsWith('.test.js')) {
-          extractFunctions(fullPath, 'js', functionMap);
-        }
-        if (item.name.endsWith('.py') && !item.name.endsWith('__pycache__')) {
-          extractFunctions(fullPath, 'py', functionMap);
-        }
-      }
-    }
-  }
-
-  walk(dir);
+  walkProject(dir, {
+    onJs: (fullPath) => extractFunctions(fullPath, 'js', functionMap),
+    onPy: (fullPath) => extractFunctions(fullPath, 'py', functionMap),
+  });
 
   for (const [name, locations] of functionMap) {
     if (locations.length > 1) {
@@ -408,30 +369,11 @@ function extractFunctions(filePath, lang, functionMap) {
 function checkSyntaxErrors(dir) {
   const findings = [];
 
-  function walk(d) {
-    const items = fs.readdirSync(d, { withFileTypes: true });
-    for (const item of items) {
-      if (item.name.startsWith('.')) continue;
-      if (item.name === 'node_modules') continue;
-      if (item.name === '__pycache__') continue;
-      if (item.name === '.pytest_cache') continue;
-      if (item.name === 'g360') continue;
+  walkProject(dir, {
+    onJs: (fullPath) => checkJsSyntax(fullPath, dir, findings),
+    onPy: (fullPath) => checkPySyntax(fullPath, dir, findings),
+  });
 
-      const fullPath = path.join(d, item.name);
-      if (item.isDirectory()) {
-        walk(fullPath);
-      } else if (item.isFile()) {
-        if (item.name.endsWith('.js') && !item.name.endsWith('.test.js')) {
-          checkJsSyntax(fullPath, dir, findings);
-        }
-        if (item.name.endsWith('.py')) {
-          checkPySyntax(fullPath, dir, findings);
-        }
-      }
-    }
-  }
-
-  walk(dir);
   return findings;
 }
 

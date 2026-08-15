@@ -7,7 +7,7 @@
 import chalk from 'chalk';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
+import { runPython, runPythonStdout, g360CorePath } from '../lib/python-runner.js';
 import fs from 'fs-extra';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -38,12 +38,12 @@ export async function ingest(input, options) {
     const result = await scanDirectory(inputPath);
     filepaths = result.valid.map(info => info.path);
     if (filepaths.length === 0) {
-      console.error(chalk.red('❌ No se encontraron archivos ERP válidos en el directorio'));
+      console.error(chalk.red('❌ No se encontraron archivos ERP validos en el directorio'));
       process.exit(1);
     }
-    console.log(chalk.green(`   Encontrados ${filepaths.length} archivos válidos`));
+    console.log(chalk.green(`   Encontrados ${filepaths.length} archivos validos`));
   } else {
-    console.error(chalk.red(`❌ Ruta no válida: ${inputPath}`));
+    console.error(chalk.red(`❌ Ruta no valida: ${inputPath}`));
     process.exit(1);
   }
 
@@ -90,8 +90,7 @@ export async function ingest(input, options) {
 
 async function scanDirectory(dir) {
   const pyCode = `
-import sys
-sys.path.insert(0, '${path.join(__dirname, '..', 'py', 'src')}')
+${g360CorePath(__dirname)}
 from g360_core.scanner import find_erp_files_in_dir
 from pathlib import Path
 
@@ -102,8 +101,8 @@ for i in invalid[:10]:
     print(f"INVALID::{i.path.name}::${i.error_msg}")
 `;
 
-  const result = await runPython(pyCode);
-  const lines = result.stdout.split('\n').filter(l => l.trim());
+  const { stdout } = await runPython(pyCode);
+  const lines = stdout.split('\n').filter(l => l.trim());
   const valid = [];
   const invalid = [];
 
@@ -122,66 +121,17 @@ for i in invalid[:10]:
 
 async function runBatchIngest(filepaths) {
   const pyCode = `
-import sys
-sys.path.insert(0, '${path.join(__dirname, '..', 'py', 'src')}')
+${g360CorePath(__dirname)}
 from g360_core.scanner import batch_process_files
 from pathlib import Path
 import pandas as pd
+import sys
 
 filepaths = [${JSON.stringify(filepaths).replace(/"/g, "'")}]
 df = batch_process_files([Path(p) for p in filepaths], merge_results=True)
 sys.stdout.write(df.to_csv(index=False))
 `;
 
-  return new Promise((resolve, reject) => {
-    const pyExec = process.env.PYTHON || 'python3';
-    const proc = spawn(pyExec, ['-c', pyCode], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-
-    let stdout = '';
-    let stderr = '';
-
-    proc.stdout?.on('data', (data) => { stdout += data.toString(); });
-    proc.stderr?.on('data', (data) => { stderr += data.toString(); });
-
-    proc.on('close', (code) => {
-      if (code === 0) {
-        resolve(stdout);
-      } else {
-        reject(new Error(stderr || `Python terminó con código ${code}`));
-      }
-    });
-
-    proc.on('error', (err) => {
-      reject(new Error(`No se pudo ejecutar Python: ${err.message}`));
-    });
-  });
-}
-
-function runPython(code) {
-  return new Promise((resolve, reject) => {
-    const pyExec = process.env.PYTHON || 'python3';
-    const proc = spawn(pyExec, ['-c', code], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-
-    let stdout = '';
-    let stderr = '';
-
-    proc.stdout?.on('data', (data) => { stdout += data.toString(); });
-    proc.stderr?.on('data', (data) => { stderr += data.toString(); });
-
-    proc.on('close', (code) => {
-      if (code === 0) {
-        resolve({ stdout, stderr });
-      } else {
-        reject(new Error(stderr || `Python terminó con código ${code}`));
-      }
-    });
-
-    proc.on('error', (err) => {
-      reject(new Error(`No se pudo ejecutar Python: ${err.message}`));
-    });
-  });
+  const { stdout } = await runPython(pyCode);
+  return stdout;
 }
