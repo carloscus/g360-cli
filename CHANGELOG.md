@@ -7,6 +7,26 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.14.2] - 2026-08-13
+
+### Added
+- **Skills visuales para frameworks web**: `react-web`, `solid-web`, `svelte-web`, `lit-web` agregados a `g360-skills.json`
+- **Skill `customtkinter`**: Agregado a `g360-skills.json` con soporte portable
+- **Project-type `python-customtkinter`**: Agregado a `project-types.json`
+- **Snippet language**: Campo `language: "html"` agregado a snippets `g360-header`, `g360-button`, `g360-card`, `g360-badge`
+
+### Fixed
+- **D-01**: `python-flet` skill.json flet version `>=0.25.0` → `>=0.28.3` (ahora consistente con pyproject.toml)
+- **D-02**: `python-flet` pyproject.toml — agregada dependencia faltante `numpy>=1.24.0`
+- **D-03**: `python-flet-migrate` pyproject.toml — removidas dependencias no usadas (`pandas`, `openpyxl`)
+- **D-04**: `python-flet-polished` — unificados los 2 skill.json (root y src/core) con mismos colores (`surface: #1a2333`, `accent: #34d399`) y schema consistente
+- **D-05**: `python-cli` — agregado `src/core/__init__.py` faltante para importabilidad
+
+### Removed
+- `python-cli/package.json` — template Python no necesita package.json (A-02)
+
+---
+
 ## [1.14.1] - 2026-08-13
 
 ### Fixed
