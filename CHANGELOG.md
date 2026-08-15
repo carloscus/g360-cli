@@ -7,6 +7,39 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.15.0] - 2026-08-13
+
+### Added
+- **`src/lib/python-runner.js`**: Runner consolidado para ejecutar Python desde Node.js
+  - `runPython(code)` — retorna `{stdout, stderr}`
+  - `runPythonStdout(code)` — retorna solo stdout
+  - `g360CorePath(dir)` — genera sys.path para importar g360_core
+- **`src/lib/file-utils.js` — `walkProject(dir, callbacks)`**: Walk recursivo consolidado con callbacks por tipo de archivo
+  - Reemplaza 4 walk() duplicados en lint.js
+  - Soporta `onJs`, `onPy`, `onFile`, `onDir` callbacks
+  - `getJsFiles()` y `getPyFiles()` como helpers
+
+### Changed
+- **`scan.js`**: Usa `python-runner.js` en vez de runPython() inline
+- **`ingest.js`**: Usa `python-runner.js` — eliminadas 2 funciones runPython() duplicadas
+- **`validate.js`**: Usa `python-runner.js` — eliminada runPython() duplicada
+- **`lint.js`**: Usa `walkProject()` — eliminados 3 walk() duplicados (~60 lineas)
+- **`skills.json` → `agent-skills.json`**: Renombrado para desambiguar con `g360-skills.json`
+- **`init.js`**: Referencia actualizada a `agent-skills.json`
+
+### Removed
+- `scan.js`: import `spawn` (ya no es necesario)
+- `ingest.js`: import `spawn` + 2 funciones runPython/runBatchIngest duplicadas
+- `validate.js`: import `spawn` + runPython duplicada
+- `lint.js`: 3 funciones walk() inline (~60 lineas de codigo duplicado eliminadas)
+
+### Metrics
+- **Lineas eliminadas**: ~212 lineas de codigo duplicado
+- **Modulos nuevos**: 2 (`python-runner.js`, `walkProject` en `file-utils.js`)
+- **Funciones consolidadas**: 4 runPython + 3 walk = 7 funciones
+
+---
+
 ## [1.14.2] - 2026-08-13
 
 ### Added
