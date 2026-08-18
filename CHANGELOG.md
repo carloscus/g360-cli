@@ -6,7 +6,7 @@
 ### Changed
 - **Flet bumped to >=0.85.0** - Modern version with better SSL/network support
 - **Added pip-system-certs>=4.38** - Fixes SSL certificate issues on Windows corporate networks
-- **Updated Python to 3.12** - run.bat now installs Python 3.12 by default
+- **Python mantenido en 3.11** - Version estable y ligera para distribucion portable
 
 ### Fixed
 - **API compatibility Flet 0.85**: t.Padding() -> t.padding.only()

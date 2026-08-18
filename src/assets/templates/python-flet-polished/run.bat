@@ -71,22 +71,22 @@ echo [%DATE% %TIME%] [1/5] uv OK >> %LOG_FILE%
 echo.
 
 REM ============================================
-REM [2/5] Verificar / Instalar Python 3.12
-echo [%DATE% %TIME%] [2/5] Verificando Python 3.12... >> %LOG_FILE%
-echo [2/5] Verificando Python 3.12...
+REM [2/5] Verificar / Instalar Python 3.11
+echo [%DATE% %TIME%] [2/5] Verificando Python 3.11... >> %LOG_FILE%
+echo [2/5] Verificando Python 3.11...
 
 set "PYTHON_OK=0"
-uv python list --only-installed 2>nul | find "3.12" >nul
+uv python list --only-installed 2>nul | find "3.11" >nul
 if not errorlevel 1 (
-    echo   Python 3.12 encontrado.
+    echo   Python 3.11 encontrado.
     set "PYTHON_OK=1"
     goto :python_done
 )
 
-echo   Python 3.12 no encontrado. Instalando con uv...
+echo   Python 3.11 no encontrado. Instalando con uv...
 call :install_python
 if not "!PYTHON_OK!"=="1" (
-    echo [%DATE% %TIME%] [ERROR] No se pudo instalar Python 3.12 >> %LOG_FILE%
+    echo [%DATE% %TIME%] [ERROR] No se pudo instalar Python 3.11 >> %LOG_FILE%
     pause
     exit /b 1
 )
@@ -102,7 +102,7 @@ echo [3/5] Configurando entorno virtual...
 
 if not exist ".venv\Scripts\python.exe" (
     echo   Creando entorno virtual...
-    uv venv .venv --python 3.12 >> %LOG_FILE% 2>&1
+    uv venv .venv --python 3.11 >> %LOG_FILE% 2>&1
     if errorlevel 1 (
         echo [%DATE% %TIME%] [ERROR] No se pudo crear el entorno virtual >> %LOG_FILE%
         pause
@@ -177,8 +177,8 @@ exit /b 1
 
 :install_python
 for /l %%i in (1,1,2) do (
-    echo   Intento %%i: Instalando Python 3.12...
-    uv python install 3.12 >> %LOG_FILE% 2>&1
+    echo   Intento %%i: Instalando Python 3.11...
+    uv python install 3.11 >> %LOG_FILE% 2>&1
     if not errorlevel 1 (
         set "PYTHON_OK=1"
         exit /b 0
