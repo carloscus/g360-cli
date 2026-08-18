@@ -1,4 +1,19 @@
-# Changelog
+
+---
+
+## [1.15.2] - 2026-08-16
+
+### Changed
+- **Flet bumped to >=0.85.0** - Modern version with better SSL/network support
+- **Added pip-system-certs>=4.38** - Fixes SSL certificate issues on Windows corporate networks
+- **Updated Python to 3.12** - run.bat now installs Python 3.12 by default
+
+### Fixed
+- **API compatibility Flet 0.85**: t.Padding() -> t.padding.only()
+- **API compatibility Flet 0.85**: t.border.Top() -> t.border.only(top=...)
+- Added pip-system-certs initialization in main.py for SSL fixes
+
+---# Changelog
 
 Todos los cambios notables en g360-cli serán documentados en este archivo.
 

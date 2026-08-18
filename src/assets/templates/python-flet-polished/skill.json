@@ -6,6 +6,7 @@
   "brand": "g360",
   "description": "G360 Flet Polished - Plantilla base con patrones de UI avanzada",
   "framework": "flet",
+  "flet_version": ">=0.85.0",
   "portable": true,
   "colors": {
     "bg": "#0b1220",

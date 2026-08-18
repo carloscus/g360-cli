@@ -43,7 +43,7 @@ class KPICard(ft.Container):
             spacing=0,
             horizontal_alignment=ft.CrossAxisAlignment.START,
         )
-        self.padding = ft.Padding(left=14, right=14, top=10, bottom=10)
+        self.padding = ft.padding.only(left=14, right=14, top=10, bottom=10)
         self.bgcolor = rgba(color, 0.08)
         self.border_radius = 10
         self.shadow = ft.BoxShadow(

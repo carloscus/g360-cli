@@ -46,9 +46,9 @@ class SearchOverlay(ft.Container):
                     content=ft.Column([], scroll=ft.ScrollMode.AUTO, max_height=300, id="search_results"),
                     bgcolor=self.c["surface"],
                     border_radius=ft.BorderRadius.only(bottom_left=10, bottom_right=10),
-                    border=ft.border.Top(border_color=self.c["border"], border_style=ft.BorderSide(1)),
+                    border=ft.border.only(top=ft.BorderSide(1, color=self.c["border"])),
                     visible=False,
-                    padding=ft.Padding(left=0, right=0, top=0, bottom=0),
+                    padding=ft.padding.only(left=0, right=0, top=0, bottom=0),
                     max_height=300,
                     height=300,
                 ),
@@ -58,7 +58,7 @@ class SearchOverlay(ft.Container):
 
         self.bgcolor = self.c["surface"]
         self.border_radius = 10
-        self.padding = ft.Padding(left=16, right=16, top=12, bottom=12)
+        self.padding = ft.padding.only(left=16, right=16, top=12, bottom=12)
         self.width = 480
         self.alignment = ft.alignment.top_center
         self.margin = ft.margin.only(top=60)
@@ -102,7 +102,7 @@ class SearchOverlay(ft.Container):
                     ], spacing=0),
                     bgcolor=rgba(self.c["accent"], 0.1) if is_selected else "transparent",
                     border_radius=6,
-                    padding=ft.Padding(left=12, right=12, top=8, bottom=8),
+                    padding=ft.padding.only(left=12, right=12, top=8, bottom=8),
                     on_click=lambda _, r=item: self._on_select(r),
                     mouse_cursor=ft.CursorType.CLICK,
                 )

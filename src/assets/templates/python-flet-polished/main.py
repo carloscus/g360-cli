@@ -6,6 +6,13 @@ import traceback
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+# Import pip-system-certs to fix SSL issues on Windows corporate networks
+try:
+    import pip_system_certs
+    pip_system_certs.install()
+except ImportError:
+    pass  # Not available, continue without it
+
 import flet as ft
 
 BASE_DIR = Path(__file__).resolve().parent

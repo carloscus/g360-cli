@@ -50,7 +50,7 @@ class Dashboard:
                 ft.Text("Datos en caché", size=11, color=self.c["warning"], weight=ft.FontWeight.W_500),
             ], spacing=4, vertical_alignment=ft.CrossAxisAlignment.CENTER),
             visible=False,
-            padding=ft.Padding(left=10, right=10, top=5, bottom=5),
+            padding=ft.padding.only(left=10, right=10, top=5, bottom=5),
             bgcolor=rgba(self.c["warning"], 0.07),
             border_radius=8,
         )
@@ -122,7 +122,7 @@ class Dashboard:
                 ft.Container(width=16),
                 self._theme_button,
             ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
-            padding=ft.Padding(left=20, right=20, top=12, bottom=12),
+            padding=ft.padding.only(left=20, right=20, top=12, bottom=12),
             bgcolor=self.c["surface"],
             border_bottom=ft.BorderSide(1, self.c["border"]),
         )
