@@ -1,6 +1,20 @@
 
 ---
 
+## [1.15.3] - 2026-08-16
+
+### Reverted
+- **Flet reverted to ==0.28.3** - v0.85 had compatibility issues with existing patterns
+
+### Kept
+- **pip-system-certs>=4.38** - Mantiene fix para SSL en redes corporativas Windows
+- **Python 3.11** - Version estable y ligera
+
+### Changed
+- API compatibility fixes preserved (ft.padding.only, ft.border.only)
+
+---
+
 ## [1.15.2] - 2026-08-16
 
 ### Changed
