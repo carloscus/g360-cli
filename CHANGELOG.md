@@ -1,4 +1,13 @@
 
+### Added
+- **FLET-NAMING-CONVENTIONS.md**: Sistema completo de convenciones de nombres para apps Flet
+  - Patrones de clases UI (App, Dashboard, Card, Modal, Overlay, Badge, Chip, Table)
+  - Patrones de funciones/metodos (_setup_, _build_, _on_, _fetch_, etc.)
+  - Patrones de variables y archivos
+  - Pattern de entry point obligatorio
+- **G360-CLI-SKILL.md**: Actualizado con convenciones detalladas de nombres
+
+---
 ---
 
 ## [1.15.3] - 2026-08-16

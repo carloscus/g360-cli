@@ -40,6 +40,7 @@ flowchart TD
 - [Plantillas](#plantillas)
 - [Componentes](#componentes)
 - [Skills](#skills)
+- [Convenciones de Nombres](#convenciones-de-nombres)
 - [Configuración](#configuración)
 - [API](#api)
 - [Estructura](#estructura)
@@ -96,7 +97,7 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 ## Versión
 
-**Current: v1.15.3** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
+**Current: v1.15.4** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
 
 ---
 
@@ -1013,6 +1014,52 @@ g360 set-skill moderno
 # Ver skills disponibles
 g360 list skills
 ```
+
+---
+
+## Convenciones de Nombres
+
+Las aplicaciones G360 siguen un sistema de nomenclatura estandarizado para ser identificables y consistentes en el ecosistema.
+
+### Clases UI
+
+| Sufijo | Uso | Ejemplo |
+|--------|-----|---------|
+| `App` | Orquestador principal | `StockMonitorApp`, `G360App` |
+| `Dashboard` | Vista principal con KPIs | `SalesDashboard` |
+| `Card` | Tarjeta reutilizable | `KpiCard`, `WarehouseCard` |
+| `Modal` | Ventana modal | `ExportModal`, `SearchModal` |
+| `Overlay` | Capa flotante | `SearchOverlay`, `LoadingOverlay` |
+| `Badge` | Indicador pequeno | `HealthBadge` |
+| `Chip` | Tag seleccionable | `WarehouseChip` |
+| `Table` | Tabla de datos | `ProductTable` |
+
+### Funciones/Metodos
+
+| Prefijo | Uso | Ejemplo |
+|---------|-----|---------|
+| `_setup_` | Inicializacion | `_setup_page()`, `_setup_theme()` |
+| `_build_` | Construccion UI | `_build_header()`, `_build_content()` |
+| `_on_` | Event handlers | `_on_click()`, `_on_refresh()` |
+| `_fetch_` / `_download_` | Obtencion datos | `_fetch_data()`, `_download_api()` |
+| `_load_` / `_save_` | Persistencia | `_load_cache()`, `_save_data()` |
+| `_update_` / `_refresh_` | Actualizacion | `_update_ui()`, `_refresh_kpis()` |
+| `_show_` / `_hide_` | Visibilidad | `_show_loading()`, `_hide_overlay()` |
+| `_toggle_` | Cambio estado | `_toggle_theme()` |
+| `_validate_` | Validaciones | `_validate_input()` |
+
+### Archivos
+
+| Capa | Convention | Ejemplo |
+|------|------------|---------|
+| Entry | `main.py` | `main.py` |
+| App | `app.py` | `app.py` |
+| Config | `config/*.py` | `theme.py`, `constants.py` |
+| Core | `core/*.py` | `processor.py`, `downloader.py` |
+| UI | `ui/*.py` | `dashboard.py`, `kpi_card.py` |
+| Modals | `ui/modals/*.py` | `export_modal.py` |
+
+> Para mas detalles, ver [`FLET-NAMING-CONVENTIONS.md`](./FLET-NAMING-CONVENTIONS.md)
 
 ---
 

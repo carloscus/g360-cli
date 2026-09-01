@@ -137,15 +137,67 @@ proyecto-flet/
 └── requirements.txt       # Dependencias
 ```
 
-#### Convenciones de Nombres
-| Elemento | Convencion | Ejemplo |
-|---|---|---|
-| Clases UI | PascalCase | `G360App`, `DropZone` |
-| Clases Core | PascalCase | `G360Theme`, `Processor` |
-| Metodos | camelCase | `_setup_page()`, `_build_ui()` |
-| Variables | snake_case | `venta_bruta`, `df_processed` |
-| Archivos | snake_case | `main_app.py`, `g360_theme.py` |
-| Constantes | UPPER_SNAKE_CASE | `G360_ACCENT`, `DEVOLUCION_THRESHOLD` |
+#### Convenciones de Nombres (Completo)
+
+**Clases UI** — PascalCase con sufijos identificadores:
+| Sufijo | Uso | Ejemplo | Archivo |
+|--------|-----|---------|---------|
+| `App` | Orquestador principal | `StockMonitorApp`, `G360App` | `app.py` |
+| `Dashboard` | Vista principal con KPIs | `SalesDashboard` | `dashboard.py` |
+| `Card` | Tarjeta reutilizable | `KpiCard`, `WarehouseCard` | `kpi_card.py` |
+| `Modal` | Ventana modal | `ExportModal`, `SearchModal` | `export_modal.py` |
+| `Overlay` | Capa flotante | `SearchOverlay`, `LoadingOverlay` | `search_overlay.py` |
+| `Badge` | Indicador pequeno | `HealthBadge`, `StatusBadge` | `health_badge.py` |
+| `Chip` | Tag seleccionable | `WarehouseChip`, `FilterChip` | `filter_chips.py` |
+| `Table` | Tabla de datos | `ProductTable`, `TransferTable` | `product_table.py` |
+| `Header` | Cabecera | `DashboardHeader` | `dashboard_header.py` |
+| `Footer` | Pie de pagina | `AppFooter` | `app_footer.py` |
+
+**Funciones/Metodos** — camelCase con prefijos semanticos:
+| Prefijo | Uso | Ejemplo | Contexto |
+|---------|-----|---------|----------|
+| `_setup_` | Inicializacion | `_setup_page()`, `_setup_theme()` | `__init__` o metodo de setup |
+| `_build_` | Construccion UI | `_build_header()`, `_build_content()` | Metodos de construccion |
+| `_on_` | Event handlers | `_on_click()`, `_on_refresh()` | Manejo de eventos |
+| `_fetch_` / `_download_` | Obtencion datos | `_fetch_data()`, `_download_api()` | HTTP/API calls |
+| `_load_` / `_save_` | Persistencia | `_load_cache()`, `_save_data()` | File I/O |
+| `_update_` / `_refresh_` | Actualizacion | `_update_ui()`, `_refresh_kpis()` | Refresco de datos |
+| `_show_` / `_hide_` | Visibilidad | `_show_loading()`, `_hide_overlay()` | Toggle UI |
+| `_toggle_` | Cambio estado | `_toggle_theme()`, `_toggle_filter()` | Switch estados |
+| `_validate_` | Validaciones | `_validate_input()` | Check datos |
+| `_format_` / `_transform_` | Transformacion | `_format_date()`, `_transform_data()` | Data processing |
+| `_confirm_` / `_alert_` | Confirmaciones | `_confirm_exit()`, `_alert_error()` | Dialogs |
+
+**Variables/Attrs** — snake_case con underscore privado:
+| Patroón | Uso | Ejemplo | Contexto |
+|---------|-----|---------|----------|
+| `_ref_componente` | Referencias UI | `_kpi_row`, `_sidebar` | Atributos de widget |
+| `_estado` | State interno | `_raw_data`, `_loading` | Estado de la app |
+| `_on_accion` | Callbacks | `_on_refresh`, `_on_theme_toggle` | Callbacks registrados |
+| `CONSTANTE` | Globales | `WINDOW_WIDTH`, `CACHE_FILE` | Constantes en modulo |
+
+**Archivos** — snake_case por capa:
+| Capa | Convention | Ejemplo |
+|------|------------|---------|
+| Entry | `main.py` | `main.py` |
+| App orchestration | `app.py` | `app.py`, `monitor.py` |
+| Config/Theme | `config/*.py` | `theme.py`, `constants.py` |
+| Core business | `core/*.py` | `processor.py`, `downloader.py`, `models.py` |
+| UI components | `ui/*.py` | `dashboard.py`, `kpi_card.py` |
+| UI modals | `ui/modals/*.py` | `export_modal.py`, `detail_dialog.py` |
+| Export/Report | `export/*.py` | `excel_report.py` |
+| Tests | `test_*.py` | `test_app.py`, `test_processor.py` |
+
+**Pattern de Entry Point** (Obligatorio):
+```python
+def main(page: ft.Page):
+    """Entry point estandar G360."""
+    app = G360App(page)
+    page.on_close = lambda _: app.shutdown() if hasattr(app, "shutdown") else None
+
+if __name__ == "__main__":
+    ft.app(main, view=ft.AppView.FLET_APP)
+```
 
 #### Theme Colors (skill flet-desktop)
 | Token | Color | Uso |
