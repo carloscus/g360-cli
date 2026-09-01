@@ -132,6 +132,45 @@ Colores semanticos definidos en `skill.json`, accesibles via `get_colors(mode)`:
 | KPI red | `#EF4444` | `#DC2626` | Indicador critico |
 | KPI amber | `#F59E0B` | `#B45309` | Indicador warning |
 
+### Personalizar Colores
+
+Los colores se leen automaticamente de `skill.json`. Para personalizar:
+
+**Opcion 1: Modificar skill.json**
+```json
+{
+  "colors": {
+    "accent": "#2563eb",      // Azul corporativo
+    "surface": "#1e293b",     // Gris oscuro
+    "success": "#16a34a",     // Verde mas oscuro
+    ...
+  }
+}
+```
+
+**Opcion 2: Sobrescribir en runtime**
+```python
+from src.config.theme import set_brand_colors
+
+set_brand_colors({
+    "dark": {
+        "accent": "#2563eb",
+        "surface": "#1e273e",
+    },
+    "light": {
+        "accent": "#1d4ed8",
+    }
+})
+```
+
+**Opcion 3: Usar paleta existente**
+- **Verde esmeralda** (default): `#10B981` — Moderno, fresco
+- **Verde corporativo**: `#2563eb` — Azul/verde profesional
+- **Verde bosque**: `#059669` — Mas sobrio, enterprise
+- **Verde fluorescente**: `#34d399` — Mas vibrante, tech
+
+> **Nota**: Todos los colores deben ser validos hex (`#RRGGBB`). El sistema usa defaults G360 y aplica overrides solo de los colores especificados.
+
 ## Arquitectura
 
 ```

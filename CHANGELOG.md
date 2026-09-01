@@ -1,5 +1,11 @@
 
 ### Added
+- **Colores flexibles en theme.py**: Ahora lee de skill.json con fallback a defaults
+- **set_brand_colors()**: Funcion para sobrescribir colores en runtime
+- **README template**: Documentacion sobre como personalizar colores
+
+---
+### Added
 - **FLET-NAMING-CONVENTIONS.md**: Sistema completo de convenciones de nombres para apps Flet
   - Patrones de clases UI (App, Dashboard, Card, Modal, Overlay, Badge, Chip, Table)
   - Patrones de funciones/metodos (_setup_, _build_, _on_, _fetch_, etc.)
