@@ -1,5 +1,13 @@
 
 ### Added
+- **G360 Event Bus**: Sistema de eventos para comunicacion entre apps
+- **App Registry**: Descubrimiento automatico de apps G360
+- **register_g360_app()**: Funcion de registro en el registry
+- **Event patterns**: Patrones estandarizados (app:{name}:*, g360:*)
+- **skill.json**: Campos events y endpoints agregados
+
+---
+### Added
 - **Docs**: Documentacion de flujo de uso de skills en apps existentes
 - **README**: Secciones de comando set-skill, bring, convert actualizadas
 

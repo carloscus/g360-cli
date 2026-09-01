@@ -24,6 +24,7 @@ from src.core.constants import (
     get_app_name,
 )
 from src.ui.dashboard import Dashboard
+from src.core.g360_registry import register_g360_app, get_event_bus
 
 import logging
 _log_logger = logging.getLogger("g360.app")
@@ -156,6 +157,9 @@ class G360App:
         self.dashboard.register_overlay()
         _log("_build: overlay (FilePickers) registrado")
 
+        # Registrar app en registry G360
+        self._register_app()
+
         sample_path = Path(__file__).resolve().parent.parent / "assets" / "data" / "sample_data.json"
         cache, ts = _load_cache()
         if cache:
@@ -215,8 +219,37 @@ class G360App:
         except Exception as ex:
             _log(f"_start_auto_refresh: ERROR {ex}")
 
+    def _register_app(self):
+        """Registrar la app en el registry G360."""
+        try:
+            skill_data = self._load_skill_config()
+            events = skill_data.get("events", [])
+            endpoints = skill_data.get("endpoints", {})
+            
+            register_g360_app(
+                name=get_app_name(),
+                version=self._local_version,
+                skill=skill_data.get("skill", "custom"),
+                framework="flet",
+                events=events,
+                endpoints=endpoints,
+            )
+            _log(f"_register_app: {get_app_name()} registrado en G360 registry")
+        except Exception as ex:
+            _log(f"_register_app: ERROR {ex}")
+
+    def _load_skill_config(self) -> dict:
+        """Cargar config del skill actual."""
+        import json
+        from pathlib import Path
+        skill_path = Path(__file__).resolve().parent.parent.parent / "skill.json"
+        if skill_path.exists():
+            with open(skill_path, encoding="utf-8") as f:
+                return json.load(f)
+        return {}
+
     def shutdown(self):
-        """Detiene el auto-refresh de forma limpia antes de cerrar."""
+        """Detiene el auto-refresh y desregistra la app antes de cerrar."""
         if self._auto_refresh_stop:
             _log("_shutdown: deteniendo auto-refresh...")
             self._auto_refresh_stop.set()
@@ -224,6 +257,15 @@ class G360App:
             if t and t.is_alive():
                 t.join(timeout=3)
             _log("_shutdown: auto-refresh detenido")
+        
+        # Desregistrar del registry
+        try:
+            from src.core.g360_registry import get_app_registry
+            registry = get_app_registry()
+            registry.update_status(get_app_name(), "offline")
+            _log(f"_shutdown: {get_app_name()} desregistrado")
+        except Exception as ex:
+            _log(f"_shutdown: ERROR desregistrando {ex}")
 
     def _auto_refresh_loop(self):
         while not self._auto_refresh_stop.is_set():

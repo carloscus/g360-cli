@@ -38,5 +38,17 @@
   "signature": {
     "mode": "powered",
     "text": "powered by G360"
+  },
+  "events": [
+    "app:{name}:refresh",
+    "app:{name}:data:update",
+    "app:{name}:theme:change",
+    "g360:app:list",
+    "g360:app:register"
+  ],
+  "endpoints": {
+    "health": "/api/health",
+    "data": "/api/data",
+    "events": "/api/events"
   }
 }
