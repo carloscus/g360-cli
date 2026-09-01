@@ -1,5 +1,10 @@
 
 ### Added
+- **Docs**: Documentacion de flujo de uso de skills en apps existentes
+- **README**: Secciones de comando set-skill, bring, convert actualizadas
+
+---
+### Added
 - **Colores flexibles en theme.py**: Ahora lee de skill.json con fallback a defaults
 - **set_brand_colors()**: Funcion para sobrescribir colores en runtime
 - **README template**: Documentacion sobre como personalizar colores

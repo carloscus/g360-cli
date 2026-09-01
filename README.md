@@ -97,7 +97,7 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 ## Versión
 
-**Current: v1.15.5** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
+**Current: v1.15.6** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
 
 ---
 
@@ -1013,6 +1013,12 @@ g360 set-skill moderno
 
 # Ver skills disponibles
 g360 list skills
+
+# Aplicar marca a proyecto existente
+g360 bring brand/cipsa
+
+# Convertir proyecto con nuevo skill
+g360 convert . --skill flet-desktop-polished --force
 ```
 
 ---
