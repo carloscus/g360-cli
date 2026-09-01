@@ -1,4 +1,12 @@
 
+### Improved
+- **G360 Registry mejorado**: Async support, better error handling, schema versioning
+- **Event callbacks**: Soporte para callbacks sync y async
+- **Wildcard matching**: Mejora en matching de patrones de eventos
+- **Cleanup offline**: Metodo para limpiar apps offline automaticamente
+- **Discover apps**: Nueva funcion discover_apps() para descubrimiento facil
+
+---
 ### Added
 - **G360 Event Bus**: Sistema de eventos para comunicacion entre apps
 - **App Registry**: Descubrimiento automatico de apps G360

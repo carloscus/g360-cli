@@ -233,6 +233,7 @@ class G360App:
                 framework="flet",
                 events=events,
                 endpoints=endpoints,
+                description=skill_data.get("description", ""),
             )
             _log(f"_register_app: {get_app_name()} registrado en G360 registry")
         except Exception as ex:

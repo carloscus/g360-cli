@@ -143,7 +143,61 @@ mi-app-g360/
 
 ---
 
-## 7. Checklist de Compliance G360
+## 7. Eventos y comunicacion entre apps G360
+
+Las apps G360 pueden comunicarse entre si usando el sistema de eventos estandarizado.
+
+### Patron de nombres de eventos
+
+| Prefijo | Uso | Ejemplo |
+|---------|-----|---------|
+| `app:{nombre}:{accion}` | Eventos propios de la app | `app:stock-monitor:refresh` |
+| `g360:{tipo}:{accion}` | Eventos del sistema G360 | `g360:theme:change`, `g360:app:list` |
+| `{dominio}:{accion}` | Eventos de dominio especifico | `inventory:stock:low`, `sales:order:create` |
+
+### Uso del Event Bus
+
+```python
+from src.core.g360_registry import (
+    get_event_bus,
+    publish_g360_event,
+    subscribe_g360_event,
+)
+
+# Publicar evento
+publish_g360_event("app:stock-monitor:refresh", {"warehouse": "VES"})
+
+# Suscribirse a evento
+def on_refresh(data):
+    print(f"Datos recibidos: {data}")
+
+subscribe_g360_event("app:stock-monitor:*", on_refresh)
+
+# Wildcards soportados
+subscribe_g360_event("g360:*", on_refresh)  # Todos los eventos g360
+subscribe_g360_event("app:*:refresh", on_refresh)  # Todos los refresh
+```
+
+### Registry de Apps
+
+```python
+from src.core.g360_registry import get_app_registry
+
+registry = get_app_registry()
+
+# Listar apps
+apps = registry.list_apps()
+
+# Buscar por skill
+flet_apps = registry.find_by_skill("flet-desktop-polished")
+
+# Buscar por evento
+refresh_handlers = registry.find_by_event("app:*:refresh")
+```
+
+---
+
+## 8. Checklist de Compliance G360
 
 Para que una app Flet sea reconocida como "G360 estándar":
 
@@ -154,9 +208,12 @@ Para que una app Flet sea reconocida como "G360 estándar":
 - [ ] Modals en `src/ui/modals/`
 - [ ] Footer con signature G360
 - [ ] Fonts: Inter + JetBrains Mono
-- [ ] Colores: Esmeralda `#10B981` como accent
+- [ ] Colores: Esmeralda `#10B981` como accent (o personalizar via skill.json)
 - [ ] Logging con RotatingFileHandler
 - [ ] README con estructura del proyecto
+- [ ] **Nuevo (v1.15.7)**: Registro en G360 Registry (`register_g360_app`)
+- [ ] **Nuevo (v1.15.7)**: Eventos publicables (`publish_g360_event`)
+- [ ] **Nuevo (v1.15.7)**: skill.json con campos `events` y `endpoints`
 - [ ] `skill.json` con identidad del proyecto
 
 ---
