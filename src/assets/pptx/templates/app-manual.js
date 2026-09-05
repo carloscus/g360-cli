@@ -1,275 +1,397 @@
 /**
- * Template Manual de App G360 — 12 slides A4.
- * 
+ * Template Manual de App G360 — formato 16:9 widescreen, estilo ventas-pulse.
+ *
  * Estructura:
- * 1.  Portada
- * 2.  ¿Qué es esta app?
- * 3.  Requisitos / Instalacion
- * 4.  Inicio — primera pantalla
- * 5-N. Funcionalidades (una por feature detectada)
- * N+1. Flujos de trabajo (modals)
+ * 1.   Portada
+ * 2.   ¿Qué es? (descripcion + tarjetas usuario/tecnico)
+ * 3.   Módulos (tabla de modulos + capturas)
+ * 4.   Flujo de trabajo (pasos numerados + capturas)
+ * 5-N. Funcionalidades (una por modulo UI detectado)
+ * N+1. Flujos de trabajo (modales)
  * N+2. Arquitectura
  * N+3. Buenas prácticas
- * N+4. Resumen
+ * N+4. Límites conocidos (si el proyecto define appData.limits)
+ * N+5. Resumen
  */
-import PptxGenJS from 'pptxgenjs';
-import { createG360Theme, createCipsaTheme } from '../themes/index.js';
+import path from 'path';
+import { createTheme } from '../themes/index.js';
 import {
   coverSlide,
-  screenshotSlide,
+  addSectionHeader,
+  addFooter,
+  card,
+  phoneShot,
   featureSlide,
   workflowSlide,
-  architectureSlide,
+  limitsSlide,
   checklistSlide,
   kpiSlide,
-  addFooter,
-  addSectionHeader,
+  architectureSlide,
+  modulesTable,
 } from '../layouts/base.js';
 
-/**
- * Genera un manual PPTX completo para una app G360.
- * 
- * @param {object} appData — resultado de analyzeApp()
- * @param {object} options — { mode, theme, outDir }
- * @returns {Promise<string>} — ruta del archivo .pptx generado
- */
-export async function generateManualPptx(appData, options = {}) {
-  const { mode = 'manual', theme: themeName = null } = options;
-  
-  // Seleccionar theme
-  const theme = themeName === 'cipsa' || (!themeName && appData.brand === 'cipsa')
-    ? createCipsaTheme()
-    : createG360Theme();
-  
-  const { pptx, colors } = theme;
-  
-  // Configurar tamaño segun modo
-  if (mode === 'demo') {
-    pptx.layout = 'LAYOUT_16x9';
-  } else {
-    pptx.layout = 'A4';
-  }
+const MAX_FEATURES = 6;
 
-  // ===== SLIDE 1: Portada =====
-  let slide = pptx.addSlide();
-  slide.background = { color: colors.bg };
-  coverSlide(slide, {
-    appName: appData.name || 'Mi Aplicacion G360',
-    description: appData.description || 'Documentacion de uso y funcionalidades',
-    version: appData.version,
-    brand: appData.brand,
-  }, theme);
-  addFooter(slide, theme, 1, 12);
+/** Descripciones genericas por clase UI conocida */
+const FEATURE_DESC = {
+  KpiCard: 'Indicadores clave del negocio en tiempo real, con estados de alerta y recuento por categoría.',
+  Dashboard: 'Vista principal con el resumen operativo: KPIs, listados y accesos a los módulos de trabajo.',
+  WarehouseCard: 'Tarjeta de almacén con existencias y estado por depósito.',
+  SearchOverlay: 'Buscador flotante global: localiza registros de cualquier módulo sin salir de la vista.',
+  ExportModal: 'Exportación a Excel con formato corporativo para seguimiento y auditoría.',
+  SkuDetailModal: 'Detalle de SKU: existencias, movimientos y atributos relevantes.',
+  TrasladosModal: 'Traslados entre almacenes con validación de stock disponible.',
+  SinStockModal: 'Productos sin stock: prioriza reposición y alternativas.',
+  AppSidebar: 'Barra lateral de navegación entre módulos.',
+};
 
-  // ===== SLIDE 2: ¿Qué es? =====
-  slide = pptx.addSlide();
-  slide.background = { color: colors.bg };
-  addSectionHeader(slide, 'INTRODUCCION', theme);
-  featureSlide(slide, {
-    title: '¿Qué es ' + (appData.name || 'esta app') + '?',
-    description: appData.description || 'Aplicacion de escritorio construida con Flet y los estandares G360.',
-    bullets: [
-      'Monitoriza datos en tiempo real desde el ERP',
-      'Genera reportes y analisis automaticos',
-      'Soporta dual theme (claro/oscuro)',
-      'Funciona offline con cache local',
-    ],
-  }, theme);
-  addFooter(slide, theme, 2, 12);
-
-  // ===== SLIDE 3: Instalacion =====
-  slide = pptx.addSlide();
-  slide.background = { color: colors.bg };
-  addSectionHeader(slide, 'INSTALACION', theme);
-  const installSteps = [
-    { title: 'Ejecutar run.bat', desc: 'El launcher instala uv, Python 3.11, dependencias y crea acceso directo.' },
-    { title: 'O usar comando directo', desc: 'uv sync && uv run python main.py' },
-    { title: 'Version portable', desc: 'Descomprimir zip y ejecutar launch.vbs (sin dependencias).' },
-  ];
-  workflowSlide(slide, {
-    title: 'Como iniciar la aplicacion',
-    steps: installSteps,
-  }, theme);
-  addFooter(slide, theme, 3, 12);
-
-  // ===== SLIDES 4+: Features / Screenshots =====
-  let slideNum = 4;
-  const totalFeatures = Math.min(appData.features.length, 6); // max 6 features en manual
-  const totalSlides = 3 + totalFeatures + 3; // intro + features + workflows + arch + summary
-  
-  // Slide 4: Dashboard / inicio
-  slide = pptx.addSlide();
-  slide.background = { color: colors.bg };
-  addSectionHeader(slide, 'PRIMERA VISTA', theme);
-  const dashScreen = appData.screenshots?.find(s => s.filename.toLowerCase().includes('dash'));
-  screenshotSlide(slide, {
-    title: 'Dashboard Principal',
-    description: appData.hasAutoRefresh
-      ? 'Vista principal con KPIs en tiempo real y auto-refresh cada 15 minutos.'
-      : 'Vista principal de la aplicacion con los indicadores clave del negocio.',
-    screenshotPath: dashScreen?.path,
-  }, theme);
-  addFooter(slide, theme, slideNum, totalSlides);
-  slideNum++;
-
-  // Features individual slides
-  for (const feature of appData.features.slice(0, totalFeatures)) {
-    slide = pptx.addSlide();
-    slide.background = { color: colors.bg };
-    addSectionHeader(slide, 'FUNCIONALIDAD', theme);
-    
-    const shot = appData.screenshots?.find(s =>
-      feature.name.toLowerCase().includes(s.filename.toLowerCase().slice(0, 6))
-    );
-    
-    const classification = classifyFeatureForSlide(feature);
-    
-    if (classification === 'kpi' && feature.name.includes('Kpi')) {
-      kpiSlide(slide, {
-        title: feature.display || feature.name,
-        kpis: generateKpiPlaceholders(feature),
-      }, theme);
-    } else if (classification === 'workflow') {
-      workflowSlide(slide, {
-        title: feature.display || feature.name,
-        steps: [`Acceder desde el menu principal`, 'Seleccionar opciones disponibles', 'Confirmar y generar resultado'],
-      }, theme);
-    } else {
-      featureSlide(slide, {
-        title: feature.display || feature.name,
-        description: `Module ubicado en src/ui/${feature.file}`,
-        bullets: [
-          'Clase exportada desde src/ui/',
-          'Integracion con Dashboard principal',
-          'Soporta dual theme automaticamente',
-        ],
-      }, theme);
-    }
-    
-    if (!shot) {
-      // Agregar placeholder si no hay screenshot
-      slide.addShape('rect', [1, 3.5, 8, 6], {
-        fill: { color: colors.surface },
-        line: { color: colors.border, width: 1, dashType: 'dash' },
-      });
-      slide.addText('📷 Screenshot: ' + (feature.display || feature.name), [1, 6, 8, 0.5], {
-        fontSize: 12, color: colors.textLight, fontFace: 'Inter', align: 'center',
-      });
-    } else {
-      screenshotSlide(slide, {
-        title: feature.display || feature.name,
-        description: `Módulo: src/ui/${feature.file}`,
-        screenshotPath: shot.path,
-      }, theme);
-      slide.clearShapes?.(); // remove placeholder
-    }
-    
-    addFooter(slide, theme, slideNum, totalSlides);
-    slideNum++;
-  }
-
-  // ===== Workflows (modals) =====
-  if (appData.hasModals.length > 0) {
-    slide = pptx.addSlide();
-    slide.background = { color: colors.bg };
-    addSectionHeader(slide, 'FLUJOS DE TRABAJO', theme);
-    
-    const steps = appData.hasModals.slice(0, 4).map((modal, i) => ({
-      title: `Modal: ${modal}`,
-      desc: 'Paso 1 → Paso 2 → Paso 3',
-    }));
-    
-    workflowSlide(slide, {
-      title: 'Modales y flujos de usuario',
-      steps,
-    }, theme);
-    addFooter(slide, theme, slideNum, totalSlides);
-    slideNum++;
-  }
-
-  // ===== Architecture =====
-  slide = pptx.addSlide();
-  slide.background = { color: colors.bg };
-  addSectionHeader(slide, 'ARQUITECTURA', theme);
-  architectureSlide(slide, {
-    title: 'Estructura de capas',
-    layers: [
-      { name: 'UI', desc: 'Dashboard, Cards, Modals, Overlays', color: colors.accent },
-      { name: 'Core', desc: 'Processor, Downloader, Models', color: colors.info },
-      { name: 'Config', desc: 'Theme, Constants, Skill', color: colors.violet },
-      { name: 'Data', desc: 'API S1, Catalogo JSON, Cache', color: colors.success },
-    ],
-  }, theme);
-  addFooter(slide, theme, slideNum, totalSlides);
-  slideNum++;
-
-  // ===== Checklist / Buenas prácticas =====
-  slide = pptx.addSlide();
-  slide.background = { color: colors.bg };
-  addSectionHeader(slide, 'BUENAS PRÁCTICAS', theme);
-  checklistSlide(slide, {
-    title: 'Recomendaciones de uso',
-    items: [
-      { text: 'Mantener nombres de clases siguiendo PascalCase (KpiCard, Dashboard)', checked: true },
-      { text: 'Usar theme.py para colores, nunca hardcodear #HEX', checked: true },
-      { text: 'Registrar eventos con publish_g360_event() para comunicacion entre apps', checked: true },
-      { text: 'Implementar shutdown() para limpieza de threads al cerrar', checked: true },
-      { text: 'Documentar funciones con docstrings en español', checked: true },
-      { text: 'Usar G360 Signature widget en el footer de la app', checked: true },
-    ],
-  }, theme);
-  addFooter(slide, theme, slideNum, totalSlides);
-  slideNum++;
-
-  // ===== Summary =====
-  slide = pptx.addSlide();
-  slide.background = { color: colors.bg };
-  addSectionHeader(slide, 'RESUMEN', theme);
-  
-  const summaryItems = [
-    `Nombre: ${appData.name || 'N/A'}`,
-    `Version: ${appData.version || '1.0.0'}`,
-    `Framework: ${appData.framework || 'Flet'}`,
-    `Skills: ${appData.skill || 'N/A'}`,
-    `Caracteristicas: ${appData.features.length} modulos UI`,
-    appData.hasAutoRefresh ? 'Auto-refresh activado' : '',
-    appData.hasSearch ? 'Buscador flotante implementado' : '',
-    appData.hasExport ? 'Exportacion a Excel disponible' : '',
-    appData.hasModals.length > 0 ? `${appData.hasModals.length} modales de trabajo` : '',
-  ].filter(Boolean);
-  
-  checklistSlide(slide, {
-    title: 'Resumen de la aplicacion',
-    items: summaryItems.map(t => ({ text: t, checked: true })),
-  }, theme);
-  addFooter(slide, theme, slideNum, totalSlides);
-
-  // Save
-  const outPath = options.outPath || path.join(process.cwd(), `${(appData.name || 'app').toLowerCase().replace(/\s+/g, '-')}-manual.pptx`);
-  await pptx.writeFile({ fileName: outPath });
-  return outPath;
+function featureDesc(feature) {
+  return feature.desc
+    || FEATURE_DESC[feature.name]
+    || `Módulo de interfaz ubicado en src/ui/${feature.file}, integrado al flujo principal de la aplicación.`;
 }
 
-/**
- * Classifica feature para decidir que slide usar.
- */
-function classifyFeatureForSlide(feature) {
-  if (feature.name.includes('Kpi')) return 'kpi';
+function classify(feature) {
+  if (feature.name.includes('Kpi') || feature.name.includes('Card')) return 'kpi';
   if (feature.name.includes('Modal') || feature.name.includes('Dialog')) return 'workflow';
   if (feature.name.includes('Dashboard')) return 'screenshot';
   return 'feature';
 }
 
 /**
- * Genera placeholders de KPIs basado en features detectadas.
+ * Genera un manual PPTX completo para una app G360 (16:9).
+ *
+ * @param {object} appData — resultado de analyzeApp()
+ * @param {object} options — { mode, theme, outPath }
+ * @returns {Promise<string>} — ruta del archivo .pptx generado
  */
-function generateKpiPlaceholders(feature) {
-  return [
-    { label: 'Total', value: '—', color: '#64748B' },
-    { label: 'Con Stock', value: '—', color: '#34D399' },
-    { label: 'Sin Stock', value: '—', color: '#EF4444' },
-    { label: 'Alertas', value: '—', color: '#F59E0B' },
-  ];
+export async function generateManualPptx(appData, options = {}) {
+  const { mode = 'manual' } = options;
+  const themeName = options.theme || appData.brand || 'g360';
+  const theme = createTheme(themeName === 'cipsa' ? 'cipsa' : themeName);
+  const { pptx, colors } = theme;
+  const S = theme.spacing;
+
+  const appName = appData.name || 'Mi Aplicación G360';
+  const features = appData.features.slice(0, MAX_FEATURES);
+  const hasModals = (appData.hasModals?.length || 0) > 0;
+  const hasLimits = Array.isArray(appData.limits) && appData.limits.length > 0;
+
+  const totalSlides = 4
+    + features.length
+    + (hasModals ? 1 : 0)
+    + 3
+    + (hasLimits ? 1 : 0);
+
+  let slideNum = 0;
+  const bg = { color: colors.bg };
+  const newSlide = () => {
+    const s = pptx.addSlide();
+    s.background = bg;
+    return s;
+  };
+
+  const screenshotFor = (feature) => {
+    if (feature.screenshotIndex >= 0 && appData.screenshots?.[feature.screenshotIndex]) {
+      return appData.screenshots[feature.screenshotIndex].path;
+    }
+    const shot = appData.screenshots?.find((s) =>
+      s.filename.toLowerCase().includes(feature.name.toLowerCase().slice(0, 4)),
+    );
+    return shot?.path || null;
+  };
+
+  // ===== 1. Portada =====
+  let slide = newSlide();
+  coverSlide(slide, {
+    appName,
+    description: appData.description || 'Documentación de uso y funcionalidades',
+    tagline: buildTagline(appData),
+    version: appData.version,
+    brand: themeName,
+  }, theme);
+  addFooter(slide, theme, ++slideNum, totalSlides);
+
+  // ===== 2. ¿Qué es? =====
+  slide = newSlide();
+  addSectionHeader(slide, 'INTRODUCCIÓN', theme, ++slideNum, totalSlides);
+  slide.addText(`¿Qué es ${appName}?`, {
+    x: S.marginX, y: 1.05, w: S.contentWidth, h: 0.45,
+    fontSize: 15, bold: true, color: colors.text, fontFace: theme.font,
+  });
+  slide.addText(appData.description || 'Aplicación construida con los estándares G360.', {
+    x: S.marginX, y: 1.5, w: S.contentWidth, h: 0.85,
+    fontSize: theme.typo.sizes.body, color: colors.text,
+    valign: 'top', fontFace: theme.font,
+  });
+  card(slide, {
+    x: S.marginX, y: 2.55, w: (S.contentWidth - S.cardGap) / 2, h: 2.0,
+    title: 'Para el usuario',
+    body: features.length > 0
+      ? features.slice(0, 4).map((f) => f.display || f.name)
+      : ['Acceso a los módulos principales de la app'],
+  }, theme);
+  card(slide, {
+    x: S.marginX + (S.contentWidth - S.cardGap) / 2 + S.cardGap, y: 2.55,
+    w: (S.contentWidth - S.cardGap) / 2, h: 2.0,
+    title: 'Bajo el capó',
+    body: buildTechBullets(appData, features),
+  }, theme);
+  slide.addText(buildCapabilityLine(appData), {
+    x: S.marginX, y: 4.85, w: S.contentWidth, h: 1.6,
+    fontSize: theme.typo.sizes.body, color: colors.textMuted, valign: 'top', fontFace: theme.font,
+  });
+
+  // ===== 3. Módulos =====
+  slide = newSlide();
+  addSectionHeader(slide, 'MÓDULOS', theme, ++slideNum, totalSlides);
+  modulesTable(slide, {
+    rows: features.map((f) => ({
+      name: f.display || f.name,
+      route: f.file,
+      desc: featureDesc(f),
+    })),
+  }, theme);
+  const shots = features.map(screenshotFor).filter(Boolean);
+  if (shots[0]) {
+    phoneShot(slide, {
+      x: S.page.width - S.marginX - 3.95, y: S.contentTopY,
+      w: 1.85, h: 4.0, imagePath: shots[0],
+      label: `Captura de ${features[0].display || features[0].name}`,
+    }, theme);
+  }
+  if (shots[1]) {
+    phoneShot(slide, {
+      x: S.page.width - S.marginX - 1.9, y: S.contentTopY,
+      w: 1.85, h: 4.0, imagePath: shots[1],
+      label: `Captura de ${features[1]?.display || 'módulo'}`,
+    }, theme);
+  }
+  slide.addText('Cada módulo se detalla en las siguientes páginas.', {
+    x: S.marginX, y: S.contentTopY + features.length * 1.12 + 0.1, w: S.contentWidth - 4.35, h: 0.5,
+    fontSize: theme.typo.sizes.caption, color: colors.textMuted, fontFace: theme.font,
+  });
+
+  // ===== 4. Flujo de trabajo =====
+  slide = newSlide();
+  addSectionHeader(slide, 'FLUJO DE TRABAJO', theme, ++slideNum, totalSlides);
+  workflowSlide(slide, {
+    textWidth: S.contentWidth - 0.65 - 4.9,
+    steps: buildWorkflowSteps(appData),
+  }, theme);
+  if (shots[2]) {
+    phoneShot(slide, {
+      x: S.page.width - S.marginX - 4.75, y: S.contentTopY + 0.15,
+      w: 2.25, h: 4.9, imagePath: shots[2],
+      label: 'Pantalla de inicio / login',
+    }, theme);
+  }
+  if (shots[3]) {
+    phoneShot(slide, {
+      x: S.page.width - S.marginX - 2.3, y: S.contentTopY + 0.15,
+      w: 2.25, h: 4.9, imagePath: shots[3],
+      label: 'Vista principal en uso',
+    }, theme);
+  }
+
+  // ===== 5-N. Features =====
+  for (const feature of features) {
+    slide = newSlide();
+    addSectionHeader(slide, 'FUNCIONALIDAD', theme, ++slideNum, totalSlides);
+    const kind = classify(feature);
+    const shotPath = screenshotFor(feature);
+    const textW = shotPath ? S.contentWidth - 5.1 : S.contentWidth;
+
+    if (kind === 'kpi') {
+      kpiSlide(slide, {
+        title: feature.display || feature.name,
+        kpis: [
+          { label: 'Registros', value: '—', color: colors.accent },
+          { label: 'Activos', value: '—', color: colors.success },
+          { label: 'Alertas', value: '—', color: colors.warning },
+          { label: 'Críticos', value: '—', color: colors.danger },
+        ],
+      }, theme);
+    } else {
+      featureSlide(slide, {
+        title: feature.display || feature.name,
+        description: featureDesc(feature),
+        bullets: kind === 'workflow'
+          ? ['Se abre desde el módulo principal', 'Interacción guiada paso a paso', 'Confirmación con resumen del resultado']
+          : feature.kind === 'route'
+            ? [
+                `Ruta accesible desde la navegación principal (${feature.file})`,
+                'Estado sincronizado con los datos del negocio',
+                'Diseño responsive y táctil',
+              ]
+            : feature.kind === 'component'
+              ? [
+                  `Componente web en ${feature.file}`,
+                  'Integrado al flujo principal de la app',
+                  'Reutilizable y con estados de carga/error',
+                ]
+              : [
+                  `Clase ${feature.name} exportada desde src/ui/${feature.file}`,
+                  'Integrada al Dashboard principal',
+                  'Respeta el tema claro/oscuro del sistema',
+                ],
+      }, theme);
+      // limitar ancho del texto si hay captura
+      if (shotPath) {
+        slide.addText(`${feature.display || feature.name}`, {
+          x: S.marginX, y: 1.05, w: textW, h: 0.6,
+          fontSize: 15, bold: true, color: colors.text, fontFace: theme.font,
+        });
+      }
+    }
+
+    if (shotPath) {
+      phoneShot(slide, {
+        x: S.page.width - S.marginX - 2.6, y: 1.25,
+        w: 2.55, h: 4.9, imagePath: shotPath,
+        label: `Captura de ${feature.display || feature.name}`,
+      }, theme);
+    } else {
+      phoneShot(slide, {
+        x: S.page.width - S.marginX - 2.6, y: 1.25,
+        w: 2.55, h: 4.9, imagePath: null,
+        label: `Captura de ${feature.display || feature.name} en uso`,
+      }, theme);
+    }
+    addFooter(slide, theme, slideNum, totalSlides);
+  }
+
+  // ===== N+1. Flujos (modales) =====
+  if (hasModals) {
+    slide = newSlide();
+    addSectionHeader(slide, 'FLUJOS DE TRABAJO', theme, ++slideNum, totalSlides);
+    workflowSlide(slide, {
+      textWidth: S.contentWidth - 0.65,
+      steps: appData.hasModals.slice(0, 6).map((m) => ({
+        title: m.replace(/([a-z])([A-Z])/g, '$1 $2'),
+        desc: 'Flujo de usuario con confirmación y resultado trazable.',
+      })),
+    }, theme);
+    addFooter(slide, theme, slideNum, totalSlides);
+  }
+
+  // ===== N+2. Arquitectura =====
+  slide = newSlide();
+  addSectionHeader(slide, 'ARQUITECTURA', theme, ++slideNum, totalSlides);
+  architectureSlide(slide, {
+    layers: [
+      { name: 'UI', desc: 'Dashboard, Cards, Modals, Overlays (src/ui/)', color: colors.accent },
+      { name: 'Core', desc: 'Lógica de negocio y procesamiento (src/core/)', color: colors.info },
+      { name: 'Config', desc: 'Tema, constantes y metadata (skill.json)', color: colors.violet },
+      { name: 'Datos', desc: 'API ERP, catálogo y cache local', color: colors.success },
+    ],
+  }, theme);
+  addFooter(slide, theme, slideNum, totalSlides);
+
+  // ===== N+3. Buenas prácticas =====
+  slide = newSlide();
+  addSectionHeader(slide, 'BUENAS PRÁCTICAS', theme, ++slideNum, totalSlides);
+  checklistSlide(slide, {
+    items: [
+      'Mantener la sesión activa solo mientras se usa la app',
+      'Actualizar datos antes de decidir (auto-refresh o botón de recarga)',
+      'Usar la exportación a Excel para seguimiento y auditoría',
+      'Reportar anomalías al administrador con el registro específico',
+      'Compartir el dispositivo solo con sesión cerrada',
+      'Verificar conectividad si los datos aparecen desactualizados',
+    ],
+  }, theme);
+  addFooter(slide, theme, slideNum, totalSlides);
+
+  // ===== N+4. Límites (opcional, definidos por el proyecto) =====
+  if (hasLimits) {
+    slide = newSlide();
+    addSectionHeader(slide, 'LÍMITES CONOCIDOS', theme, ++slideNum, totalSlides);
+    limitsSlide(slide, { items: appData.limits }, theme);
+    addFooter(slide, theme, slideNum, totalSlides);
+  }
+
+  // ===== Resumen =====
+  slide = newSlide();
+  addSectionHeader(slide, 'RESUMEN', theme, ++slideNum, totalSlides);
+  checklistSlide(slide, {
+    startY: 1.5,
+    items: [
+      `Nombre: ${appName}`,
+      `Versión: ${appData.version || '1.0.0'}`,
+      `Framework: ${appData.framework || 'N/A'}`,
+      `Módulos UI: ${appData.features.length}`,
+      appData.hasAutoRefresh ? 'Auto-refresh de datos activado' : 'Actualización manual de datos',
+      appData.hasSearch ? 'Buscador global disponible' : null,
+      appData.hasExport ? 'Exportación a Excel disponible' : null,
+      hasModals ? `${appData.hasModals.length} flujos con modales de trabajo` : null,
+    ].filter(Boolean).map((t) => ({ text: t, checked: true })),
+  }, theme);
+  slide.addText('Documentación completa: README.md · powered by G360', {
+    x: S.marginX, y: 6.6, w: S.contentWidth, h: 0.4,
+    fontSize: theme.typo.sizes.bodySmall, color: colors.textMuted,
+    align: 'center', fontFace: theme.font,
+  });
+
+  // Save — por defecto dentro del repo de la app (cada PPTX es propio de su repo)
+  const slug = appName.toLowerCase().replace(/\s+/g, '-');
+  const defaultDir = options.targetDir || process.cwd();
+  const outPath = options.outPath
+    || path.join(defaultDir, mode === 'demo' ? `${slug}-demo.pptx` : `${slug}-manual.pptx`);
+  await pptx.writeFile({ fileName: outPath });
+  return outPath;
 }
 
-import path from 'path';
+function buildTagline(appData) {
+  const bits = [];
+  if (appData.framework) bits.push(appData.framework);
+  if (appData.features.length) bits.push(`${appData.features.length} módulos UI`);
+  if (appData.hasModals?.length) bits.push(`${appData.hasModals.length} flujos de trabajo`);
+  if (appData.type === 'web' && appData.hasPwa) bits.push('PWA instalable');
+  return bits.join('  ·  ');
+}
+
+function buildTechBullets(appData, features) {
+  const bullets = [];
+  if (appData.framework) bullets.push(`Framework: ${appData.framework}`);
+  bullets.push(`${appData.features.length} módulos UI detectados`);
+  if (appData.hasModals?.length) bullets.push(`${appData.hasModals.length} modales de trabajo en src/ui/modals/`);
+  if (appData.hasExport) bullets.push('Exportación a Excel integrada');
+  if (appData.hasAutoRefresh) bullets.push('Auto-refresh de datos (~15 min)');
+  if (appData.hasSupabase) bullets.push('Datos en tiempo real vía Supabase');
+  if (appData.hasPwa) bullets.push('PWA instalable con cache offline');
+  if (appData.hasCharts) bullets.push('Visualización de datos con gráficos');
+  if (appData.hasSearch) bullets.push('Búsqueda global con overlay flotante');
+  bullets.push('Metadata y eventos declarados en skill.json');
+  return bullets.slice(0, 6);
+}
+
+function buildCapabilityLine(appData) {
+  const caps = [];
+  if (appData.hasAutoRefresh) caps.push('datos en tiempo real');
+  if (appData.hasSearch) caps.push('búsqueda global');
+  if (appData.hasExport) caps.push('export a Excel');
+  if (appData.hasSource1 || appData.hasSupabase) caps.push('conexión a ERP/Supabase');
+  if (appData.hasPwa) caps.push('modo offline (PWA)');
+  if (appData.hasCharts) caps.push('gráficos interactivos');
+  return caps.length > 0
+    ? `Capacidades destacadas: ${caps.join(' · ')}.`
+    : 'Revisa los módulos en las siguientes páginas para conocer las capacidades de la app.';
+}
+
+function buildWorkflowSteps(appData) {
+  if (appData.templates?.length >= 4) {
+    return appData.templates.slice(0, 6).map((t, i) => ({
+      title: `${i + 1} · ${t.display}`,
+      desc: `Interacción "${t.name.replace(/^_on_/, '').replace(/_/g, ' ')}" registrada en src/app.py.`,
+    }));
+  }
+  return [
+    { title: 'Ingresar', desc: 'Abre la app y autentícate si el proyecto lo requiere.' },
+    { title: 'Revisar el dashboard', desc: 'El resumen principal concentra KPIs y accesos a los módulos.' },
+    { title: 'Explorar módulos', desc: 'Cada módulo cubre una parte del flujo operativo del negocio.' },
+    { title: 'Operar', desc: 'Registra, edita o consulta según el módulo de trabajo.' },
+    { title: 'Exportar / compartir', desc: 'Genera reportes en Excel cuando el proyecto lo integre.' },
+    { title: 'Cerrar sesión', desc: 'Si compartes el dispositivo, cierra tu sesión al terminar.' },
+  ];
+}

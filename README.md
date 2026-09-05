@@ -97,7 +97,7 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 ## Versión
 
-**Current: v1.16.0** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
+**Current: v1.17.0** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
 
 ---
 
@@ -1151,7 +1151,7 @@ g360-cli/
 |---------|-------------|
 | `npm run build` | Build portable con pkg (g360.exe) |
 | `npm run build:portable` | Especificar target node18-win-x64 |
- | `npm test` | Ejecutar tests con Vitest (53 tests, 9 suites) |
+| `npm test` | Ejecutar tests con Vitest (57 tests, 9 suites) |
 | `npm run prepublishOnly` | Validación antes de publicar en npm |
 
 ---
@@ -1159,7 +1159,7 @@ g360-cli/
 ## Testing
 
 ```bash
-npm test            # Vitest — 53 tests, 9 suites
+npm test            # Vitest — 57 tests, 9 suites
 npm run test:watch  # Modo watch
 npm run test:ui     # UI interactiva
 npm run test:coverage
@@ -1339,7 +1339,7 @@ g360 lint --project ./mi-proyecto
 
 ### `g360 pptx`
 
-Genera manuales y presentaciones en PowerPoint (.pptx) desde una app G360.
+Genera manuales y presentaciones en PowerPoint (.pptx) desde una app G360. Detecta automáticamente el framework (Flet, SvelteKit, Lit, React, Vue), los módulos UI, las capacidades (PWA, Supabase, Excel, búsqueda) y el tema de marca. El archivo se genera **dentro del propio repo de la app**, independiente para cada proyecto.
 
 ```bash
 g360 pptx [ruta] [opciones]
@@ -1350,60 +1350,70 @@ g360 pptx [ruta] [opciones]
 | Opción | Descripción | Valor por defecto |
 |--------|-------------|-------------------|
 | `--mode <tipo>` | Modo de generacion (`manual`, `demo`, `onboarding`) | `manual` |
-| `--theme <nombre>` | Tema de marca (`g360`, `cipsa`) | auto-detected desde `skill.json` |
-| `--out <archivo>` | Ruta del archivo de salida | `{app-name}-manual.pptx` |
+| `--theme <nombre>` | Tema de marca (`g360`, `cipsa`, `corporate`) | auto-detectado desde `skill.json` |
+| `--out <archivo>` | Ruta del archivo de salida | `{repo}/{app-name}-manual.pptx` |
 | `--dry-run` | Solo muestra outline sin generar | `false` |
 
 **Modos:**
 
 | Modo | Proposito | Formato |
 |------|-----------|---------|
-| `manual` | Documentacion de usuario (A4 portrait) | Impresion/pdfs |
-| `demo` | Presentaciones comerciales (16:9) | Proyector/screens |
-| `onboarding` | Guia de inicio rapido | Pantalla |
+| `manual` | Documentacion de usuario | 16:9 (compartir/imprimir) |
+| `demo` | Presentaciones comerciales | 16:9 (proyector/screens) |
+| `onboarding` | Guia de inicio rapido | 16:9 |
+
+**Detección automática por framework:**
+
+| Framework | Módulos UI | Capacidad |
+|-----------|-----------|-----------|
+| Flet | `src/ui/*.py` + `src/ui/modals/` | desde `src/app.py` (auto-refresh, search, export) |
+| SvelteKit | `src/routes/**/+page.svelte` (incluye subrutas dinámicas) | desde `package.json` |
+| Lit / React / Vue | `src/components/*.js\|ts` | desde `package.json` (supabase, PWA, exceljs, charts, tailwind) |
 
 **Ejemplos:**
 
 ```bash
-# Generar manual A4 para app CIPSA (auto-detected desde skill.json)
+# Generar manual dentro del repo de la app (theme auto-detectado)
+g360 pptx ../g360-ventas-pulse
+
+# Manual para app CIPSA (auto-detectado desde skill.json)
 g360 pptx ../mi-app --mode manual
 
 # Solo preview del outline
 g360 pptx . --dry-run
 
-# Presentacion 16:9 con tema G360
-g360 pptx . --mode demo --theme g360 --out demo.pptx
-
-# Onboarding en modo print
-g360 pptx . --mode onboarding --out onboarding.pptx
+# Presentacion 16:9 con tema corporate
+g360 pptx . --mode demo --theme corporate --out demo.pptx
 ```
 
-**Estructura generada (modo manual, A4):**
+**Estructura generada (16:9 widescreen 13.33x7.5in):**
 
 | # | Slide | Contenido |
 |---|-------|-----------|
-| 1 | Portada | Nombre + descripcion + version |
-| 2 | ¿Que es? | Proposito de la app |
-| 3 | Instalacion | Pasos de inicio |
-| 4 | Dashboard | Screenshot principal (placeholder si no hay) |
+| 1 | Portada | Nombre + descripcion + tagline + version + logo |
+| 2 | ¿Que es? | Descripcion + tarjetas usuario/tecnico + capacidades |
+| 3 | Modulos | Tabla de modulos + capturas laterales |
+| 4 | Flujo de trabajo | Pasos numerados + capturas |
 | 5-N | Features | Una por modulo UI detectado |
-| N+1 | Flujos | Modals y workflows |
+| N+1 | Flujos | Modals y workflows (PWA, busqueda en web) |
 | N+2 | Arquitectura | Diagrama por capas |
 | N+3 | Buenas practicas | Checklist de uso |
-| N+4 | Resumen | Sintesis final |
+| N+4 | Limites conocidos | Solo si el proyecto define `limits` |
+| N+5 | Resumen | Sintesis final |
 
 **Screenshots:**
 
-Colocar imagenes en `assets/screenshots/` para inclusion automatica:
+Colocar imagenes en `assets/screenshots/` para inclusion automatica con encaje proporcional (nunca distorsiona):
 - `dashboard.png` — vista principal
 - `kpi-card.png`, `modal-export.png` — componentes relevantes
 
-Si no hay screenshots, se generan placeholders con marco punteado.
+Si no hay screenshots, se generan placeholders-guia ("CAPTURA PENDIENTE") que indican que capturar y donde guardarlo.
 
-**Temas disponibles:**
+**Temas disponibles** (design tokens unificados en `design-tokens.js`):
 
-- **`g360`**: Esmeralda #10B981, fondo claro
-- **`cipsa`**: Verde CIPSA #00d084, logo corporativo incluido
+- **`g360`**: Esmeralda `#10B981` sobre slate (default)
+- **`cipsa`**: Verde corporativo `#008F5D`, logo CIPSA
+- **`corporate`**: Azul marino `#1E40AF`, neutral para apps sin marca
 
 ---
 

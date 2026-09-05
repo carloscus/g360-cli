@@ -48,29 +48,41 @@ g360 pptx . --dry-run
 
 | # | Slide | Contenido |
 |---|-------|-----------|
-| 1 | Portada | Nombre + descripcion + version |
-| 2 | ¿Que es? | Proposito de la app |
-| 3 | Instalacion | Pasos de inicio |
-| 4 | Dashboard | Screenshot principal |
+| 1 | Portada | Nombre + descripcion + tagline + version + logo |
+| 2 | ¿Que es? | Descripcion + tarjetas usuario/tecnico + capacidades |
+| 3 | Modulos | Tabla de modulos + capturas laterales |
+| 4 | Flujo de trabajo | Pasos numerados + capturas |
 | 5-N | Features | Una por modulo UI detectado |
-| N+1 | Flujos | Modals y workflows |
+| N+1 | Flujos | Modals y workflows (PWA, busqueda en web) |
 | N+2 | Arquitectura | Diagrama por capas |
 | N+3 | Buenas practicas | Checklist |
-| N+4 | Resumen | Sintesis final |
+| N+4 | Limites conocidos | Solo si el proyecto define `limits` |
+| N+5 | Resumen | Sintesis final |
+
+Formato: 16:9 widescreen (13.333x7.5in). Output por defecto: dentro del repo de la app.
+
+## Deteccion automatica de frameworks
+
+| Framework | Modulos UI | Capacidades |
+|-----------|-----------|-------------|
+| Flet | `src/ui/*.py` + `src/ui/modals/` | desde `src/app.py` |
+| SvelteKit | `src/routes/**/+page.svelte` (subrutas dinamicas incluidas) | desde `package.json` |
+| Lit/React/Vue | `src/components/*.{js,ts}` | desde `package.json` (supabase, PWA, exceljs, charts) |
 
 ## Screenshots
 
 Para incluir screenshots reales:
 1. Colocar imagenes en `assets/screenshots/`
 2. Nombres sugeridos: `dashboard.png`, `kpi-card.png`, `modal-export.png`
-3. El generator las detecta automaticamente por nombre
+3. El generator las detecta automaticamente por nombre y las incrusta con encaje proporcional (contain-fit, nunca distorsiona)
 
-Si no hay screenshots, se generan placeholders con marco punteado.
+Si no hay screenshots, se generan placeholders-guia ("CAPTURA PENDIENTE") que indican que capturar y donde guardarlo.
 
-## Temas disponibles
+## Temas disponibles (design-tokens.js)
 
-- **g360** (default): Esmeralda #10B981, fondo claro
-- **cipsa**: Verde CIPSA #00d084, logo corporativo incluido
+- **g360** (default): Esmeralda #10B981 sobre slate
+- **cipsa**: Verde corporativo #008F5D, logo CIPSA
+- **corporate**: Azul marino #1E40AF, neutral para apps sin marca
 
 ## Integracion con agents
 

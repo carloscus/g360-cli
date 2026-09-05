@@ -22,7 +22,7 @@ export async function pptx(targetPath, options) {
     screenshots,
   } = options;
 
-  const targetDir = path.join(process.cwd(), targetPath || '.');
+  const targetDir = path.resolve(process.cwd(), targetPath || '.');
 
   if (!await fs.pathExists(targetDir)) {
     console.error(chalk.red(`❌ Directorio no encontrado: ${targetDir}`));
@@ -50,15 +50,16 @@ export async function pptx(targetPath, options) {
   if (dryRun) {
     console.log(chalk.yellow('📋 DRY RUN — Outline generado:\n'));
     console.log(chalk.gray('  [1] Portada'));
-    console.log(chalk.gray('  [2] Introducción'));
-    console.log(chalk.gray('  [3] Instalación'));
-    console.log(chalk.gray('  [4] Dashboard / Inicio'));
+    console.log(chalk.gray('  [2] Introducción (¿Qué es?)'));
+    console.log(chalk.gray('  [3] Módulos (tabla + capturas)'));
+    console.log(chalk.gray('  [4] Flujo de trabajo'));
     console.log(chalk.gray('  [5-N] Funcionalidades (una por módulo UI detectado)'));
     console.log(chalk.gray('  [N+1] Flujos de trabajo (modales)'));
     console.log(chalk.gray('  [N+2] Arquitectura'));
     console.log(chalk.gray('  [N+3] Buenas prácticas'));
-    console.log(chalk.gray('  [N+4] Resumen'));
-    console.log(chalk.gray(`\nTotal estimado: ~${12 + Math.min(6, 20)} slides A4`));
+    console.log(chalk.gray('  [N+4] Límites conocidos (si aplica)'));
+    console.log(chalk.gray('  [N+5] Resumen'));
+    console.log(chalk.gray(`\nFormato: 16:9 widescreen · Theme: ${themeName || detectedBrand}`));
     return;
   }
 
@@ -70,12 +71,13 @@ export async function pptx(targetPath, options) {
     const pptxPath = await generateManualPptx(appData, {
       mode,
       theme: themeName || detectedBrand,
+      targetDir: targetDir,
       outPath: out,
     });
 
     spinner.succeed(chalk.green(`✅ PPTX generado: ${pptxPath}`));
     console.log(chalk.gray(`   Tamaño: ${Math.round((await fs.stat(pptxPath)).size / 1024)} KB`));
-    console.log(chalk.gray(`   Slides: ~12 A4 (modo manual)`));
+    console.log(chalk.gray(`   Formato: 16:9 widescreen (modo ${mode})`));
     console.log('');
     console.log(chalk.cyan('  Siguiente paso:'));
     console.log(chalk.gray('    Revisar el archivo y reemplazar placeholders de screenshots'));

@@ -7,6 +7,33 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.17.0] - 2026-09-05
+
+### Changed
+- **`g360 pptx` rediseñado — formato 16:9 widescreen unificado** (13.333x7.5in): elimina la mezcla A4/16:9 con elementos fuera de lienzo
+- **Design tokens unificados** (`src/assets/pptx/design-tokens.js`): fuente única de verdad de paletas, tipografía (Inter/Arial) y espaciados
+- **Nueva paleta `corporate`** (azul marino `#1E40AF`) además de `g360` (esmeralda) y `cipsa` (verde corporativo `#008F5D`, alineado al manual de ventas-pulse)
+- **Output por repo**: el PPTX se genera dentro del propio repo de la app (`{repo}/{app}-manual.pptx`), independiente por proyecto
+- **Estructura del manual alineada a ventas-pulse**: portada con banda de acento y logo, intro con tarjetas usuario/tecnico, tabla de módulos, flujo numerado, límites con barras ámbar, checklist final
+
+### Added
+- **Detección de frameworks web** en `analyze-app.js`:
+  - SvelteKit: módulos desde `src/routes/**/+page.svelte` (incluye subrutas dinámicas como `ficha/[cliente]/`)
+  - Lit/React/Vue: módulos desde `src/components/*.{js,ts}`
+  - Capacidades desde `package.json`: Supabase, PWA (workbox), Excel (exceljs), charts, Tailwind, búsqueda global (scan de contenido)
+- **Componente `phoneShot`**: marco tipo teléfono con encaje proporcional contain-fit (nunca distorsiona capturas) y placeholders-guía "CAPTURA PENDIENTE"
+- **`scripts/image-size.js`**: lector de dimensiones PNG/JPEG sin dependencias externas
+- **Nuevos layouts**: `limitsSlide`, `modulesTable`, `card`, `textBlock` en `layouts/base.js`
+
+### Fixed
+- `EISDIR` al escanear `src/ui/` con subdirectorios (ej. `modals/`) — ahora filtra con `fs.stat().isFile()`
+- Ruido de `__init__.py` listado como feature en apps Flet
+- `require('fs')` dentro de módulo ESM en `themes/base.js` (crasheaba `setLogo`)
+- Placeholder y screenshot superpuestos en slides de features (`clearShapes` no existe en pptxgenjs)
+- Rutas absolutas rechazadas por `g360 pptx` (ahora usa `path.resolve`)
+
+---
+
 ## [1.16.0] - 2026-08-16
 
 ### Added
