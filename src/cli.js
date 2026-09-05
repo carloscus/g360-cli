@@ -22,6 +22,7 @@ import { ingest } from './commands/ingest.js';
 import { addon } from './commands/addon.js';
 import { docs } from './commands/docs.js';
 import { lint } from './commands/lint.js';
+import { pptx } from './commands/pptx.js';
 
 // Comando config (no requiere archivo separado)
 function configAction(options) {
@@ -211,5 +212,15 @@ program
   .argument('[level]', 'Lint level: naming, duplicates, syntax, structure, all', 'all')
   .option('--project <path>', 'Project path', '.')
   .action(lint);
+
+program
+  .command('pptx')
+  .argument('[path]', 'Project path to generate presentation from', '.')
+  .option('-m, --mode <type>', 'Mode: manual, demo, onboarding', 'manual')
+  .option('-t, --theme <name>', 'Brand theme: g360, cipsa (auto-detected from skill.json)', null)
+  .option('-o, --out <file>', 'Output file path (default: {app-name}-manual.pptx)', null)
+  .option('--dry-run', 'Preview outline without generating')
+  .option('--screenshots <dir>', 'Custom screenshots directory', 'assets/screenshots')
+  .action(pptx);
 
 program.parse();
