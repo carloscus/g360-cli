@@ -1337,7 +1337,77 @@ g360 lint --project ./mi-proyecto
 
 ---
 
-## Integración con OpenCode
+### `g360 pptx`
+
+Genera manuales y presentaciones en PowerPoint (.pptx) desde una app G360.
+
+```bash
+g360 pptx [ruta] [opciones]
+```
+
+**Opciones:**
+
+| Opción | Descripción | Valor por defecto |
+|--------|-------------|-------------------|
+| `--mode <tipo>` | Modo de generacion (`manual`, `demo`, `onboarding`) | `manual` |
+| `--theme <nombre>` | Tema de marca (`g360`, `cipsa`) | auto-detected desde `skill.json` |
+| `--out <archivo>` | Ruta del archivo de salida | `{app-name}-manual.pptx` |
+| `--dry-run` | Solo muestra outline sin generar | `false` |
+
+**Modos:**
+
+| Modo | Proposito | Formato |
+|------|-----------|---------|
+| `manual` | Documentacion de usuario (A4 portrait) | Impresion/pdfs |
+| `demo` | Presentaciones comerciales (16:9) | Proyector/screens |
+| `onboarding` | Guia de inicio rapido | Pantalla |
+
+**Ejemplos:**
+
+```bash
+# Generar manual A4 para app CIPSA (auto-detected desde skill.json)
+g360 pptx ../mi-app --mode manual
+
+# Solo preview del outline
+g360 pptx . --dry-run
+
+# Presentacion 16:9 con tema G360
+g360 pptx . --mode demo --theme g360 --out demo.pptx
+
+# Onboarding en modo print
+g360 pptx . --mode onboarding --out onboarding.pptx
+```
+
+**Estructura generada (modo manual, A4):**
+
+| # | Slide | Contenido |
+|---|-------|-----------|
+| 1 | Portada | Nombre + descripcion + version |
+| 2 | ¿Que es? | Proposito de la app |
+| 3 | Instalacion | Pasos de inicio |
+| 4 | Dashboard | Screenshot principal (placeholder si no hay) |
+| 5-N | Features | Una por modulo UI detectado |
+| N+1 | Flujos | Modals y workflows |
+| N+2 | Arquitectura | Diagrama por capas |
+| N+3 | Buenas practicas | Checklist de uso |
+| N+4 | Resumen | Sintesis final |
+
+**Screenshots:**
+
+Colocar imagenes en `assets/screenshots/` para inclusion automatica:
+- `dashboard.png` — vista principal
+- `kpi-card.png`, `modal-export.png` — componentes relevantes
+
+Si no hay screenshots, se generan placeholders con marco punteado.
+
+**Temas disponibles:**
+
+- **`g360`**: Esmeralda #10B981, fondo claro
+- **`cipsa`**: Verde CIPSA #00d084, logo corporativo incluido
+
+---
+
+## Integracion con OpenCode
 
 g360-cli incluye integración con **OpenCode** para desarrollo asistido por IA. Esta integración permite que los agentes de IA tengan acceso a los recursos de g360-cli durante el desarrollo.
 
