@@ -61,7 +61,7 @@ export async function pptx(targetPath, options) {
     console.log(chalk.gray('  [N+3] Buenas prácticas'));
     console.log(chalk.gray('  [N+4] Límites conocidos (si aplica)'));
     console.log(chalk.gray('  [N+5] Resumen'));
-    console.log(chalk.gray(`\nFormato: 16:9 widescreen · Theme: ${themeName || detectedBrand}`));
+    console.log(chalk.gray(`\nFormato: 16:9 widescreen · Theme: ${themeLabel}`));
     return;
   }
 
