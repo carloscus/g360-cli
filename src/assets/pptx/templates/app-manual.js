@@ -46,9 +46,11 @@ const FEATURE_DESC = {
 };
 
 function featureDesc(feature) {
-  return feature.desc
-    || FEATURE_DESC[feature.name]
-    || `Módulo de interfaz ubicado en src/ui/${feature.file}, integrado al flujo principal de la aplicación.`;
+  if (feature.desc) return feature.desc;
+  if (FEATURE_DESC[feature.name]) return FEATURE_DESC[feature.name];
+  if (feature.kind === 'route') return `Página accesible desde la navegación principal (${feature.file}). Estado sincronizado con los datos del negocio.`;
+  if (feature.kind === 'component') return `Componente web en ${feature.file}, integrado al flujo principal de la app.`;
+  return `Módulo de interfaz ubicado en src/ui/${feature.file}, integrado al flujo principal de la aplicación.`;
 }
 
 function classify(feature) {
@@ -152,18 +154,24 @@ export async function generateManualPptx(appData, options = {}) {
       desc: featureDesc(f),
     })),
   }, theme);
+  // Capturas: primero las asignadas a features, luego las libres (dashboard, reportes...)
   const shots = features.map(screenshotFor).filter(Boolean);
-  if (shots[0]) {
+  const usedShotIdx = new Set(features.map((f) => f.screenshotIndex).filter((i) => i >= 0));
+  const freeShots = (appData.screenshots || [])
+    .filter((s, i) => !usedShotIdx.has(i))
+    .map((s) => s.path);
+  const allShots = [...shots, ...freeShots];
+  if (allShots[0]) {
     phoneShot(slide, {
       x: S.page.width - S.marginX - 3.95, y: S.contentTopY,
-      w: 1.85, h: 4.0, imagePath: shots[0],
+      w: 1.85, h: 4.0, imagePath: allShots[0],
       label: `Captura de ${features[0].display || features[0].name}`,
     }, theme);
   }
-  if (shots[1]) {
+  if (allShots[1]) {
     phoneShot(slide, {
       x: S.page.width - S.marginX - 1.9, y: S.contentTopY,
-      w: 1.85, h: 4.0, imagePath: shots[1],
+      w: 1.85, h: 4.0, imagePath: allShots[1],
       label: `Captura de ${features[1]?.display || 'módulo'}`,
     }, theme);
   }
@@ -179,17 +187,17 @@ export async function generateManualPptx(appData, options = {}) {
     textWidth: S.contentWidth - 0.65 - 4.9,
     steps: buildWorkflowSteps(appData),
   }, theme);
-  if (shots[2]) {
+  if (allShots[2]) {
     phoneShot(slide, {
       x: S.page.width - S.marginX - 4.75, y: S.contentTopY + 0.15,
-      w: 2.25, h: 4.9, imagePath: shots[2],
+      w: 2.25, h: 4.9, imagePath: allShots[2],
       label: 'Pantalla de inicio / login',
     }, theme);
   }
-  if (shots[3]) {
+  if (allShots[3]) {
     phoneShot(slide, {
       x: S.page.width - S.marginX - 2.3, y: S.contentTopY + 0.15,
-      w: 2.25, h: 4.9, imagePath: shots[3],
+      w: 2.25, h: 4.9, imagePath: allShots[3],
       label: 'Vista principal en uso',
     }, theme);
   }
@@ -275,16 +283,24 @@ export async function generateManualPptx(appData, options = {}) {
     addFooter(slide, theme, slideNum, totalSlides);
   }
 
-  // ===== N+2. Arquitectura =====
+  // ===== N+2. Arquitectura (context-aware según framework) =====
   slide = newSlide();
   addSectionHeader(slide, 'ARQUITECTURA', theme, ++slideNum, totalSlides);
+  const isWeb = appData.type === 'web';
   architectureSlide(slide, {
-    layers: [
-      { name: 'UI', desc: 'Dashboard, Cards, Modals, Overlays (src/ui/)', color: colors.accent },
-      { name: 'Core', desc: 'Lógica de negocio y procesamiento (src/core/)', color: colors.info },
-      { name: 'Config', desc: 'Tema, constantes y metadata (skill.json)', color: colors.violet },
-      { name: 'Datos', desc: 'API ERP, catálogo y cache local', color: colors.success },
-    ],
+    layers: isWeb
+      ? [
+          { name: 'UI', desc: `Components y vistas (${appData.modules?.length ? appData.modules.join(', ') : 'src/components/'})`, color: colors.accent },
+          { name: 'Hooks', desc: 'Custom hooks y estado local (src/hooks/)', color: colors.info },
+          { name: 'Utils', desc: 'Helpers, tipos y utilidades (src/utils/)', color: colors.violet },
+          { name: 'Config', desc: 'vite.config, skill.json, manifest', color: colors.success },
+        ]
+      : [
+          { name: 'UI', desc: 'Dashboard, Cards, Modals, Overlays (src/ui/)', color: colors.accent },
+          { name: 'Core', desc: 'Lógica de negocio y procesamiento (src/core/)', color: colors.info },
+          { name: 'Config', desc: 'Tema, constantes y metadata (skill.json)', color: colors.violet },
+          { name: 'Datos', desc: 'API ERP, catálogo y cache local', color: colors.success },
+        ],
   }, theme);
   addFooter(slide, theme, slideNum, totalSlides);
 
@@ -385,6 +401,17 @@ function buildWorkflowSteps(appData) {
       title: `${i + 1} · ${t.display}`,
       desc: `Interacción "${t.name.replace(/^_on_/, '').replace(/_/g, ' ')}" registrada en src/app.py.`,
     }));
+  }
+  // Apps generadoras / configuradoras (signature, calculators, forms)
+  const isGenerator = /crear|generador|creator|calculator|form|constructor/i.test(appData.name || '');
+  if (isGenerator) {
+    return [
+      { title: '1 · Completar formulario', desc: 'Ingresa los datos requeridos (nombre, cargo, contacto, etc.).' },
+      { title: '2 · Previsualizar en vivo', desc: 'Observa los cambios en tiempo real con debounce.' },
+      { title: '3 · Configurar opciones', desc: 'Ajusta formato, colores, redes sociales y tamaño.' },
+      { title: '4 · Seleccionar formato', desc: 'Elige entre completo, medio, corto o mínimo.' },
+      { title: '5 · Copiar / descargar', desc: 'Exporta la firma al portapapeles o descarga el archivo.' },
+    ];
   }
   return [
     { title: 'Ingresar', desc: 'Abre la app y autentícate si el proyecto lo requiere.' },

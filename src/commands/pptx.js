@@ -29,13 +29,14 @@ export async function pptx(targetPath, options) {
     return;
   }
 
-  // Detectar branding desde skill.json
+  // Detectar branding desde skill.json (campo brand o nombre de skill cipsa-*)
   const skillPath = path.join(targetDir, 'skill.json');
-  let detectedBrand = 'g360';
+  let detectedBrand = null;
   if (await fs.pathExists(skillPath)) {
     try {
       const skill = await fs.readJson(skillPath);
-      detectedBrand = skill.brand || 'g360';
+      detectedBrand = skill.brand
+        || (/^cipsa/i.test(skill.skill || '') ? 'cipsa' : null);
       if (detectedBrand === 'cipsa' && !themeName) themeName = 'cipsa';
     } catch {}
   }
@@ -43,7 +44,8 @@ export async function pptx(targetPath, options) {
   console.log(chalk.bold.cyan('\n📊 G360 App → PPTX Generator\n'));
   console.log(chalk.gray(`  Proyecto: ${targetDir}`));
   console.log(chalk.gray(`  Modo: ${mode}`));
-  console.log(chalk.gray(`  Theme: ${themeName || detectedBrand}`));
+  const themeLabel = themeName || detectedBrand || 'g360';
+  console.log(chalk.gray(`  Theme: ${themeLabel}`));
   if (out) console.log(chalk.gray(`  Salida: ${out}`));
   console.log('');
 
@@ -68,9 +70,9 @@ export async function pptx(targetPath, options) {
     const appData = await analyzeApp(targetDir);
     spinner.text = `Generando ${mode} (${appData.features.length} módulos detectados)...`;
 
-    const pptxPath = await generateManualPptx(appData, {
+      const pptxPath = await generateManualPptx(appData, {
       mode,
-      theme: themeName || detectedBrand,
+      theme: themeName || detectedBrand || 'g360',
       targetDir: targetDir,
       outPath: out,
     });

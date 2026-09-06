@@ -65,7 +65,12 @@ export async function analyzeApp(projectDir) {
       const skill = await fs.readJson(skillPath);
       result.name = skill.name || result.name;
       result.description = skill.description || result.description;
-      result.brand = skill.brand || 'g360';
+      // brand: campo directo o inferido del nombre del skill (cipsa-* → cipsa)
+      if (skill.brand) {
+        result.brand = skill.brand;
+      } else if (/^cipsa/i.test(skill.skill || '')) {
+        result.brand = 'cipsa';
+      }
       result.skill = skill.skill || skill.name || '';
       result.framework = skill.framework || '';
       result.version = skill.version || '';
@@ -178,13 +183,150 @@ export async function analyzeApp(projectDir) {
     } catch { /* ignorar */ }
   }
 
-  // 8. Construir features list
-  result.features = result.features.map(f => ({
-    ...f,
-    screenshotIndex: result.screenshots.findIndex(s => s.filename.includes(f.name.toLowerCase().slice(0, 4))),
-  }));
+  // 8. Descripcion y nombre amigable fallback desde README.md / package.json
+  const readmeMeta = await metaFromReadme(projectDir);
+  if (!result.description) {
+    result.description = readmeMeta.description || (pkg?.description || '');
+  }
+  if (isGenericName(result.name, result.brand)) {
+    // Primero intenta el H1; si el H1 es igual al slug, deriva del slug
+    let friendly = '';
+    if (readmeMeta.title && readmeMeta.title !== normalize(result.name)) {
+      friendly = friendlyNameFromTitle(readmeMeta.title, result.name);
+    }
+    if (!friendly) {
+      friendly = nameFromSlug(result.name);
+    }
+    if (friendly) result.name = friendly;
+  }
+
+  // 9. Emparejar screenshots con features (matching semantico ES/EN)
+  matchScreenshots(result);
 
   return result;
+}
+
+/**
+ * Extrae titulo (H1) y tagline (primer blockquote) del README.md.
+ * Convencion G360 estandar: "# Titulo" + "> descripcion".
+ */
+async function metaFromReadme(projectDir) {
+  const out = { title: '', description: '' };
+  const readmePath = path.join(projectDir, 'README.md');
+  if (!await fs.pathExists(readmePath)) return out;
+  try {
+    const content = await fs.readFile(readmePath, 'utf-8');
+    const lines = content.split(/\r?\n/);
+    let title = '';
+    let tagline = '';
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line) continue;
+      if (!title && /^#\s+/.test(line)) {
+        title = line.replace(/^#\s+/, '').trim();
+        continue;
+      }
+      if (title && !tagline && /^>\s+/.test(line)) {
+        const t = line.replace(/^>\s+/, '').trim();
+        if (!/^!\[|badge|shield/i.test(t) && t.length >= 15) tagline = t;
+        continue;
+      }
+      if (title && tagline) break;
+      if (title && !/^#|^>/) break;
+    }
+    const clean = (s) => s.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/[*`_]/g, '').trim();
+    out.title = clean(title);
+    out.description = clean(tagline);
+  } catch { /* ignorar */ }
+  return out;
+}
+
+/**
+ * Nombre de display desde el H1: "StockPulse CIPSA - Stock Reporter (Lit PWA)"
+ * → "StockPulse CIPSA". Si el H1 empieza con slug tecnico, se descarta esa parte.
+ */
+function friendlyNameFromTitle(title, fallbackName) {
+  if (!title) return '';
+  let parts = title.split(/\s+[-–—:|]\s+/);
+  if (parts.length > 1 && /^g360-/i.test(parts[0].trim())) {
+    parts = parts.slice(1);
+  }
+  const t = parts[0].replace(/\s*[(\[].*?[)\]]\s*/g, ' ').trim();
+  return t || '';
+}
+
+/**
+ * Un nombre es "generico" si es un slug tecnico (g360-*) o solo la marca
+ * (ej. skill.json con name:"cipsa") — en ese caso se prefiere el titulo del README.
+ */
+function isGenericName(name, brand) {
+  if (!name) return true;
+  if (/^g360-[\w-]+$/.test(name)) return true;
+  const n = normalize(name);
+  return n === normalize(brand || '') || ['cipsa', 'g360'].includes(n);
+}
+
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/**
+ * Deriva un nombre legible a partir de un slug (strip g360-, title-case, hyphens to spaces).
+ */
+function nameFromSlug(slug) {
+  const core = slug.replace(/^g360-/i, '').replace(/^-+|-+$/g, '');
+  return core
+    .replace(/-([a-z])/g, (_, c) => ' ' + c.toUpperCase())
+    .replace(/\b\w/g, (l) => l.toUpperCase())
+    .trim();
+}
+
+/**
+ * Normaliza texto para matching: lowercase y sin acentos.
+ */
+function normalize(s) {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/**
+ * Empareja screenshots con features por tokens con sinonimos ES/EN.
+ * Greedy: primero los pares con mejor score; cada screenshot se asigna 1 vez.
+ */
+function matchScreenshots(result) {
+  const shots = result.screenshots.map((s) => ({
+    ...s,
+    tokens: normalize(s.filename.replace(/\.(png|jpe?g|webp)$/i, '')).split(/[^a-z0-9]+/).filter(Boolean),
+  }));
+
+  const candidatePairs = [];
+  result.features.forEach((f, fi) => {
+    const featTokens = [normalize(f.name), ...normalize(f.name).split(/[^a-z0-9]+/)]
+      .filter((t) => t.length >= 3);
+    shots.forEach((shot, si) => {
+      let score = 0;
+      for (const ft of featTokens) {
+        for (const st of shot.tokens) {
+          if (ft === st || st.includes(ft) || ft.includes(st)) score += 2;
+        }
+        // sinonimos: alerts <-> alertas, search <-> buscar, etc.
+        for (const syn of SHOT_SYNONYMS[ft] || []) {
+          if (shot.tokens.includes(syn)) score += 1;
+        }
+      }
+      if (score > 0) candidatePairs.push({ fi, si, score });
+    });
+  });
+
+  const usedShots = new Set();
+  const usedFeats = new Set();
+  candidatePairs
+    .sort((a, b) => b.score - a.score)
+    .forEach(({ fi, si }) => {
+      if (usedShots.has(si) || usedFeats.has(fi)) return;
+      result.features[fi].screenshotIndex = si;
+      usedShots.add(si);
+      usedFeats.add(fi);
+    });
 }
 
 /**
@@ -204,15 +346,38 @@ const WEB_ROUTE_MAP = {
   config: 'Configuración y preferencias de la app',
 };
 
+/**
+ * Componentes web: display amigable + descripcion.
+ * infra: true = componente interno de la app, no es funcionalidad de usuario.
+ */
 const WEB_COMPONENT_MAP = {
-  'app-root': 'Contenedor principal de la aplicación',
-  'stock-header': 'Encabezado con estado de conexión y acciones',
-  'stock-search': 'Búsqueda de productos con coincidencias en vivo',
-  'stock-alerts': 'Alertas de quiebres de stock y reposición',
-  'estado-panel': 'Panel de estado por almacén/producto',
-  'pulso-form': 'Formulario de registro de datos de campo',
-  'sin-catalogo-panel': 'Aviso de catálogo no disponible con acción de carga',
-  'login': 'Autenticación y validación de acceso',
+  'app-root': { infra: true, display: 'Contenedor principal', desc: 'Contenedor principal de la aplicación' },
+  'stock-header': { display: 'Encabezado de la app', desc: 'Encabezado con estado de conexión y acciones' },
+  'stock-search': { display: 'Buscador de productos', desc: 'Búsqueda de productos con coincidencias en vivo' },
+  'stock-alerts': { display: 'Alertas de stock', desc: 'Alertas de quiebres de stock y reposición' },
+  'estado-panel': { display: 'Panel de estado', desc: 'Panel de estado por almacén/producto' },
+  'pulso-form': { display: 'Formulario de registro', desc: 'Formulario de registro de datos de campo' },
+  'sin-catalogo-panel': { display: 'Aviso de catálogo', desc: 'Aviso de catálogo no disponible con acción de carga' },
+  'login': { display: 'Acceso', desc: 'Autenticación y validación de acceso' },
+};
+
+/** Sinónimos ES/EN para emparejar screenshots con features */
+const SHOT_SYNONYMS = {
+  alerts: ['alertas', 'alerta'],
+  alert: ['alertas', 'alerta'],
+  search: ['buscar', 'busqueda'],
+  dashboard: ['inicio', 'hoy'],
+  report: ['reporte', 'reportes', 'informe'],
+  form: ['formulario', 'form'],
+  catalog: ['catalogo'],
+  state: ['estado'],
+  clients: ['clientes'],
+  client: ['clientes'],
+  net: ['netos'],
+  ficha: ['ficha'],
+  radar: ['radar'],
+  login: ['ingreso', 'acceso'],
+  header: ['encabezado'],
 };
 
 /**
@@ -234,6 +399,7 @@ async function analyzeWebApp(projectDir, result) {
 
   // Framework
   if (hasDep('@sveltejs/kit')) result.framework = result.framework || 'SvelteKit';
+  else if (hasDep('solid-js') || hasDep('solid')) result.framework = result.framework || 'SolidJS';
   else if (hasDep('lit')) result.framework = result.framework || 'Lit';
   else if (hasDep('react')) result.framework = result.framework || 'React';
   else if (hasDep('vue')) result.framework = result.framework || 'Vue';
@@ -271,13 +437,16 @@ async function analyzeWebApp(projectDir, result) {
   const componentsDir = path.join(projectDir, 'src', 'components');
   if (result.features.length === 0 && await fs.pathExists(componentsDir)) {
     const files = (await fs.readdir(componentsDir))
-      .filter((f) => /\.(js|ts)$/.test(f));
+      .filter((f) => /\.(js|ts|tsx|jsx)$/.test(f));
     for (const file of files) {
-      const base = file.replace(/\.(js|ts)$/, '');
+      const base = file.replace(/\.(js|ts|tsx|jsx)$/, '');
+      if (WEB_INFRA_NAMES.has(base.toLowerCase())) continue;
+      const known = WEB_COMPONENT_MAP[base];
+      if (known?.infra) continue; // contenedores internos no son funcionalidades
       result.features.push({
         name: base,
-        display: componentDisplayName(base),
-        desc: WEB_COMPONENT_MAP[base] || `Componente de interfaz ${base}.`,
+        display: known?.display || describeComponentName(base),
+        desc: known?.desc || `Sección dedicada a ${describeComponentName(base).toLowerCase()}.`,
         file: `src/components/${file}`,
         path: path.join(componentsDir, file),
         kind: 'component',
@@ -320,15 +489,31 @@ async function analyzeWebApp(projectDir, result) {
   }
 }
 
-function componentDisplayName(base) {
-  return base
-    .replace(/-([a-z])/g, (_, c) => ' ' + c.toUpperCase())
+/**
+ * Convierte PascalCase a nombre descriptivo separando palabras.
+ * Ejemplo: PersonalDataSection → "Personal Data Section"
+ */
+function describeComponentName(pascalName) {
+  return pascalName
+    .replace(/([A-Z])/g, ' $1')
+    .trim()
     .replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
-function capitalize(s) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
+/** Componentes que son infraestructura interna y no funcionalidad de usuario */
+const WEB_INFRA_NAMES = new Set(['app', 'app-root', 'root', 'main', 'index', '__init__', 'entrypoint']);
+
+/** Mapeo de palabras comunes EN→ES para nombres de componentes web */
+const WORD_MAP = {
+  preview: 'vista previa', panel: 'panel', section: 'sección', modal: 'ventana modal',
+  form: 'formulario', buttons: 'botones', button: 'botón', contact: 'contacto',
+  social: 'social', banner: 'banner', alerts: 'alertas', alert: 'alerta',
+  search: 'búsqueda', catalog: 'catálogo', stock: 'stock', config: 'configuración',
+  advanced: 'avanzada', personal: 'personal', data: 'datos',
+  visual: 'visual', customization: 'personalización', upload: 'carga',
+  signature: 'firma', creator: 'generador', generator: 'generador',
+  status: 'estado', dashboard: 'panel principal', action: 'acción',
+};
 
 /** Busca recursivamente +page.svelte dentro de un directorio de ruta (subrutas dinámicas incluidas). */
 async function findPageSvelte(dir, depth = 0) {

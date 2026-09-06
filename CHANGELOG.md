@@ -7,6 +7,25 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.17.1] - 2026-09-05
+
+### Fixed
+- **Brand por skill name**: `skill.json` con `skill: "cipsa-*"` ahora detecta theme cipsa (ej. `cipsa-movil` → theme CIPSA)
+- **Match de screenshots ES/EN**: matching semántico con sinónimos (`alerts↔alertas`, `search↔buscar`, `report↔reporte`...) para emparejar capturas con features en repos no ingleses
+- **Nombre del repo**: si el H1 del README es distinto al slug técnico (ej. `g360-stock-reporter-lit` → H1 "StockPulse CIPSA"), se usa el nombre legible para la portada
+- **Descripción desde README**: lee H1 + primer blockquote `>` siguiendo convención G360; filtra badges/banners ASCII
+- **`App.tsx` excluido**: componentes infraestructura (`app-root`, `app`, `main`, `index`) ya no aparecen como features
+- **Soporte SolidJS**: detectado desde `solid-js` en dependencies
+- **Extensiones web completas**: scanner acepta `.tsx` y `.jsx` además de `.js/.ts`
+- **Nombre desde slug**: cuando el H1 no difiere del slug, deriva nombre legible (`g360-signature-creator` → "Signature Creator")
+- **Flujo context-aware**: apps generadoras (nombre con "creator/generator/form") usan pasos tipo *Completar formulario → Previsualizar → Seleccionar formato → Exportar* en vez del flujo Flet genérico
+- **Arquitectura por framework**: web → UI/Hooks/Utils/Config; Flet → UI/Core/Config/Datos
+- **Descripciones de features web**: usan `describeComponentName` en vez del slug en minúsculas
+- **CLI "Theme: null"**: ahora muestra "g360" como fallback cuando no hay tema detectado
+- **Stock-monitor nombre**: corrige "cipsa" → "G360 Stock Monitor" (lea README cuando skill.json tiene nombre genérico)
+
+---
+
 ## [1.17.0] - 2026-09-05
 
 ### Changed
