@@ -16,7 +16,8 @@ export async function list(type, options) {
     components: [],
     skills: [],
     brands: [],
-    ingestion: []
+    ingestion: [],
+    harness: []
   };
 
   const templatesPath = path.join(assetsPath, 'templates');
@@ -51,6 +52,11 @@ export async function list(type, options) {
   const ingestionPath = path.join(assetsPath, 'ingestion');
   if (fs.existsSync(ingestionPath)) {
     assets.ingestion = ['ingestion'];
+  }
+
+  const harnessPath = path.join(assetsPath, 'harness');
+  if (fs.existsSync(harnessPath)) {
+    assets.harness = fs.readdirSync(harnessPath).filter(f => !f.includes('.'));
   }
 
   if (fs.existsSync(snippetsPath)) {
@@ -151,6 +157,17 @@ export async function list(type, options) {
       });
     } else {
       console.log(chalk.gray('  No snippets found'));
+    }
+  }
+
+  if (!type || type === 'all' || type === 'harness') {
+    console.log(chalk.bold.yellow('\n🤖 Harness:'));
+    if (assets.harness.length) {
+      console.log(chalk.gray('  - opencode (skills/g360-ui + commands en .opencode/)'));
+      console.log(chalk.gray('  - kilocode (rules + commands en .kilo/, legacy .kilocode/)'));
+      console.log(chalk.gray('    Run: g360 bring harness'));
+    } else {
+      console.log(chalk.gray('  No harness found'));
     }
   }
 

@@ -14,7 +14,7 @@ const INGESTION_FILES = [
 
 export async function bring(asset, options) {
   const { path: targetPath = '.', dryRun = false, force = false } = options;
-  const targetDir = path.join(process.cwd(), targetPath);
+  const targetDir = path.resolve(targetPath);
   const assetsPath = path.join(__dirname, '../assets');
 
   console.log(chalk.bold.cyan('\n📦 G360 Asset Manager\n'));
@@ -34,6 +34,10 @@ export async function bring(asset, options) {
 
   if (asset === 'ingestion') {
     return installIngestion(targetDir, dryRun, force);
+  }
+
+  if (asset === 'harness' || asset.startsWith('harness/')) {
+    return installHarness(targetDir, asset, dryRun, force);
   }
 
   await copyAssets(assetPath, targetDir, dryRun, force);
@@ -273,6 +277,102 @@ async function installIngestion(targetDir, dryRun, force) {
     progressBar.stop();
     console.error(chalk.red(`\n❌ Error: ${error.message}`));
   }
+}
+
+async function installHarness(targetDir, asset, dryRun, force) {
+  const assetsPath = path.join(__dirname, '../assets');
+  const harnessDir = path.join(assetsPath, 'harness');
+
+  if (!fs.existsSync(harnessDir)) {
+    console.error(chalk.red('❌ Harness asset not found in package.'));
+    return;
+  }
+
+  const scope = asset === 'harness' ? 'all' : asset.split('/')[1];
+  if (!['all', 'opencode', 'kilocode'].includes(scope)) {
+    console.error(chalk.red(`❌ Harness scope "${scope}" not found. Use: harness, harness/opencode, harness/kilocode`));
+    return;
+  }
+
+  const plan = [];
+  const withScope = (s) => scope === 'all' || scope === s;
+
+  if (withScope('opencode')) {
+    plan.push({ src: 'opencode/skills/g360-ui/SKILL.md', dest: '.opencode/skills/g360-ui/SKILL.md' });
+    for (const f of fs.readdirSync(path.join(harnessDir, 'opencode', 'commands'))) {
+      if (f.endsWith('.md')) plan.push({ src: `opencode/commands/${f}`, dest: `.opencode/commands/${f}` });
+    }
+  }
+
+  if (withScope('kilocode')) {
+    for (const f of fs.readdirSync(path.join(harnessDir, 'kilocode', 'rules'))) {
+      if (!f.endsWith('.md')) continue;
+      plan.push({ src: `kilocode/rules/${f}`, dest: `.kilo/rules/${f}` });
+      plan.push({ src: `kilocode/rules/${f}`, dest: `.kilocode/rules/${f}` });
+    }
+    for (const f of fs.readdirSync(path.join(harnessDir, 'kilocode', 'commands'))) {
+      if (f.endsWith('.md')) plan.push({ src: `kilocode/commands/${f}`, dest: `.kilo/commands/${f}` });
+    }
+  }
+
+  plan.push({ src: 'AGENTS.md', dest: 'AGENTS.md', noOverwrite: true });
+
+  if (dryRun) {
+    console.log(chalk.yellow('\n📋 DRY RUN - Would install harness:'));
+    for (const p of plan) console.log(chalk.gray(`   ${p.dest}`));
+    if (withScope('kilocode')) console.log(chalk.gray('   kilo.jsonc (merge instructions)'));
+    return;
+  }
+
+  let copied = 0;
+  let skipped = 0;
+  for (const p of plan) {
+    const srcFile = path.join(harnessDir, p.src);
+    const destFile = path.join(targetDir, p.dest);
+    if ((fs.existsSync(destFile) && !force) || (p.noOverwrite && fs.existsSync(destFile))) {
+      skipped++;
+      continue;
+    }
+    await fs.copy(srcFile, destFile, { overwrite: true });
+    copied++;
+  }
+
+  if (withScope('kilocode')) {
+    const merged = mergeKiloJsonc(targetDir, force);
+    if (merged) copied++;
+    else skipped++;
+  }
+
+  console.log(chalk.green(`\n✅ Harness installed: ${copied} file(s)`));
+  if (skipped > 0) console.log(chalk.yellow(`   ${skipped} skipped (exists — use --force to overwrite)`));
+  console.log(chalk.gray('   OpenCode: .opencode/skills/g360-ui + .opencode/commands/'));
+  console.log(chalk.gray('   Kilo Code: .kilo/rules/ + .kilo/commands/ (+ legacy .kilocode/rules/)'));
+  console.log();
+}
+
+function mergeKiloJsonc(targetDir, force) {
+  const assetsPath = path.join(__dirname, '../assets');
+  const wanted = ['.kilo/rules/g360-less-is-more.md', '.kilo/rules/g360-naming.md'];
+  const dest = path.join(targetDir, 'kilo.jsonc');
+
+  if (!fs.existsSync(dest)) {
+    fs.copySync(path.join(assetsPath, 'harness', 'kilocode', 'kilo.jsonc'), dest);
+    return true;
+  }
+
+  let current;
+  try {
+    current = fs.readJsonSync(dest);
+  } catch {
+    console.log(chalk.yellow('   ⚠ kilo.jsonc has comments or custom format — merge skipped (edit manually)'));
+    return false;
+  }
+
+  const instructions = new Set([...(current.instructions || []), ...wanted]);
+  if (instructions.size === (current.instructions || []).length && !force) return false;
+  current.instructions = [...instructions];
+  fs.writeJsonSync(dest, current, { spaces: 2 });
+  return true;
 }
 
 async function copyAssets(src, dest, dryRun, force) {
