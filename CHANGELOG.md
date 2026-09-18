@@ -7,7 +7,7 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
-## [Unreleased]
+## [1.18.0] - 2026-09-18
 
 ### Added
 - **Sistema de color G360 v3**: escala esmeralda (`accentStrong`, `accentBright`, `accentSoft`, `onAccent`, `accentHover`, `info`) + semanticos en los 18 skills de `g360-skills.json` y en todos los `skill.json` de plantillas. CIPSA con identidad propia (`accent #008F5D`). Schema `skills-schema.json` extendido
