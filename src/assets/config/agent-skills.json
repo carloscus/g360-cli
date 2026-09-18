@@ -61,6 +61,11 @@
       "name": "repo-presenter",
       "description": "Repository presentation and documentation",
       "files": []
+    },
+    {
+      "name": "ui-review",
+      "description": "Review UI/UX: design tokens, type hierarchy, essential components (g360 review)",
+      "files": []
     }
   ]
 }

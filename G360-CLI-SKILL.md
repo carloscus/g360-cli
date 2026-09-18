@@ -11,6 +11,26 @@ El skill G360-CLI permite a OpenCode acceder a:
 - Componentes G360 predefinidos
 - Convenciones de desarrollo del ecosistema G360
 
+## Politica G360 — Less is More (leer primero)
+
+Toda generacion o refactor de UI obedece estas reglas, sin excepcion:
+
+- NO hardcodear colores. Todo color sale de `skill.json` → `theme` / `var(--g360-*)`.
+- NO logica de negocio en UI. `core/` nunca importa el framework UI.
+- NO mas de 3 niveles de nesting visual.
+- SIEMPRE loading visible en operaciones bloqueantes (fetch, threads, exports).
+- SIEMPRE error visible al usuario (toast/SnackBar). Nunca `except: pass` ni `catch {}`.
+- NO duplicar componentes. Reusar desde `src/assets/snippets/snippets.json`.
+- Un componente por archivo. Archivos UI de maximo 400 lineas.
+- Una vista = un solo `<h1>`. Nunca saltar niveles (H1 → H3 prohibido).
+- Maximo 6 pasos tipograficos (H1, H2, H3, body, caption, mono).
+- Toda app incluye los 8 esenciales: header, KPI card, tabla, drop-zone,
+  loading, firma G360, menu export, busqueda.
+
+Verificar con `g360 review` (objetivo >= 90/100) antes de presentar.
+En proyectos con harness instalado, el skill `g360-ui` (OpenCode) y las
+rules `.kilo/rules/g360-*.md` (Kilo Code) aplican esta misma politica.
+
 ## Recursos Disponibles
 
 ### Skills de Identidad Visual
