@@ -7,6 +7,13 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.18.1] - 2026-09-18
+
+### Fixed
+- **`--project` con ruta absoluta**: `g360 review` y `g360 lint` usaban `path.join(cwd, path)` que rompia rutas absolutas; ahora `path.resolve` (mismo fix aplicado antes a `bring -p`)
+
+---
+
 ## [1.18.0] - 2026-09-18
 
 ### Added

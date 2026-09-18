@@ -6,7 +6,7 @@ import { reviewProject, REVIEW_LEVELS } from '../lib/ui-review.js';
 export async function review(targetLevel, options) {
   const { project, json = false } = options;
   const level = REVIEW_LEVELS.includes(targetLevel) ? targetLevel : 'all';
-  const targetDir = project ? path.join(process.cwd(), project) : path.resolve(targetLevel && !REVIEW_LEVELS.includes(targetLevel) ? targetLevel : '.');
+  const targetDir = project ? path.resolve(project) : path.resolve(targetLevel && !REVIEW_LEVELS.includes(targetLevel) ? targetLevel : '.');
 
   if (!fs.existsSync(targetDir)) {
     console.error(chalk.red(`❌ Directorio no encontrado: ${targetDir}`));

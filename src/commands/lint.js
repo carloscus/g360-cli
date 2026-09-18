@@ -29,7 +29,7 @@ const GENERIC_NAMES = ['result', 'data', 'info', 'val', 'obj', 'tmp', 'aux', 'va
 
 export async function lint(targetPath, options) {
   const { level = 'all', project } = options;
-  const targetDir = project ? path.join(process.cwd(), project) : path.resolve(targetPath || '.');
+  const targetDir = project ? path.resolve(project) : path.resolve(targetPath || '.');
 
   if (!fs.existsSync(targetDir)) {
     console.error(chalk.red(`❌ Directorio no encontrado: ${targetDir}`));
