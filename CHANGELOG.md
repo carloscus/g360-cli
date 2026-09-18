@@ -7,6 +7,29 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Sistema de color G360 v3**: escala esmeralda (`accentStrong`, `accentBright`, `accentSoft`, `onAccent`, `accentHover`, `info`) + semanticos en los 18 skills de `g360-skills.json` y en todos los `skill.json` de plantillas. CIPSA con identidad propia (`accent #008F5D`). Schema `skills-schema.json` extendido
+- **Templates web v3** (web-pwa, solid, svelte, lit): `:root` con escala + roles por tema (light usa `#047857`, AA 5.48:1 sobre blanco), botones con `on-accent`, fuente de sistema + `.g360-num` monoespaciada, `theme-color` dual por tema, `base` comentado para GitHub Pages
+- **Flet `theme.py`**: claves `accent_bright`, `accent_soft`, `on_accent`, `accent_hover` en dark/light (aditivas)
+- **`g360 review`**: ignora definiciones de tokens y metas `theme-color` (sin falsos positivos)
+- **`g360 bring -p`**: acepta rutas absolutas (`path.resolve`)
+- **Template `python-flet-polished` sin errores silenciosos**: `except: pass` reemplazados por log (`_log`/`logger.debug` con fallback intacto); review del template 87 → 99/100
+- **`g360 review`**: excluye guards `except ImportError` (imports opcionales idiomaticos)
+- **Distribucion npm**: skill docs (`G360-CLI-SKILL.md`, `AGENTS-UIUX.md`, `opencode-config.json`, `CHANGELOG.md`) incluidas en `files`; tests excluidos del tarball; `LICENSE` MIT creada (faltaba en disco)
+- **Arranque 3.4x mas rapido**: `cli.js` con lazy imports por comando (`--version` 2229ms → 649ms)
+- **`prepublishOnly` real**: `vitest run` + `scripts/validate-assets.js` (schemas, `files` en disco, version sincronizada) bloquea publicar si algo falla
+- **Version sincronizada**: `opencode-config.json` 1.16.0 → 1.17.1 + test invariante `version-sync.test.js`
+- **Release automatizado**: `.github/workflows/release.yml` (tag `v*` → tests → validacion → `npm publish` → `g360.exe` al Release)
+- **`g360 review`**: inspeccion UI/UX estatica con niveles `tokens`, `hierarchy`, `components`, `all`. Detecta framework y paleta desde `skill.json`, puntaje 0-100, salida `--json` para agentes
+- **`g360 bring harness`**: instala integracion IA en cualquier proyecto — skill `g360-ui` + commands para OpenCode (`.opencode/`), rules + workflows para Kilo Code (`.kilo/` + legacy `.kilocode/`), `kilo.jsonc` con merge de `instructions`, `AGENTS.md` agnostico
+- **Politica Less is More**: seccion obligatoria al inicio de `G360-CLI-SKILL.md` (no hardcodear colores, loading siempre, errores visibles, 8 esenciales, objetivo review >= 90)
+- **Agent skill `ui-review`** registrado en `agent-skills.json`
+- **`g360 list harness`**: lista harnesses disponibles (opencode, kilocode)
+
+---
+
 ## [1.17.1] - 2026-09-05
 
 ### Fixed

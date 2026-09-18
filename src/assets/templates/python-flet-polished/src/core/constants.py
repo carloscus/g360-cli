@@ -1,5 +1,8 @@
 from pathlib import Path
+import logging
 import os
+
+_logger = logging.getLogger("g360.app")
 
 try:
     import tomllib
@@ -44,6 +47,6 @@ def get_app_name() -> str:
                 import json
                 data = json.load(f)
                 return data.get("name", "g360-app")
-        except Exception:
-            pass
+        except Exception as ex:
+            _logger.debug("constants: app name not loaded from skill.json: %s", ex)
     return BASE_DIR.name

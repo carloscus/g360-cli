@@ -1,11 +1,18 @@
 import json
+import logging
 from pathlib import Path
 
-# Colores G360 estandar como referencia
+_logger = logging.getLogger("g360.app")
+
+# Colores G360 estandar como referencia (v3: escala esmeralda + roles por tema)
 G360_DEFAULTS = {
     "dark": {
         "accent": "#10B981",
         "accent_dark": "#047857",
+        "accent_bright": "#34D399",
+        "accent_soft": "#1F10B981",
+        "accent_hover": "#34D399",
+        "on_accent": "#06281C",
         "success": "#34D399",
         "warning": "#F59E0B",
         "error": "#EF4444",
@@ -36,6 +43,10 @@ G360_DEFAULTS = {
     "light": {
         "accent": "#047857",
         "accent_dark": "#065F46",
+        "accent_bright": "#00D084",
+        "accent_soft": "#1F047857",
+        "accent_hover": "#065F46",
+        "on_accent": "#FFFFFF",
         "success": "#15803D",
         "warning": "#B45309",
         "error": "#DC2626",
@@ -116,8 +127,8 @@ def _load_skill_colors(skill_path: Path = None) -> dict | None:
             with open(skill_path, encoding="utf-8") as f:
                 data = json.load(f)
                 return data.get("colors", {})
-    except Exception:
-        pass
+    except Exception as ex:
+        _logger.debug("theme: skill colors not loaded: %s", ex)
     return None
 
 
@@ -159,8 +170,8 @@ def _get_app_name() -> str:
             with open(skill_path, encoding="utf-8") as f:
                 data = json.load(f)
                 return data.get("name", Path(__file__).resolve().parent.parent.parent.name)
-    except Exception:
-        pass
+    except Exception as ex:
+        _logger.debug("theme: app name not loaded from skill.json: %s", ex)
     return Path(__file__).resolve().parent.parent.parent.name
 
 
@@ -172,8 +183,8 @@ def load_theme_preference() -> str:
             with open(config_file, encoding="utf-8") as f:
                 config = json.load(f)
                 return config.get("theme_mode", "dark")
-    except Exception:
-        pass
+    except Exception as ex:
+        _logger.debug("theme: preference not loaded: %s", ex)
     return "dark"
 
 
@@ -185,8 +196,8 @@ def save_theme_preference(mode: str):
         config = {"theme_mode": mode}
         with open(config_file, "w", encoding="utf-8") as f:
             json.dump(config, f)
-    except Exception:
-        pass
+    except Exception as ex:
+        _logger.debug("theme: preference not saved: %s", ex)
 
 
 def set_brand_colors(colors: dict):

@@ -57,10 +57,10 @@ def _load_cache() -> tuple[dict, str | None]:
         _log(f"_load_cache: corrupt cache file, removing: {ex}")
         try:
             CACHE_FILE.unlink(missing_ok=True)
-        except Exception:
-            pass
-    except Exception:
-        pass
+        except Exception as ex:
+            _log(f"_load_cache: could not remove corrupt cache: {ex}")
+    except Exception as ex:
+        _log(f"_load_cache: unexpected error, starting with empty data: {ex}")
     return {}, None
 
 
@@ -138,7 +138,7 @@ class G360App:
         try:
             self.page.window_center()
         except AttributeError:
-            pass
+            _log("_setup_page: window_center() not available in this Flet version")
 
         fonts_dir = Path(__file__).resolve().parent.parent.parent / "assets" / "fonts"
         self.page.fonts = {

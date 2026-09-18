@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npx vitest run
+
+      - name: Validate assets
+        run: node scripts/validate-assets.js
+
+      - name: Check tag matches package.json
+        shell: pwsh
+        run: |
+          $pkg = (Get-Content package.json | ConvertFrom-Json).version
+          $tag = "${{ github.ref_name }}".TrimStart('v')
+          if ($pkg -ne $tag) { throw "Tag v$tag != package.json $pkg" }
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Build portable exe
+        run: npm run build:portable
+
+      - name: Upload exe to release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: 'dist/g360.exe'
+          allowUpdates: true
+          omitBodyDuringUpdate: true

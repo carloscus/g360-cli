@@ -29,7 +29,11 @@
     "border": "#ffffff17",
     "text_muted": "#8fa0ba",
     "text_primary": "#f1f5fb",
-    "text_secondary": "#c9d4e6"
+    "text_secondary": "#c9d4e6",
+    "accentStrong": "#047857",
+    "accentBright": "#6ee7b7",
+    "accentSoft": "rgba(52, 211, 153, 0.12)",
+    "onAccent": "#06281c"
   },
   "effects": {
     "glassmorphism": true,

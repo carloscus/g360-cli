@@ -41,32 +41,57 @@ src/
 | Signals/Stores | camelCase | `$isLoading`, `filteredItems` |
 | Event handlers | on + PascalCase | `onClick`, `onFileChange` |
 
-### 1.2 Theme Colors (Todos los frameworks)
+### 1.2 Theme Colors v3 (Todos los frameworks)
 
-Definidos en `skill.json` y expuestos como variables CSS o constantes:
+Sistema G360 v3: escala esmeralda + roles por tema. Definidos en `skill.json`
+(`accentStrong`, `accentBright`, `accentSoft`, `onAccent`, `info`) y expuestos
+como variables CSS o constantes. El rol `accent` cambia por tema: brillante en
+dark (#00d084), profundo en light (#047857, AA sobre blanco).
 
 ```css
-/* CSS custom properties (React, Solid, Svelte, Lit) */
+/* CSS custom properties (React, Solid, Svelte, Lit) — dark default */
 :root {
   --g360-bg: #0b1220;
   --g360-surface: #1a2332;
-  --g360-accent: #00d084;
+  --g360-accent-strong: #047857;   /* texto/bordes sobre claro */
+  --g360-accent: #00d084;          /* marca (dark) */
+  --g360-accent-bright: #34d399;   /* glow/highlights sobre oscuro */
+  --g360-accent-soft: rgba(0, 208, 132, 0.12); /* superficies teñidas */
+  --g360-accent-hover: #34d399;
+  --g360-on-accent: #06281c;       /* texto sobre fills de acento */
   --g360-text: #f0f4f8;
   --g360-muted: #94a3b8;
+  --g360-info: #3b82f6;
   --g360-success: #22c55e;
   --g360-warning: #f59e0b;
   --g360-error: #ef4444;
   --g360-radius: 12px;
   --g360-blur: 12px;
+  --g360-font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --g360-font-mono: 'JetBrains Mono', 'Consolas', monospace; /* solo datos */
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --g360-bg: #ffffff;
+    --g360-surface: #f5f5f5;
+    --g360-accent: #047857;        /* rol adaptado: AA 5.48:1 sobre blanco */
+    --g360-accent-hover: #065f46;
+    --g360-on-accent: #ffffff;
+    --g360-text: #1f2937;
+    --g360-muted: #6b7280;
+  }
 }
 ```
 
 ```python
-# G360Theme (Flet, CustomTkinter)
-theme = G360Theme()
-theme.bg      # "#0b1220"
-theme.accent  # "#00d084"
+# theme.py (Flet, CustomTkinter) — get_colors() ya resuelve por modo
+colors["accent_bright"]  # "#34D399" en dark
+colors["on_accent"]      # "#06281C" en dark, "#FFFFFF" en light
+colors["accent_soft"]    # tinte para superficies (con alpha)
 ```
+
+Reglas: texto sobre acento usa SIEMPRE `on-accent` (nunca `bg`);
+monoespaciada solo para numeros/KPIs/codigo (`.g360-num` en web).
 
 ---
 

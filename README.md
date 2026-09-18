@@ -16,7 +16,7 @@
 ```mermaid
 flowchart TD
     CLI["g360 CLI<br/>cli.js"]
-    CMD["Comandos<br/>init · bring · audit · ingest · scan · validate"]
+    CMD["Comandos<br/>init · bring · audit · lint · review · clean · convert · docs · pptx · ingest · scan · validate"]
     LIB["Librerías<br/>manifest · auditor · validator · logger"]
     ASSETS["Assets<br/>templates · brand · signature · ingestion"]
     PY["g360-core (PyPI)<br/>commercial_engine · pipeline · batch_processor"]
@@ -85,6 +85,10 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 - **Precio efectivo** - PRECIO_BASE, RECARGO_UNITARIO y PRECIO_EFECTIVO separan precio físico de ajustes financieros FAE
 - **Paquete Python** - `g360-core` en PyPI para pipelines de datos independientes
 - **Auditoría** - Verifica compliance de proyectos G360
+- **Lint** - Nomenclatura, duplicados y sintaxis con puntaje 0-100
+- **Review UI** - Tokens de diseño, jerarquía tipográfica y 8 componentes esenciales (`g360 review`, objetivo >= 90)
+- **Harness IA** - Skill + commands para OpenCode y rules + workflows para Kilo Code (`g360 bring harness`)
+- **Color System v3** - Escala esmeralda con roles por tema (AA en light y dark), identidad CIPSA propia
 - **Limpieza** - Elimina assets embebidos antes de deployment
 - **Multi-plantilla** - Web (Lit, Solid, Svelte, PWA, React), Python (CLI, Flet ⭐, Flet Polished ⭐, CustomTkinter, Migration)
 - **Flet Polished** - Template estandar con dual theme, auto-refresh, hash cache, search debounce, KPI glow, G360 signature, portable launcher
@@ -118,7 +122,7 @@ npm install -g g360-cli
 
 ```bash
 g360 --version
-# → 1.15.0
+# → 1.17.1
 
 g360 health
 ```
@@ -127,9 +131,12 @@ g360 health
 
 ```bash
 npm version patch   # o minor / major
-git push --tags
-npm publish
+git push --tags     # CI publica a npm y sube g360.exe al Release (requiere secret NPM_TOKEN)
 ```
+
+El workflow `.github/workflows/release.yml` corre tests + `validate-assets.js`,
+verifica que el tag coincida con `package.json`, publica a npm y adjunta
+`dist/g360.exe` al Release. Publicacion manual (sin CI): `npm publish`.
 
 ---
 
@@ -325,7 +332,35 @@ g360 bring engine/g360-skill-audit
 
 # Traer ingestion module ERP a proyecto Flet existente
 g360 bring ingestion
+
+# Instalar integracion IA (OpenCode + Kilo Code)
+g360 bring harness
+g360 bring harness/opencode   # solo OpenCode (.opencode/)
+g360 bring harness/kilocode   # solo Kilo Code (.kilo/ + legacy .kilocode/)
 ```
+
+### `g360 bring harness`
+
+Instala los archivos de integracion con harnesses de IA en el proyecto actual.
+
+```bash
+g360 bring harness [opciones]
+```
+
+**Scopes:** `harness` (todo), `harness/opencode`, `harness/kilocode`
+
+**Archivos instalados:**
+
+| Destino | Contenido |
+|---------|-----------|
+| `.opencode/skills/g360-ui/SKILL.md` | Skill primario UI (politica Less is More) |
+| `.opencode/commands/g360-review.md` | Slash command de revision UI |
+| `.opencode/commands/g360-ship.md` | Slash command del pipeline completo |
+| `.kilo/rules/g360-*.md` | Rules de politica + naming (Kilo Code) |
+| `.kilo/commands/g360-*.md` | Workflows de revision y ship |
+| `.kilocode/rules/` | Copia legacy para compatibilidad |
+| `kilo.jsonc` | `instructions` (merge, no sobrescribe) |
+| `AGENTS.md` | Guia agnostica (solo si no existe) |
 
 ### `g360 bring ingestion`
 
@@ -1151,24 +1186,24 @@ g360-cli/
 |---------|-------------|
 | `npm run build` | Build portable con pkg (g360.exe) |
 | `npm run build:portable` | Especificar target node18-win-x64 |
-| `npm test` | Ejecutar tests con Vitest (57 tests, 9 suites) |
-| `npm run prepublishOnly` | Validación antes de publicar en npm |
+| `npm test` | Ejecutar tests con Vitest (88 tests, 11 suites) |
+| `npm run prepublishOnly` | Validación antes de publicar en npm (tests + schemas + files + versión) |
 
 ---
 
 ## Testing
 
 ```bash
-npm test            # Vitest — 57 tests, 9 suites
+npm test            # Vitest — 88 tests, 11 suites
 npm run test:watch  # Modo watch
 npm run test:ui     # UI interactiva
 npm run test:coverage
 ```
 
-**Cobertura actual (v1.12.0):**
+**Cobertura actual (v1.17.1):**
 - `commands/`: init, bring, list, audit, set-skill, addon
-- `lib/`: manifest, validator, asset-validator, python_runner
-- **53 passing / 1 timeout** (init.test.js requiere import pesado de inquirer)
+- `lib/`: manifest, validator, asset-validator, python_runner, ui-review, version-sync
+- **88 passing**
 
 ---
 
@@ -1334,6 +1369,47 @@ g360 lint --project ./mi-proyecto
 ```
 
 **Puntaje:** `g360 lint` asigna un puntaje de 0 a 100 basado en la cantidad de hallazgos.
+
+---
+
+### `g360 review`
+
+Revisa la UI del proyecto: tokens de diseño, jerarquía tipográfica y componentes esenciales. Detecta el framework (Flet, React, Solid, Svelte, Lit, Vue, CustomTkinter) y la paleta desde `skill.json`.
+
+```bash
+g360 review [level] [opciones]
+```
+
+**Niveles:**
+
+| Nivel | Qué revisa |
+|---|---|
+| `tokens` | Colores hardcodeados vs paleta de `skill.json`, `rgb()` literales, colores fuera de paleta |
+| `hierarchy` | Múltiples `<h1>`, saltos de nivel (H1→H3), tamaños fuera de escala 10-64, más de 6 pasos tipográficos |
+| `components` | 8 esenciales (header, KPI, tabla, drop-zone, loading, firma, export, búsqueda) + antipatrones (sin loading, errores silenciosos, `print`/`console.log` en UI, archivos >400 líneas) |
+| `all` (default) | Todas las anteriores |
+
+**Opciones:**
+
+| Opción | Descripción | Valor por defecto |
+|--------|-------------|-------------------|
+| `--project <ruta>` | Ruta del proyecto | `.` |
+| `--json` | Salida JSON (para agentes) | `false` |
+
+**Ejemplos:**
+
+```bash
+# Revisar todo el proyecto
+g360 review
+
+# Solo paleta de colores
+g360 review tokens
+
+# Salida JSON para un agente
+g360 review --json --project ./mi-app
+```
+
+**Puntaje:** `g360 review` asigna un puntaje de 0 a 100. Objetivo: >= 90 antes de presentar.
 
 ---
 

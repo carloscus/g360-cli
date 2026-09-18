@@ -2,27 +2,34 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import fs from 'fs-extra';
+import { readFileSync } from 'node:fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { init } from './commands/init.js';
-import { setSkill } from './commands/set-skill.js';
-import { bring } from './commands/bring.js';
-import { list } from './commands/list.js';
-import { present } from './commands/present.js';
-import { audit } from './commands/audit.js';
-import { clean } from './commands/clean.js';
-import { health } from './commands/health.js';
-import { update } from './commands/update.js';
-import { convert } from './commands/convert.js';
-import { signature } from './commands/signature.js';
-import { scan } from './commands/scan.js';
-import { validate } from './commands/validate.js';
-import { ingest } from './commands/ingest.js';
-import { addon } from './commands/addon.js';
-import { docs } from './commands/docs.js';
-import { lint } from './commands/lint.js';
-import { pptx } from './commands/pptx.js';
+
+// Lazy-load de comandos: cada modulo se importa solo cuando se invoca.
+// Mantiene `g360 --version` y `g360 --help` rapidos (sin arrastrar inquirer).
+const lazy = (modulePath, exportName) => (...args) =>
+  import(modulePath).then((m) => m[exportName](...args));
+
+const init = lazy('./commands/init.js', 'init');
+const setSkill = lazy('./commands/set-skill.js', 'setSkill');
+const bring = lazy('./commands/bring.js', 'bring');
+const list = lazy('./commands/list.js', 'list');
+const present = lazy('./commands/present.js', 'present');
+const audit = lazy('./commands/audit.js', 'audit');
+const clean = lazy('./commands/clean.js', 'clean');
+const health = lazy('./commands/health.js', 'health');
+const update = lazy('./commands/update.js', 'update');
+const convert = lazy('./commands/convert.js', 'convert');
+const signature = lazy('./commands/signature.js', 'signature');
+const scan = lazy('./commands/scan.js', 'scan');
+const validate = lazy('./commands/validate.js', 'validate');
+const ingest = lazy('./commands/ingest.js', 'ingest');
+const addon = lazy('./commands/addon.js', 'addon');
+const docs = lazy('./commands/docs.js', 'docs');
+const lint = lazy('./commands/lint.js', 'lint');
+const review = lazy('./commands/review.js', 'review');
+const pptx = lazy('./commands/pptx.js', 'pptx');
 
 // Comando config (no requiere archivo separado)
 function configAction(options) {
@@ -61,7 +68,7 @@ function configAction(options) {
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const pkg = fs.readJsonSync(path.join(__dirname, '../package.json'));
+const pkg = JSON.parse(readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
 
 const program = new Command();
 
@@ -212,6 +219,13 @@ program
   .argument('[level]', 'Lint level: naming, duplicates, syntax, structure, all', 'all')
   .option('--project <path>', 'Project path', '.')
   .action(lint);
+
+program
+  .command('review')
+  .argument('[level]', 'Review level: tokens, hierarchy, components, all', 'all')
+  .option('--project <path>', 'Project path', '.')
+  .option('--json', 'Output as JSON')
+  .action(review);
 
 program
   .command('pptx')
