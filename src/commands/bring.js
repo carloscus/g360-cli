@@ -36,6 +36,10 @@ export async function bring(asset, options) {
     return installIngestion(targetDir, dryRun, force);
   }
 
+  if (asset === 'layouts' || asset.startsWith('layouts/')) {
+    return installLayouts(targetDir, asset, dryRun);
+  }
+
   if (asset === 'harness' || asset.startsWith('harness/')) {
     return installHarness(targetDir, asset, dryRun, force);
   }
@@ -200,6 +204,47 @@ async function applyBrandFavicons(targetDir, brandName, dryRun) {
       }
     }
   }
+}
+
+/**
+ * Copia layouts del catalogo al proyecto (docs/diseño) para referencia
+ * del agente. `g360 bring layouts` trae todos; `layouts/<name>` uno solo.
+ */
+async function installLayouts(targetDir, asset, dryRun) {
+  const assetsPath = path.join(__dirname, '../assets');
+  const layoutsDir = path.join(assetsPath, 'layouts');
+  const onlyName = asset.startsWith('layouts/') ? asset.split('/')[1] : null;
+
+  if (!fs.existsSync(layoutsDir)) {
+    console.error(chalk.red('❌ Layouts asset not found in package.'));
+    return;
+  }
+
+  let files = fs.readdirSync(layoutsDir).filter((f) => f.endsWith('.md'));
+  if (onlyName) {
+    files = files.filter((f) => f === `${onlyName}.md`);
+    if (files.length === 0) {
+      console.error(chalk.red(`❌ Layout "${onlyName}" not found.`));
+      console.log(chalk.gray('   Run "g360 list layouts" to see available layouts.'));
+      return;
+    }
+  }
+
+  const destDir = path.join(targetDir, 'g360', 'layouts');
+
+  if (dryRun) {
+    console.log(chalk.yellow('\n📋 DRY RUN - Would install layouts:'));
+    for (const f of files) console.log(chalk.gray(`   g360/layouts/${f}`));
+    return;
+  }
+
+  fs.mkdirpSync(destDir);
+  for (const f of files) {
+    fs.copySync(path.join(layoutsDir, f), path.join(destDir, f));
+    console.log(chalk.gray(`   + g360/layouts/${f}`));
+  }
+  console.log(chalk.green(`\n✅ ${files.length} layout(s) installed`));
+  console.log(chalk.gray('   Next: g360 plan-ui <layout> --app "Mi pantalla" --out UI-PLAN.md\n'));
 }
 
 async function installIngestion(targetDir, dryRun, force) {

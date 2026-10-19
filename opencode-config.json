@@ -1,6 +1,6 @@
 {
   "name": "g360-cli",
-  "version": "1.18.1",
+  "version": "1.19.0",
   "description": "CLI tool for bootstrapping G360 projects with standardized structure, assets, and identity",
   "opencode": {
     "skill": "G360-CLI-SKILL.md",
@@ -13,7 +13,8 @@
       "skills": "src/assets/config/g360-skills.json",
       "snippets": "src/assets/snippets/snippets.json",
       "templates": "src/assets/templates",
-      "components": "src/assets/components"
+      "components": "src/assets/components",
+      "layouts": "src/assets/layouts"
     },
     "commands": {
       "list": "node src/cli.js list",
@@ -23,7 +24,21 @@
       "audit": "node src/cli.js audit",
       "clean": "node src/cli.js clean",
       "convert": "node src/cli.js convert",
-      "signature": "node src/cli.js signature"
+      "signature": "node src/cli.js signature",
+      "plan-ui": "node src/cli.js plan-ui",
+      "capture": "node src/cli.js capture",
+      "review": "node src/cli.js review",
+      "set-accent": "node src/cli.js set-accent"
+    },
+    "designWorkflow": {
+      "description": "Loop visual obligatorio para UI: plan -> codigo -> captura -> comparar -> review",
+      "steps": [
+        "g360 plan-ui <layout> --out UI-PLAN.md (aprobacion del usuario)",
+        "implementar el plan en codigo",
+        "g360 capture (screenshot de la app Flet)",
+        "agente lee el PNG y compara contra UI-PLAN.md, corrige desviaciones",
+        "g360 review >= 90/100"
+      ]
     },
     "conventions": {
       "framework": "SolidJS",

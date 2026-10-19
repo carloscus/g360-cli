@@ -17,7 +17,8 @@ export async function list(type, options) {
     skills: [],
     brands: [],
     ingestion: [],
-    harness: []
+    harness: [],
+    layouts: []
   };
 
   const templatesPath = path.join(assetsPath, 'templates');
@@ -57,6 +58,19 @@ export async function list(type, options) {
   const harnessPath = path.join(assetsPath, 'harness');
   if (fs.existsSync(harnessPath)) {
     assets.harness = fs.readdirSync(harnessPath).filter(f => !f.includes('.'));
+  }
+
+  const layoutsPath = path.join(assetsPath, 'layouts');
+  if (fs.existsSync(layoutsPath)) {
+    const layoutsJsonPath = path.join(layoutsPath, 'layouts.json');
+    if (fs.existsSync(layoutsJsonPath)) {
+      try {
+        const layoutsData = fs.readJsonSync(layoutsJsonPath);
+        assets.layouts = layoutsData.layouts || [];
+      } catch (error) {
+        console.log(chalk.yellow(`Warning: Could not read layouts config: ${error.message}`));
+      }
+    }
   }
 
   if (fs.existsSync(snippetsPath)) {
@@ -168,6 +182,20 @@ export async function list(type, options) {
       console.log(chalk.gray('    Run: g360 bring harness'));
     } else {
       console.log(chalk.gray('  No harness found'));
+    }
+  }
+
+  if (!type || type === 'all' || type === 'layouts') {
+    console.log(chalk.bold.yellow('\n🗺  Layouts (composicion de pantallas):'));
+    if (assets.layouts.length) {
+      assets.layouts.forEach(l => {
+        console.log(chalk.gray(`  - ${l.name}`));
+        console.log(chalk.gray(`    ${l.description}`));
+        console.log(chalk.gray(`    Cuando: ${l.useWhen}`));
+      });
+      console.log(chalk.gray('\n    Plan: g360 plan-ui <layout> --out UI-PLAN.md'));
+    } else {
+      console.log(chalk.gray('  No layouts found'));
     }
   }
 

@@ -17,6 +17,7 @@ const TEMPLATE_DEFAULTS = {
   'flet-desktop': 'python-flet-polished',
   'flet-desktop-corporativo': 'python-flet-polished',
   'flet-desktop-polished': 'python-flet-polished',
+  'flet-desktop-indigo': 'python-flet-polished',
   'cipsa': 'python-flet-polished',
   'cipsa-movil': 'python-flet-polished',
   'corporativo': 'web-pwa',
@@ -25,6 +26,7 @@ const TEMPLATE_DEFAULTS = {
   'corporativo-g360-movil': 'web-pwa',
   'moderno': 'web-pwa',
   'moderno-movil': 'web-pwa',
+  'moderno-azure': 'web-pwa',
   'minimalista': 'python-cli',
   'custom': 'web-pwa',
 };

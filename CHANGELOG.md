@@ -7,6 +7,24 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.19.0] - 2026-10-19
+
+### Added
+- **Loop visual Flet (`g360 capture`)**: lanza la app via `py/src/g360_capture.py`, espera el render y guarda screenshot en `assets/screenshots/`; el agente lee el PNG y compara contra el plan — diseño UI deja de ser ciego. Detección automática de entrypoint (`main.py` / `src/main.py`), `--wait`, `--timeout`, `--python`
+- **Catalogo de layouts (`src/assets/layouts/`)**: 5 recetas de composicion de pantallas (no widgets sueltos): `dashboard-kpi`, `master-detail`, `wizard`, `sidebar-panels`, `lista-filtros-export`. Cada una con wireframe ASCII, bloques, reglas de composicion, snippets asociados y errores comunes. `g360 list layouts`, `g360 bring layouts [/<name>]`
+- **`g360 plan-ui <layout>`**: wireframe en texto antes de generar codigo; emite plan con bloques, checklist de composicion y el loop de verificacion (aprobacion del usuario -> codigo -> capture -> review)
+- **Flujo de diseño documentado**: seccion "Flujo de Diseño UI (loop visual)" en `G360-CLI-SKILL.md` + `designWorkflow` en `opencode-config.json` (el agente guía el proceso sin adivinar)
+- **`g360 capture` verificado end-to-end** contra `g360-erp-nc-sustentor` con flet 0.28.3: la ventana (`FLUTTER_RUNNER_WIN32_WINDOW`) vive en un **proceso hijo** lanzado por flet-desktop — el capturador la localiza recorriendo el árbol de procesos (Win32) y captura con Pillow (`ImageGrab`), sin tocar la app. Fallback a `page.screenshot_async()`/`screenshot()` si una versión futura de flet las expone. Cierre graceful + watchdog de 4s para no dejar el proceso colgado
+- **Tests**: `plan-ui.test.js` (catalogo, buildPlan, detección de entrypoint)
+- **Sistema de familias de acento** (`src/assets/config/accent-families.json`): 7 familias seleccionables (`emerald`, `cyan`, `azure`, `indigo`, `violet`, `amber`, `rose`) con estructura de tokens simétrica + semánticos fijos; 3 tonos legacy documentados (`teal`, `blue`, `cipsa`) para skills existentes. Todas verificadas contraste AA sobre bg oscuro/claro (≥4.5, calculado)
+- **`g360 set-accent <familia>`**: reescribe los tokens `accent*` del `skill.json` del proyecto con la derivación de la familia e imprime la verificación de contraste (`--dry-run`, `--mode dark|light`)
+- **Skills variantes** `moderno-azure` y `flet-desktop-indigo` (misma simetría, hue alternativo) + mapeo en `TEMPLATE_DEFAULTS`
+- **Fix colisión semántica**: `cipsa`, `cipsa-movil` y `flet-desktop-polished` tenían `accent === success` literal; success pasa a `#22c55e`. Ajuste menor de marca: verde CIPSA `#008F5D` → `#008254` para cumplir AA con texto blanco (4.13 → 4.86)
+- **Gate de invariantes de color** (`accent-families.test.js`): bloquea publicar si algún skill tiene `accent === success`, contraste < 4.5 o `dHue(accent, success) < 25` fuera de las excepciones de marca documentadas
+- **`accentFamily`** declarado en los 20 skills para saber de qué familia derivan sus tokens
+
+---
+
 ## [1.18.1] - 2026-09-18
 
 ### Fixed

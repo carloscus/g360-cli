@@ -328,6 +328,30 @@ import './App.css';
 
 ## Comandos g360-cli Disponibles
 
+### Flujo de Diseño UI (loop visual — usar antes y durante tocar UI)
+
+```bash
+# 1. PLANIFICAR (wireframe en texto antes de generar codigo)
+g360 plan-ui <layout> --app "Nombre pantalla" --sections "KPIs,Grafico,Tabla" --out UI-PLAN.md
+
+# Layouts: dashboard-kpi, master-detail, wizard, sidebar-panels, lista-filtros-export
+# (composiciones, no widgets sueltos — ver: g360 list layouts)
+
+# 2. IMPLEMENTAR siguiendo el plan aprobado
+
+# 3. VER (captura screenshot de la app Flet corriendo)
+g360 capture --project <ruta> [--wait 3] [--timeout 45]
+
+# 4. El agente LEE el PNG, compara contra UI-PLAN.md y corrige desviaciones
+
+# 5. AUDITAR (review estatico, objetivo >= 90/100)
+g360 review --project <ruta>
+```
+
+**Regla**: UI nueva nunca empieza en codigo. Primero plan-ui (aprobacion),
+despues codigo, despues capture + comparacion, despues review. Repetir
+hasta que captura == plan y review >= 90.
+
 ### Inicialización de Proyectos
 
 ```bash
@@ -341,6 +365,24 @@ g360 init <nombre> [opciones]
 # --dry-run                 Previsualizar sin crear
 # --force                   Sobrescribir existente
 ```
+
+### Familias de Acento (derivación simétrica)
+
+```bash
+# Ver familias disponibles (las 7 seleccionables)
+g360 set-accent
+
+# Cambiar la familia del proyecto (reescribe tokens accent* de skill.json)
+g360 set-accent <familia> --project <ruta> [--mode dark|light] [--dry-run]
+
+# Familias: emerald, cyan, azure, indigo, violet, amber, rose
+```
+
+**Sistema**: misma estructura de tokens en todas las familias (simetría),
+semánticos fijos (`success #22c55e`, `warning #f59e0b`, `error #ef4444`,
+`info #3b82f6`), solo cambia el hue. Invariantes validadas por test:
+contraste AA (≥4.5) y `dHue(accent, success) ≥ 25°` salvo excepciones de
+marca (emerald/teal/cipsa, donde `accent === success` sigue prohibido).
 
 ### Gestión de Skills
 
@@ -364,6 +406,9 @@ g360 bring [asset] [opciones]
 # --dry-run            Previsualizar
 # --force              Sobrescribir
 
+# Skills variantes (misma simetria, otro hue):
+#   moderno-azure, flet-desktop-indigo
+#
 # Assets disponibles:
 #   brand               Assets de marca (SVGs, logos, iconos)
 #   brand/cipsa         Aplica marca CIPSA + actualiza skill.json
@@ -371,6 +416,8 @@ g360 bring [asset] [opciones]
 #   components          Componentes UI reutilizables
 #   templates           Plantillas de proyecto
 #   skills              Skills de identidad visual
+#   layouts             Recetas de composicion de pantallas (a g360/layouts/)
+#   layouts/<name>      Un layout especifico (ej. layouts/dashboard-kpi)
 #   all                 Todo
 
 # Ejemplo: aplicar marca CIPSA a proyecto existente

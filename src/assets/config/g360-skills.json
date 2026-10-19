@@ -27,11 +27,12 @@
       "signature": {
         "mode": "powered",
         "text": "powered by G360"
-      }
+      },
+      "accentFamily": "teal"
     },
     {
       "name": "corporativo-movil",
-      "description": "Proyectos para clientes - estilo corporativo - enfoque móvil",
+      "description": "Proyectos para clientes - estilo corporativo - enfoque mÃ³vil",
       "device": "movil",
       "colors": {
         "bg": "#0b1220",
@@ -56,7 +57,8 @@
       "signature": {
         "mode": "powered",
         "text": "powered by G360"
-      }
+      },
+      "accentFamily": "teal"
     },
     {
       "name": "corporativo-g360",
@@ -85,11 +87,12 @@
       "signature": {
         "mode": "powered",
         "text": "powered by G360"
-      }
+      },
+      "accentFamily": "emerald"
     },
     {
       "name": "corporativo-g360-movil",
-      "description": "Proyectos para clientes con colores G360 - enfoque móvil",
+      "description": "Proyectos para clientes con colores G360 - enfoque mÃ³vil",
       "device": "movil",
       "colors": {
         "bg": "#0b1220",
@@ -114,7 +117,8 @@
       "signature": {
         "mode": "powered",
         "text": "powered by G360"
-      }
+      },
+      "accentFamily": "emerald"
     },
     {
       "name": "moderno",
@@ -143,11 +147,12 @@
       "signature": {
         "mode": "own",
         "text": "G360 by ccusi"
-      }
+      },
+      "accentFamily": "emerald"
     },
     {
       "name": "moderno-movil",
-      "description": "Herramientas propias G360 - estilo innovador móvil",
+      "description": "Herramientas propias G360 - estilo innovador mÃ³vil",
       "device": "movil",
       "colors": {
         "bg": "#0b1220",
@@ -172,7 +177,8 @@
       "signature": {
         "mode": "own",
         "text": "G360 by ccusi"
-      }
+      },
+      "accentFamily": "emerald"
     },
     {
       "name": "minimalista",
@@ -201,11 +207,12 @@
       "signature": {
         "mode": "optional",
         "text": "by @carloscus"
-      }
+      },
+      "accentFamily": "blue"
     },
     {
       "name": "custom",
-      "description": "Configuración personalizada - colores ajustables",
+      "description": "ConfiguraciÃ³n personalizada - colores ajustables",
       "device": "both",
       "colors": {
         "bg": "#0b1220",
@@ -230,7 +237,8 @@
       "signature": {
         "mode": "custom",
         "text": "custom"
-      }
+      },
+      "accentFamily": "emerald"
     },
     {
       "name": "flet-desktop",
@@ -261,7 +269,8 @@
         "text": "G360 Desktop"
       },
       "framework": "flet",
-      "portable": true
+      "portable": true,
+      "accentFamily": "emerald"
     },
     {
       "name": "flet-desktop-corporativo",
@@ -292,7 +301,8 @@
         "text": "powered by G360"
       },
       "framework": "flet",
-      "portable": true
+      "portable": true,
+      "accentFamily": "teal"
     },
     {
       "name": "cipsa",
@@ -301,15 +311,15 @@
       "colors": {
         "bg": "#0d1117",
         "surface": "#161b22",
-        "accent": "#008F5D",
+        "accent": "#008254",
         "text": "#f0f6fc",
         "muted": "#8b949e",
-        "success": "#008F5D",
+        "success": "#22c55e",
         "warning": "#B45309",
         "error": "#DC2626",
         "accentStrong": "#0B6B47",
         "accentBright": "#34d399",
-        "accentSoft": "rgba(0, 143, 93, 0.14)",
+        "accentSoft": "rgba(0, 130, 84, 0.14)",
         "onAccent": "#ffffff",
         "info": "#0369A1"
       },
@@ -330,7 +340,8 @@
         "logo_alt": "Logo_cipsa_borde.svg",
         "app_icon": "cipsa/favicons/cipsa.ico",
         "description": "Usar logo CIPSA + signature 'powered by G360'. El verde fluorescente #00d084 se mantiene como acento principal."
-      }
+      },
+      "accentFamily": "cipsa"
     },
     {
       "name": "cipsa-movil",
@@ -339,15 +350,15 @@
       "colors": {
         "bg": "#0d1117",
         "surface": "#161b22",
-        "accent": "#008F5D",
+        "accent": "#008254",
         "text": "#f0f6fc",
         "muted": "#8b949e",
-        "success": "#008F5D",
+        "success": "#22c55e",
         "warning": "#B45309",
         "error": "#DC2626",
         "accentStrong": "#0B6B47",
         "accentBright": "#34d399",
-        "accentSoft": "rgba(0, 143, 93, 0.14)",
+        "accentSoft": "rgba(0, 130, 84, 0.14)",
         "onAccent": "#ffffff",
         "info": "#0369A1"
       },
@@ -362,7 +373,8 @@
       },
       "framework": "flet",
       "portable": true,
-      "brand": "cipsa"
+      "brand": "cipsa",
+      "accentFamily": "cipsa"
     },
     {
       "name": "flet-desktop-polished",
@@ -375,7 +387,7 @@
         "accent": "#34d399",
         "text": "#f0f6fc",
         "muted": "#8b949e",
-        "success": "#34d399",
+        "success": "#22c55e",
         "warning": "#f59e0b",
         "error": "#ef4444",
         "accentStrong": "#047857",
@@ -406,7 +418,8 @@
         "search-debounce",
         "kpi-glow-cards",
         "rotating-logger"
-      ]
+      ],
+      "accentFamily": "emerald"
     },
     {
       "name": "react-web",
@@ -436,7 +449,8 @@
         "mode": "powered",
         "text": "powered by G360"
       },
-      "framework": "react"
+      "framework": "react",
+      "accentFamily": "emerald"
     },
     {
       "name": "solid-web",
@@ -466,7 +480,8 @@
         "mode": "powered",
         "text": "powered by G360"
       },
-      "framework": "solid"
+      "framework": "solid",
+      "accentFamily": "emerald"
     },
     {
       "name": "svelte-web",
@@ -496,7 +511,8 @@
         "mode": "powered",
         "text": "powered by G360"
       },
-      "framework": "svelte"
+      "framework": "svelte",
+      "accentFamily": "emerald"
     },
     {
       "name": "lit-web",
@@ -526,7 +542,8 @@
         "mode": "powered",
         "text": "powered by G360"
       },
-      "framework": "lit"
+      "framework": "lit",
+      "accentFamily": "emerald"
     },
     {
       "name": "customtkinter",
@@ -557,7 +574,70 @@
         "text": "powered by G360"
       },
       "framework": "customtkinter",
-      "portable": true
+      "portable": true,
+      "accentFamily": "emerald"
+    },
+    {
+      "name": "moderno-azure",
+      "description": "Herramientas propias G360 en familia azure â€” misma simetria de tokens, otro hue",
+      "device": "pc",
+      "colors": {
+        "bg": "#0b1220",
+        "surface": "#151e2e",
+        "accent": "#38bdf8",
+        "text": "#f0f4f8",
+        "muted": "#94a3b8",
+        "accentStrong": "#0284c7",
+        "accentBright": "#7dd3fc",
+        "accentSoft": "rgba(56, 189, 248, 0.12)",
+        "onAccent": "#0b1220",
+        "info": "#3B82F6",
+        "success": "#22c55e",
+        "warning": "#f59e0b",
+        "error": "#ef4444"
+      },
+      "effects": {
+        "glassmorphism": true,
+        "blur": "16px",
+        "rounded": "16px"
+      },
+      "signature": {
+        "mode": "own",
+        "text": "G360 by ccusi"
+      },
+      "accentFamily": "azure"
+    },
+    {
+      "name": "flet-desktop-indigo",
+      "description": "App Flet desktop en familia indigo â€” patrones pulidos con hue alternativo",
+      "device": "pc",
+      "colors": {
+        "bg": "#0b1220",
+        "surface": "#1a2332",
+        "accent": "#818cf8",
+        "text": "#f0f4f8",
+        "muted": "#94a3b8",
+        "success": "#22c55e",
+        "warning": "#f59e0b",
+        "error": "#ef4444",
+        "accentStrong": "#4f46e5",
+        "accentBright": "#a5b4fc",
+        "accentSoft": "rgba(129, 140, 248, 0.12)",
+        "onAccent": "#0b1220",
+        "info": "#3B82F6"
+      },
+      "effects": {
+        "glassmorphism": true,
+        "blur": "12px",
+        "rounded": "12px"
+      },
+      "signature": {
+        "mode": "own",
+        "text": "G360 Desktop"
+      },
+      "framework": "flet",
+      "portable": true,
+      "accentFamily": "indigo"
     }
   ]
 }

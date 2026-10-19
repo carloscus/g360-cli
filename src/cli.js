@@ -30,6 +30,9 @@ const docs = lazy('./commands/docs.js', 'docs');
 const lint = lazy('./commands/lint.js', 'lint');
 const review = lazy('./commands/review.js', 'review');
 const pptx = lazy('./commands/pptx.js', 'pptx');
+const capture = lazy('./commands/capture.js', 'capture');
+const planUi = lazy('./commands/plan-ui.js', 'planUi');
+const setAccent = lazy('./commands/set-accent.js', 'setAccent');
 
 // Comando config (no requiere archivo separado)
 function configAction(options) {
@@ -159,6 +162,15 @@ program
   .action(convert);
 
 program
+  .command('set-accent')
+  .argument('<familia>', 'Familia de acento: emerald, cyan, azure, indigo, violet, amber, rose')
+  .description('Cambia la familia de acento del skill.json del proyecto (derivacion simetrica)')
+  .option('-p, --project <path>', 'Project path', '.')
+  .option('--mode <modo>', 'Modo de tema: dark (default) o light', 'dark')
+  .option('--dry-run', 'Preview changes without writing')
+  .action(setAccent);
+
+program
   .command('signature')
   .argument('<command>', 'Command to execute: install, positions')
   .description('Install g360-signature branding component')
@@ -236,5 +248,27 @@ program
   .option('--dry-run', 'Preview outline without generating')
   .option('--screenshots <dir>', 'Custom screenshots directory', 'assets/screenshots')
   .action(pptx);
+
+program
+  .command('capture')
+  .description('Loop visual: lanza la app Flet y guarda un screenshot para revision del agente')
+  .option('-p, --project <path>', 'Project path', '.')
+  .option('-e, --entry <file>', 'Flet entrypoint (default: main.py o src/main.py)')
+  .option('-o, --out <file>', 'Output PNG path (default: assets/screenshots/capture-<ts>.png)')
+  .option('-w, --wait <seconds>', 'Seconds to wait after render', '3')
+  .option('-t, --timeout <seconds>', 'Hard timeout', '45')
+  .option('--python <exe>', 'Python interpreter (default: PYTHON env o python/python3)')
+  .action(capture);
+
+program
+  .command('plan-ui')
+  .description('Wireframe en texto a partir de un layout del catalogo (antes de generar codigo)')
+  .argument('<layout>', 'Layout: dashboard-kpi, master-detail, wizard, sidebar-panels, lista-filtros-export')
+  .option('-p, --project <path>', 'Project path', '.')
+  .option('-a, --app <name>', 'App/screen name', 'App G360')
+  .option('-s, --sections <list>', 'Comma-separated sections of this screen')
+  .option('-o, --out <file>', 'Save plan to file (e.g. UI-PLAN.md)')
+  .option('--print', 'Print plan to stdout')
+  .action(planUi);
 
 program.parse();
