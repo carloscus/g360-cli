@@ -8,8 +8,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export async function list(type, options) {
   const { json = false } = options;
   const assetsPath = path.join(__dirname, '../assets');
-  
-  console.log(chalk.bold.cyan('\n📋 G360 Assets\n'));
+
+  // --json debe emitir SOLO JSON (lo parsean agentes): sin header decorativo.
+  if (!json) {
+    console.log(chalk.bold.cyan('\n📋 G360 Assets\n'));
+  }
 
   const assets = {
     templates: [],
