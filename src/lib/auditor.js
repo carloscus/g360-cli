@@ -1,6 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
+import { autonomyAuditor } from './autonomy-auditor.js';
 
 /**
  * @typedef {Object} AuditIssue
@@ -34,7 +35,7 @@ export const auditor = {
    * console.log(`Passed: ${result.passed}, Failed: ${result.failed}`);
    */
   async audit(projectDir, options = {}) {
-    const { verbose = false } = options;
+    const { verbose = false, autonomy = true } = options;
     const results = {
       passed: 0,
       failed: 0,
@@ -49,22 +50,38 @@ export const auditor = {
       { name: 'config', check: () => this.checkConfig(projectDir) }
     ];
 
+    if (autonomy) {
+      checks.push({ name: 'autonomy', check: () => this.checkAutonomy(projectDir) });
+    }
+
     for (const { name, check } of checks) {
       const result = await check();
-      results.total++;
-      
-      if (result.status === 'pass') {
-        results.passed++;
-      } else if (result.status === 'fail') {
-        results.failed++;
-        results.issues.push({ ...result.issue, severity: 'error' });
-      } else if (result.status === 'warn') {
-        results.warnings++;
-        results.issues.push({ ...result.issue, severity: 'warning' });
-      }
+      const findings = Array.isArray(result.findings) ? result.findings : [result];
 
-      if (verbose && result.details) {
-        console.log(chalk.gray(`  ${name}: ${result.details}`));
+      for (const finding of findings) {
+        const file = finding.file ?? finding.issue?.file ?? 'proyecto';
+        const message = finding.message ?? finding.issue?.message ?? '';
+
+        results.total++;
+
+        if (finding.status === 'pass') {
+          results.passed++;
+        } else if (finding.status === 'n/a') {
+          results.passed++;
+        } else if (finding.status === 'fail') {
+          results.failed++;
+          results.issues.push({ file, message, severity: 'error' });
+        } else if (finding.status === 'warn') {
+          results.warnings++;
+          results.issues.push({ file, message, severity: 'warning' });
+        }
+
+        if (verbose) {
+          const detail = finding.details ?? finding.message;
+          if (detail) {
+            console.log(chalk.gray(`  ${name}: ${detail}`));
+          }
+        }
       }
     }
 
@@ -148,5 +165,16 @@ export const auditor = {
       return { status: 'pass', details: 'Config directory found' };
     }
     return { status: 'pass' };
+  },
+
+  /**
+   * Verifica la autosuficiencia del proyecto: debe poder compilar, ejecutarse
+   * y probarse sin el asistente y sin red.
+   * @param {string} projectDir - Directorio del proyecto
+   * @returns {{status: 'pass'|'warn'|'fail', findings: Object[]}} Resultado del check
+   * @private
+   */
+  checkAutonomy(projectDir) {
+    return autonomyAuditor.check(projectDir);
   }
 };

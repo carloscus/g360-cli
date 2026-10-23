@@ -17,6 +17,7 @@ const bring = lazy('./commands/bring.js', 'bring');
 const list = lazy('./commands/list.js', 'list');
 const present = lazy('./commands/present.js', 'present');
 const audit = lazy('./commands/audit.js', 'audit');
+const agents = lazy('./commands/agents.js', 'agents');
 const clean = lazy('./commands/clean.js', 'clean');
 const health = lazy('./commands/health.js', 'health');
 const update = lazy('./commands/update.js', 'update');
@@ -125,7 +126,18 @@ program
   .argument('[path]', 'Path to audit', '.')
   .option('--fix', 'Auto-fix issues when possible')
   .option('--verbose', 'Show detailed output')
+  .option('--no-autonomy', 'Omitir los checks de autosuficiencia')
+  .option('--ecosystem', 'Auditar todos los repos bajo <path>/projects y mostrar un resumen')
   .action(audit);
+
+program
+  .command('agents')
+  .argument('[path]', 'Path to the project', '.')
+  .option('--dry-run', 'Preview without writing')
+  .option('--force', 'Overwrite AGENTS.md entirely (loses manual content)')
+  .option('--env-example', 'Also create .env.example with the detected variables')
+  .option('--ecosystem', 'Generate for every repo under <path>/projects')
+  .action(agents);
 
 program
   .command('clean')

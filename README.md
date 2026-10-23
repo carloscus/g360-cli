@@ -497,7 +497,8 @@ g360 present ./mi-proyecto --depth 2
 
 ### `g360 audit`
 
-Audita el proyecto para compliance G360.
+Audita el proyecto para compliance G360 **y autosuficiencia**: que el repo pueda
+compilar, ejecutarse y probarse sin el asistente y sin red.
 
 ```bash
 g360 audit [ruta] [opciones]
@@ -509,13 +510,82 @@ g360 audit [ruta] [opciones]
 |--------|-------------|
 | `--fix` | Auto-corregir problemas |
 | `--verbose` | Salida detallada |
+| `--no-autonomy` | Omitir los checks de autosuficiencia |
+| `--ecosystem` | Auditar todos los repos bajo `<ruta>/projects` y mostrar un resumen |
+
+**Checks de autosuficiencia:**
+
+| Check | Falla | Aviso |
+|-------|-------|-------|
+| `AGENTS.md` | No existe | — |
+| Comando de verificación | No se declara en `AGENTS.md` | Solo está en el README |
+| `README.md` | No existe | — |
+| Lockfile | — | Declara dependencias sin lockfile |
+| `.env.example` | — | El código lee variables de entorno sin documentar |
+| Tests honestos | — | Hay `skip` / `xfail` / `todo` en archivos de test |
+
+Criterio: `git clone <repo>` + un comando ⇒ la app levanta y los tests pasan,
+sin red y sin intervención humana.
 
 **Ejemplo:**
 
 ```bash
 g360 audit
 g360 audit ./mi-proyecto --verbose
+g360 audit --ecosystem C:\ruta\G360-ecosystem
 ```
+
+**Salida en modo ecosistema:**
+
+```text
+Proyecto                     AGENTS  VERIF   README  LOCK    ENV     TESTS   Estado
+-------------------------------------------------------------------------------------
+g360-price-audit             ✓       ✓       ✓       ✓       ✓       ✓       ok
+g360-ventas-pulse            ✗       !       ✓       ✓       ✓       ✓       fail
+```
+
+---
+
+### `g360 agents`
+
+Genera (o actualiza) el `AGENTS.md` de un repo con el comando de verificación
+real, derivado del stack: `package.json`, `pyproject.toml`, `uv.lock`,
+`go.mod` o `Cargo.toml`.
+
+```bash
+g360 agents [ruta] [opciones]
+```
+
+**Opciones:**
+
+| Opción | Descripción |
+|--------|-------------|
+| `--dry-run` | Simular sin escribir |
+| `--force` | Sobrescribir el `AGENTS.md` entero (pierde lo manual) |
+| `--ecosystem` | Generar para todos los repos bajo `<ruta>/projects` |
+
+El bloque generado va entre markers `<!-- g360:agents:begin -->` y
+`<!-- g360:agents:end -->`: lo que escribas **afuera** de los markers se
+conserva, y regenerar es idempotente.
+
+**Ejemplo:**
+
+```bash
+g360 agents                              # en el repo actual
+g360 agents ./mi-proyecto --dry-run
+g360 agents --ecosystem C:\ruta\G360-ecosystem
+```
+
+Comandos que detecta por stack:
+
+| Stack | Verificación |
+|-------|--------------|
+| Node + Vitest/Jest | `npm ci` + `npm test` |
+| Node sin script de test | `npm run build && npm run lint` (o los que existan) |
+| Python + uv | `uv sync` + `uv run pytest` |
+| Python + pip | `pip install -r requirements.txt` + `pytest` |
+| Go | `go build ./... && go test ./...` |
+| Rust | `cargo build && cargo test` |
 
 ---
 
