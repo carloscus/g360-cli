@@ -24,17 +24,19 @@ function loadSkills() {
 }
 
 describe('accent-families.json', () => {
-  it('has the 7 selectable families plus 3 legacy brand tones', () => {
+  it('has the 7 selectable families plus the legacy brand tones', () => {
     const { families } = loadFamilies();
     const names = Object.keys(families);
     for (const f of ['emerald', 'cyan', 'azure', 'indigo', 'violet', 'amber', 'rose']) {
       expect(names).toContain(f);
     }
-    // legacy: tonos de skills existentes
-    for (const f of ['teal', 'blue', 'cipsa']) {
-      expect(families[f].legacy).toBe(true);
+    // legacy: tonos de skills existentes + navy (tono de deck)
+    for (const f of ['teal', 'blue', 'cipsa', 'navy']) {
+      expect(families[f].legacy, `${f} debe ser legacy`).toBe(true);
     }
-    expect(listFamilyNames().length).toBe(10);
+    const selectable = names.filter((name) => !families[name].legacy);
+    expect(selectable.length).toBe(7);
+    expect(listFamilyNames().length).toBe(names.length);
   });
 
   it('every family exposes the full symmetric token set with valid formats', () => {
@@ -70,9 +72,15 @@ describe('accent-families.json', () => {
       const d = Math.abs(hueOf(a) - hueOf(b));
       return Math.min(d, 360 - d);
     };
-    for (const [name, f] of Object.entries(families)) {
-      if (f.legacy || exempt[name]) continue;
-      expect(dhue(f.accent, semantics.success), `${name} dHue vs success`).toBeGreaterThanOrEqual(rules.minHueDistance);
+    // Los semanticos tienen variante por tema: la regla se verifica en ambas.
+    for (const mode of Object.keys(semantics)) {
+      for (const [name, f] of Object.entries(families)) {
+        if (f.legacy || exempt[name]) continue;
+        expect(
+          dhue(f.accent, semantics[mode].success),
+          `${name} dHue vs success (${mode})`
+        ).toBeGreaterThanOrEqual(rules.minHueDistance);
+      }
     }
   });
 });

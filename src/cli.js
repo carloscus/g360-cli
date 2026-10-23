@@ -18,6 +18,7 @@ const list = lazy('./commands/list.js', 'list');
 const present = lazy('./commands/present.js', 'present');
 const audit = lazy('./commands/audit.js', 'audit');
 const agents = lazy('./commands/agents.js', 'agents');
+const tokens = lazy('./commands/tokens.js', 'tokens');
 const clean = lazy('./commands/clean.js', 'clean');
 const health = lazy('./commands/health.js', 'health');
 const update = lazy('./commands/update.js', 'update');
@@ -138,6 +139,15 @@ program
   .option('--env-example', 'Also create .env.example with the detected variables')
   .option('--ecosystem', 'Generate for every repo under <path>/projects')
   .action(agents);
+
+program
+  .command('tokens')
+  .argument('[path]', 'Path to the project', '.')
+  .option('--skill <name>', 'Skill to apply (default: el del skill.json del proyecto)')
+  .option('--accent <family>', 'Familia de acento a aplicar')
+  .option('--dry-run', 'Preview without writing')
+  .option('--verbose', 'Show detailed output')
+  .action(tokens);
 
 program
   .command('clean')

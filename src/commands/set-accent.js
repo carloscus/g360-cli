@@ -84,10 +84,20 @@ export async function setAccent(familyName, options = {}) {
   skill.updatedAt = new Date().toISOString();
   fs.writeJsonSync(skillPath, skill, { spaces: 2 });
 
+  // La familia tiene que llegar a los estilos, no solo a skill.json.
+  const { refreshTokens } = await import('./tokens.js');
+  const written = refreshTokens(projectDir, {
+    skill: skill.skill ?? null,
+    accentFamily: familyName
+  });
+
   console.log(chalk.green(`✅ Familia "${familyName}" aplicada (${mode}) a ${skillPath}\n`));
   Object.entries(tokens).forEach(([k, v]) => {
     console.log(chalk.gray(`   ${k}: ${v}`));
   });
+  if (written.length > 0) {
+    console.log(chalk.gray(`\n   Tokens reemitidos: ${written.map((item) => item.file).join(', ')}`));
+  }
   if (skill.colors.accent) {
     console.log(chalk.gray(`\n   Verificacion: onAccent/accent = ${contrastRatio(skill.colors.onAccent, skill.colors.accent).toFixed(2)} (objetivo >= 4.5)`));
   }

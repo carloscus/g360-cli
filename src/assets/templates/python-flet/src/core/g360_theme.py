@@ -19,13 +19,18 @@ class G360Theme:
             Path("src/core/skill.json"),
             Path(__file__).resolve().parent.parent.parent / "skill.json",
             Path(__file__).resolve().parent / "skill.json",
-            Path(__file__).resolve().parent.parent / "g360" / "skills" / "flet-desktop.json",
+            Path(__file__).resolve().parent.parent
+            / "g360"
+            / "skills"
+            / "flet-desktop.json",
         ]
         for c in candidates:
             if c.exists():
                 self.config_path = c
                 return
-        raise FileNotFoundError("skill.json not found. Run: g360 init <name> --skill flet-desktop")
+        raise FileNotFoundError(
+            "skill.json not found. Run: g360 init <name> --skill flet-desktop"
+        )
 
     def _load_colors(self):
         with open(self.config_path, encoding="utf-8") as f:
@@ -34,11 +39,18 @@ class G360Theme:
         self.bg = colors.get("bg", "#0b1220")
         self.surface = colors.get("surface", "#1a2332")
         self.accent = colors.get("accent", "#00d084")
+        self.accent_strong = colors.get("accentStrong", "#047857")
+        self.accent_bright = colors.get("accentBright", "#34d399")
+        self.accent_soft = colors.get("accentSoft", "rgba(0, 208, 132, 0.12)")
+        self.on_accent = colors.get("onAccent", "#06281c")
         self.text = colors.get("text", "#f0f4f8")
         self.muted = colors.get("muted", "#94a3b8")
+        self.border = colors.get("border", "rgba(255, 255, 255, 0.10)")
+        self.info = colors.get("info", "#3b82f6")
         self.success = colors.get("success", "#22c55e")
         self.warning = colors.get("warning", "#f59e0b")
         self.error = colors.get("error", "#ef4444")
+        self.overlay = colors.get("overlay", "rgba(11, 18, 32, 0.90)")
         self.brand = self.config.get("brand", "g360")
 
     def _load_effects(self):
@@ -56,7 +68,10 @@ class G360Theme:
             logo_name = "logo-g360-dark.svg"
         paths = [
             Path("assets/images") / logo_name,
-            Path(__file__).resolve().parent.parent.parent / "assets" / "images" / logo_name,
+            Path(__file__).resolve().parent.parent.parent
+            / "assets"
+            / "images"
+            / logo_name,
         ]
         self._logo_path = None
         for p in paths:
@@ -83,7 +98,9 @@ class G360Theme:
         fallback = brand_dir / "logo-g360-dark.svg"
         if fallback.exists():
             raw = fallback.read_bytes()
-            self._logo_b64 = f"data:image/svg+xml;base64,{base64.b64encode(raw).decode()}"
+            self._logo_b64 = (
+                f"data:image/svg+xml;base64,{base64.b64encode(raw).decode()}"
+            )
             return self._logo_b64
         return None
 
@@ -93,10 +110,13 @@ class G360Theme:
 
     def logo_component(self, height=40):
         import flet as ft
+
         src = self.logo_base64()
         if src:
             return ft.Image(src_base64=src, height=height, fit=ft.ImageFit.CONTAIN)
-        return ft.Text(self.build_name(), size=18, weight=ft.FontWeight.BOLD, color=self.accent)
+        return ft.Text(
+            self.build_name(), size=18, weight=ft.FontWeight.BOLD, color=self.accent
+        )
 
     def container(self, content=None, **kwargs):
         kwargs.setdefault("bgcolor", self.surface)
@@ -104,16 +124,19 @@ class G360Theme:
         kwargs.setdefault("padding", 15)
         if self.glassmorphism and "shadow" not in kwargs:
             import flet as ft
+
             kwargs["shadow"] = ft.BoxShadow(
                 spread_radius=1,
                 blur_radius=20,
                 color=f"{self.accent}20",
             )
         import flet as ft
+
         return ft.Container(content=content, **kwargs)
 
     def accent_button(self, text="", on_click=None, **kwargs):
         import flet as ft
+
         return ft.ElevatedButton(
             text=text,
             on_click=on_click,
@@ -128,6 +151,7 @@ class G360Theme:
 
     def styled_text(self, value="", size=14, color=None, weight=None, **kwargs):
         import flet as ft
+
         return ft.Text(
             value=value,
             size=size,
@@ -138,6 +162,7 @@ class G360Theme:
 
     def loading_overlay(self, message="Cargando..."):
         import flet as ft
+
         return ft.Container(
             content=ft.Column(
                 [
@@ -156,8 +181,10 @@ class G360Theme:
 
     def footer_signature(self):
         import flet as ft
+
         try:
             from core.components.g360_signature import g360_footer
+
             mode = self.config.get("signature", {}).get("mode", "powered")
             version = self.config.get("signature", {}).get("version", None)
             return g360_footer(version=version)

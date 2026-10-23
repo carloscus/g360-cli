@@ -50,8 +50,9 @@ export function accentTokensFor(familyName, mode = 'dark') {
     onAccent: isLight ? family.onAccentLight : family.onAccent,
   };
 
-  // Semánticos fijos: iguales en todas las familias (simetria)
-  return { ...tokens, ...data.semantics };
+  // Semanticos por tema: en claro se usan las variantes oscuras (AA sobre blanco).
+  const semantics = data.semantics?.[isLight ? 'light' : 'dark'] ?? data.semantics ?? {};
+  return { ...tokens, ...semantics };
 }
 
 /* ---------- Invariantes de color (WCAG + hue) ---------- */

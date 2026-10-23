@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { accentTokensFor } from '../lib/accent-families.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BRAND_PATH = path.join(__dirname, '..', 'assets', 'brand', 'brand.json');
@@ -188,6 +189,7 @@ async function generateReadme(dir, projectInfo, brand, manifest, skill, dryRun) 
   const template = manifest?.template || projectInfo.type;
   const signature = skill?.signature || { mode: 'powered', text: 'powered by G360' };
   const brandName = brand?.brands?.[skill?.brand || 'g360'];
+  const primaryColor = accentTokensFor(brandName?.accentFamily || 'emerald')?.accent ?? '#00d084';
   const logoPath = brandName?.default_logo || 'logotypes/logo-g360-dark.svg';
   const logoDir = path.dirname(logoPath);
   const logoFile = path.basename(logoPath);
@@ -232,7 +234,8 @@ g360 bring brand
 | Elemento | Valor |
 |---|---|
 | Marca | ${brandName?.name || 'G360'} |
-| Color primario | ${brandName?.primary_color || '#00d084'} |
+| Familia de acento | ${brandName?.accentFamily || 'emerald'} |
+| Color primario | ${primaryColor} |
 | Signature mode | ${signature.mode} |
 | Signature text | "${signature.text}" |
 | Logo | ${logoPath} |

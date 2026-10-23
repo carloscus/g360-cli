@@ -112,9 +112,16 @@ async function applyBrand(targetDir, brandName, dryRun) {
     skill.signature.text = brand.signature.text;
   }
 
-  if (brand.primary_color) {
-    if (!skill.colors) skill.colors = {};
-    skill.colors.accent = brand.primary_color;
+  // La marca aporta la FAMILIA de acento: los colores salen de ahi, no de un
+  // hex propio (asi la marca y la paleta no pueden contradecirse).
+  if (brand.accentFamily) {
+    const { accentTokensFor } = await import('../lib/accent-families.js');
+    const familyTokens = accentTokensFor(brand.accentFamily);
+    if (familyTokens) {
+      if (!skill.colors) skill.colors = {};
+      skill.colors = { ...skill.colors, ...familyTokens };
+      skill.accentFamily = brand.accentFamily;
+    }
   }
 
   fs.writeJsonSync(skillPath, skill, { spaces: 2 });

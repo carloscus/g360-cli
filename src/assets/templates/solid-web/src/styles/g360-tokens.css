@@ -1,0 +1,155 @@
+/* ============================================
+ * G360 Design Tokens
+ * Generado por `g360 tokens` — no editar a mano.
+ * Skill: solid-web | acento: emerald | tema: dark
+ *
+ * El tema por defecto es dark. Para forzar el otro:
+ *   <html data-theme="light">  (o "dark")
+ * Sin data-theme se respeta la preferencia del sistema.
+ * ============================================ */
+
+:root {
+  --g360-bg: #0b1220;
+  --g360-surface: #1a2332;
+  --g360-surface-alt: #1c2941;
+  --g360-overlay: rgba(11, 18, 32, 0.90);
+  --g360-border: rgba(255, 255, 255, 0.10);
+  --g360-border-strong: rgba(255, 255, 255, 0.18);
+  --g360-text: #f0f4f8;
+  --g360-text-muted: #94a3b8;
+  --g360-muted: #94a3b8;
+  --g360-text-inverse: #0b1220;
+  --g360-accent: #00d084;
+  --g360-accent-strong: #047857;
+  --g360-accent-bright: #34d399;
+  --g360-accent-soft: rgba(0, 208, 132, 0.12);
+  --g360-accent-hover: #34d399;
+  --g360-on-accent: #06281c;
+  --g360-success: #22c55e;
+  --g360-warning: #f59e0b;
+  --g360-error: #ef4444;
+  --g360-info: #3b82f6;
+  --g360-glass: rgba(21, 30, 46, 0.75);
+  --g360-blur: 12px;
+  --g360-radius: 12px;
+  --g360-rounded: 12px;
+  --g360-radius-sm: 8px;
+  --g360-font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --g360-font-mono: 'JetBrains Mono', 'Consolas', monospace;
+  --g360-font-size: 14px;
+  --g360-space-xs: 4px;
+  --g360-space-sm: 8px;
+  --g360-space-md: 16px;
+  --g360-space-lg: 24px;
+  --g360-space-xl: 32px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --g360-bg: #ffffff;
+    --g360-surface: #f8fafc;
+    --g360-surface-alt: #eef2f7;
+    --g360-overlay: rgba(255, 255, 255, 0.92);
+    --g360-border: rgba(0, 0, 0, 0.10);
+    --g360-border-strong: rgba(0, 0, 0, 0.18);
+    --g360-text: #1e293b;
+    --g360-text-muted: #64748b;
+    --g360-muted: #64748b;
+    --g360-text-inverse: #ffffff;
+    --g360-accent: #047857;
+    --g360-accent-strong: #047857;
+    --g360-accent-bright: #00d084;
+    --g360-accent-soft: rgba(0, 208, 132, 0.12);
+    --g360-accent-hover: #047857;
+    --g360-on-accent: #ffffff;
+    --g360-success: #15803d;
+    --g360-warning: #b45309;
+    --g360-error: #dc2626;
+    --g360-info: #0369a1;
+    --g360-glass: rgba(255, 255, 255, 0.75);
+    --g360-blur: 16px;
+    --g360-radius: 16px;
+    --g360-rounded: 16px;
+    --g360-radius-sm: 8px;
+    --g360-font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --g360-font-mono: 'JetBrains Mono', 'Consolas', monospace;
+    --g360-font-size: 14px;
+    --g360-space-xs: 4px;
+    --g360-space-sm: 8px;
+    --g360-space-md: 16px;
+    --g360-space-lg: 24px;
+    --g360-space-xl: 32px;
+  }
+}
+
+html[data-theme="light"] {
+  --g360-bg: #ffffff;
+  --g360-surface: #f8fafc;
+  --g360-surface-alt: #eef2f7;
+  --g360-overlay: rgba(255, 255, 255, 0.92);
+  --g360-border: rgba(0, 0, 0, 0.10);
+  --g360-border-strong: rgba(0, 0, 0, 0.18);
+  --g360-text: #1e293b;
+  --g360-text-muted: #64748b;
+  --g360-muted: #64748b;
+  --g360-text-inverse: #ffffff;
+  --g360-accent: #047857;
+  --g360-accent-strong: #047857;
+  --g360-accent-bright: #00d084;
+  --g360-accent-soft: rgba(0, 208, 132, 0.12);
+  --g360-accent-hover: #047857;
+  --g360-on-accent: #ffffff;
+  --g360-success: #15803d;
+  --g360-warning: #b45309;
+  --g360-error: #dc2626;
+  --g360-info: #0369a1;
+  --g360-glass: rgba(255, 255, 255, 0.75);
+  --g360-blur: 16px;
+  --g360-radius: 16px;
+  --g360-rounded: 16px;
+  --g360-radius-sm: 8px;
+  --g360-font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --g360-font-mono: 'JetBrains Mono', 'Consolas', monospace;
+  --g360-font-size: 14px;
+  --g360-space-xs: 4px;
+  --g360-space-sm: 8px;
+  --g360-space-md: 16px;
+  --g360-space-lg: 24px;
+  --g360-space-xl: 32px;
+}
+
+html[data-theme="dark"] {
+  --g360-bg: #0b1220;
+  --g360-surface: #1a2332;
+  --g360-surface-alt: #1c2941;
+  --g360-overlay: rgba(11, 18, 32, 0.90);
+  --g360-border: rgba(255, 255, 255, 0.10);
+  --g360-border-strong: rgba(255, 255, 255, 0.18);
+  --g360-text: #f0f4f8;
+  --g360-text-muted: #94a3b8;
+  --g360-muted: #94a3b8;
+  --g360-text-inverse: #0b1220;
+  --g360-accent: #00d084;
+  --g360-accent-strong: #047857;
+  --g360-accent-bright: #34d399;
+  --g360-accent-soft: rgba(0, 208, 132, 0.12);
+  --g360-accent-hover: #34d399;
+  --g360-on-accent: #06281c;
+  --g360-success: #22c55e;
+  --g360-warning: #f59e0b;
+  --g360-error: #ef4444;
+  --g360-info: #3b82f6;
+  --g360-glass: rgba(21, 30, 46, 0.75);
+  --g360-blur: 12px;
+  --g360-radius: 12px;
+  --g360-rounded: 12px;
+  --g360-radius-sm: 8px;
+  --g360-font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --g360-font-mono: 'JetBrains Mono', 'Consolas', monospace;
+  --g360-font-size: 14px;
+  --g360-space-xs: 4px;
+  --g360-space-sm: 8px;
+  --g360-space-md: 16px;
+  --g360-space-lg: 24px;
+  --g360-space-xl: 32px;
+}

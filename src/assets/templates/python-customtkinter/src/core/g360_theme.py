@@ -17,13 +17,18 @@ class G360Theme:
             Path("src/core/skill.json"),
             Path(__file__).resolve().parent.parent.parent / "skill.json",
             Path(__file__).resolve().parent / "skill.json",
-            Path(__file__).resolve().parent.parent / "g360" / "skills" / "customtkinter-desktop.json",
+            Path(__file__).resolve().parent.parent
+            / "g360"
+            / "skills"
+            / "customtkinter-desktop.json",
         ]
         for c in candidates:
             if c.exists():
                 self.config_path = c
                 return
-        raise FileNotFoundError("skill.json not found. Run: g360 init <name> --skill customtkinter-desktop")
+        raise FileNotFoundError(
+            "skill.json not found. Run: g360 init <name> --skill customtkinter-desktop"
+        )
 
     def _load_colors(self):
         with open(self.config_path, encoding="utf-8") as f:
@@ -32,11 +37,18 @@ class G360Theme:
         self.bg = colors.get("bg", "#0b1220")
         self.surface = colors.get("surface", "#1a2332")
         self.accent = colors.get("accent", "#00d084")
+        self.accent_strong = colors.get("accentStrong", "#047857")
+        self.accent_bright = colors.get("accentBright", "#34d399")
+        self.accent_soft = colors.get("accentSoft", "rgba(0, 208, 132, 0.12)")
+        self.on_accent = colors.get("onAccent", "#06281c")
         self.text = colors.get("text", "#f0f4f8")
         self.muted = colors.get("muted", "#94a3b8")
+        self.border = colors.get("border", "rgba(255, 255, 255, 0.10)")
+        self.info = colors.get("info", "#3b82f6")
         self.success = colors.get("success", "#22c55e")
         self.warning = colors.get("warning", "#f59e0b")
         self.error = colors.get("error", "#ef4444")
+        self.overlay = colors.get("overlay", "rgba(11, 18, 32, 0.90)")
         self.brand = self.config.get("brand", "g360")
 
     def _load_effects(self):
@@ -47,6 +59,7 @@ class G360Theme:
 
     def apply_ctk(self):
         import customtkinter as ctk
+
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("green")
 
@@ -56,6 +69,7 @@ class G360Theme:
 
     def glass_frame(self, parent, **kwargs):
         import customtkinter as ctk
+
         kwargs.setdefault("fg_color", self.surface)
         kwargs.setdefault("corner_radius", self.rounded)
         if self.glassmorphism:
@@ -65,6 +79,7 @@ class G360Theme:
 
     def accent_button(self, parent, text="", command=None, **kwargs):
         import customtkinter as ctk
+
         return ctk.CTkButton(
             parent,
             text=text,
@@ -78,6 +93,7 @@ class G360Theme:
 
     def styled_label(self, parent, text="", size=14, color=None, **kwargs):
         import customtkinter as ctk
+
         return ctk.CTkLabel(
             parent,
             text=text,

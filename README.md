@@ -236,6 +236,62 @@ g360 set-skill corporativo-g360 --verbose
 
 ---
 
+### `g360 tokens`
+
+Emite los **design tokens** del proyecto en el formato de cada stack. Es la
+puente entre la fuente de diseño y el código: las plantillas ya no llevan la
+paleta escrita a mano, la reciben de acá.
+
+```bash
+g360 tokens [ruta] [opciones]
+```
+
+**Opciones:**
+
+| Opción | Descripción |
+|--------|-------------|
+| `--skill <name>` | Skill a aplicar (por defecto, el del `skill.json`) |
+| `--accent <familia>` | Familia de acento a aplicar |
+| `--dry-run` | Previsualizar sin escribir |
+| `--verbose` | Mostrar todos los tokens |
+
+**Destinos por stack:**
+
+| Stack | Archivo generado |
+|-------|------------------|
+| Web (React, Svelte, Solid, Lit, PWA) | `src/styles/g360-tokens.css` |
+| Python (Flet, CustomTkinter) | `src/core/g360_tokens.py` |
+| Go | `internal/theme/tokens.go` |
+| Rust / Tauri | `src-tauri/src/theme.rs` |
+
+**Roles emitidos** (idénticos en todos los stacks, para que los componentes
+sean simétricos):
+
+```text
+bg · surface · surfaceAlt · overlay · border · borderStrong
+text · textMuted · textInverse
+accent · accentStrong · accentBright · accentSoft · accentHover · onAccent
+success · warning · error · info
+glass · blur · radius · radiusSm
+font · fontMono · fontSize · spaceXs..spaceXl
+```
+
+En CSS se emiten como `--g360-*` (más los alias `--g360-muted` y
+`--g360-rounded` que ya usaban las plantillas y proyectos existentes).
+
+**Ejemplos:**
+
+```bash
+g360 tokens
+g360 tokens ./mi-proyecto --skill react-web
+g360 tokens --accent cyan --dry-run
+```
+
+`g360 set-skill` y `g360 set-accent` reemiten los tokens automáticamente: la
+familia de acento llega a los estilos, no solo al `skill.json`.
+
+---
+
 ### `g360 convert`
 
 Convierte un proyecto existente a identidad G360.

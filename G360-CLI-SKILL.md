@@ -319,6 +319,28 @@ import './App.css';
 - **Stock Status**: Red para agotado, Yellow para bajo stock, Green para disponible
 - **G360 Theme**: #00d084 primary, glassmorphism effects
 
+### Design Tokens (nunca hardcodear colores)
+
+Los colores salen de los tokens del proyecto, no de constantes escritas a mano.
+
+| Stack | Archivo de tokens | Cómo se consume |
+|-------|-------------------|-----------------|
+| Web (React/Svelte/Solid/Lit/PWA) | `src/styles/g360-tokens.css` | `var(--g360-accent)`, `var(--g360-surface)`, ... |
+| Python (Flet/CustomTkinter) | `src/core/g360_theme.py` | `theme.accent`, `theme.surface`, ... (lee `skill.json`) |
+| Go | `internal/theme/tokens.go` | `theme.Accent` |
+| Rust / Tauri | `src-tauri/src/theme.rs` | `theme::dark::ACCENT` |
+
+Reglas:
+
+- **Nunca** escribir `#00d084` (ni ningún hex) en un componente: usar el token.
+  Si falta un rol, agregarlo al generador (`src/lib/token-generator.js`) y
+  reemitir, no hardcodearlo en el componente.
+- Para cambiar la identidad: `g360 set-accent <familia>` — reemite los tokens
+  de todos los stacks del proyecto.
+- Para regenerar: `g360 tokens [ruta]`.
+- Un componente debe funcionar igual en todos los stacks: si un rol existe en
+  CSS, tiene que existir en Python, Go y Rust con el mismo nombre.
+
 ### Nombres de Archivos
 
 - Components: PascalCase (ProductTable.jsx)

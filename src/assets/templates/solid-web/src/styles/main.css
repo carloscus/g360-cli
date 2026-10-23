@@ -3,39 +3,9 @@
  * Sistema de diseño para proyectos G360
  * ============================================ */
 
-/* === VARIABLES G360 === */
-:root {
-  /* G360 v3 — escala esmeralda + roles por tema (dark default) */
-  --g360-bg: #0b1220;
-  --g360-surface: #151e2e;
-  --g360-accent-strong: #047857;
-  --g360-accent: #00d084;
-  --g360-accent-bright: #34d399;
-  --g360-accent-soft: rgba(0, 208, 132, 0.12);
-  --g360-accent-hover: #34d399;
-  --g360-on-accent: #06281c;
-  --g360-text: #f0f4f8;
-  --g360-muted: #94a3b8;
-  --g360-info: #3b82f6;
-  --g360-border: rgba(255, 255, 255, 0.1);
-  
-  /* Efectos */
-  --g360-glass: rgba(21, 30, 46, 0.75);
-  --g360-blur: 16px;
-  --g360-rounded: 16px;
-  
-  /* Espaciado */
-  --g360-space-xs: 4px;
-  --g360-space-sm: 8px;
-  --g360-space-md: 16px;
-  --g360-space-lg: 24px;
-  --g360-space-xl: 32px;
-  
-  /* Tipografía: sistema para UI, mono solo para datos */
-  --g360-font: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --g360-font-mono: 'JetBrains Mono', 'Consolas', monospace;
-  --g360-font-size: 14px;
-}
+/* Tokens G360: una sola fuente para todos los stacks.
+   Se regenera con `g360 tokens` (o `g360 set-accent <familia>`). */
+@import './g360-tokens.css';
 
 /* === ESTILOS BASE === */
 * {
@@ -110,20 +80,3 @@ main {
 
 /* Numeros tabulares con monoespaciada (KPIs, tablas, codigo) */
 .g360-num { font-family: var(--g360-font-mono); font-variant-numeric: tabular-nums; }
-
-/* === MODO CLARO === */
-@media (prefers-color-scheme: light) {
-  :root {
-    --g360-bg: #ffffff;
-    --g360-surface: #f5f5f5;
-    --g360-accent: #047857;
-    --g360-accent-bright: #00d084;
-    --g360-accent-soft: rgba(4, 120, 87, 0.12);
-    --g360-accent-hover: #065f46;
-    --g360-on-accent: #ffffff;
-    --g360-text: #1f2937;
-    --g360-muted: #6b7280;
-    --g360-border: rgba(0, 0, 0, 0.1);
-    --g360-glass: rgba(255, 255, 255, 0.75);
-  }
-}

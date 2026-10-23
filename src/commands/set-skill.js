@@ -59,20 +59,32 @@ export async function setSkill(skillName, options = {}) {
     const skillData = {
       skill: skill.name,
       device: skill.device,
+      theme: skill.theme ?? 'dark',
       version: '1.0.0',
       updatedAt: new Date().toISOString(),
       colors: skill.colors,
       signature: skill.signature
     };
+
+    // Variantes de tema propias del skill (si declara).
+    if (skill.light) skillData.light = skill.light;
+    if (skill.dark) skillData.dark = skill.dark;
     
     await fs.writeJson(skillJsonPath, skillData, { spaces: 2 });
-    
+
+    // Reemitir los tokens del proyecto con el skill nuevo (CSS/Go/Rust/Python).
+    const { refreshTokens } = await import('./tokens.js');
+    const written = refreshTokens(cwd, { skill: skillName });
+
     if (!isInternalCall) {
       console.log(chalk.green(`\n✅ Skill "${skillName}" configurado correctamente`));
       console.log(chalk.gray('\nDetalles:'));
       console.log(`  Device: ${skill.device}`);
       console.log(`  Accent: ${skill.colors.accent}`);
       console.log(`  Signature: ${skill.signature.mode}`);
+      if (written.length > 0) {
+        console.log(chalk.gray(`  Tokens: ${written.map((item) => item.file).join(', ')}`));
+      }
 
       if (verbose) {
         console.log(chalk.gray('\nColores:'));

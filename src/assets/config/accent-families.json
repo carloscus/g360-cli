@@ -112,17 +112,47 @@
       "onAccentLight": "#ffffff",
       "hue": 152,
       "note": "Verde de marca CIPSA (brand-locked); ajustado a #008254 para pasar AA con texto blanco (4.86:1)"
+    },
+    "navy": {
+      "accent": "#1E40AF",
+      "accentStrong": "#172554",
+      "accentBright": "#3B82F6",
+      "accentSoft": "rgba(30, 64, 175, 0.12)",
+      "onAccent": "#ffffff",
+      "accentLight": "#1E40AF",
+      "onAccentLight": "#ffffff",
+      "hue": 224,
+      "note": "Azul marino neutro: decks y apps sin marca definida (tono deck, no apto como acento de app)",
+      "legacy": true
     }
   },
   "semantics": {
-    "success": "#22c55e",
-    "warning": "#f59e0b",
-    "error": "#ef4444",
-    "info": "#3b82f6"
+    "dark": {
+      "success": "#22c55e",
+      "warning": "#f59e0b",
+      "error": "#ef4444",
+      "info": "#3b82f6"
+    },
+    "light": {
+      "success": "#15803d",
+      "warning": "#b45309",
+      "error": "#dc2626",
+      "info": "#0369a1"
+    }
   },
   "bases": {
-    "dark": { "bg": "#0b1220", "surface": "#151e2e", "text": "#f0f4f8", "muted": "#94a3b8" },
-    "light": { "bg": "#ffffff", "surface": "#f8fafc", "text": "#1e293b", "muted": "#64748b" }
+    "dark": {
+      "bg": "#0b1220",
+      "surface": "#151e2e",
+      "text": "#f0f4f8",
+      "muted": "#94a3b8"
+    },
+    "light": {
+      "bg": "#ffffff",
+      "surface": "#f8fafc",
+      "text": "#1e293b",
+      "muted": "#64748b"
+    }
   },
   "rules": {
     "minContrast": 4.5,
@@ -130,7 +160,9 @@
     "exemptFamilies": {
       "emerald": "Identidad G360 historica: accent verde vs success #22c55e comparten familia; se diferencia por luminosidad y forma (icono + texto). Prohibido igualdad exacta.",
       "teal": "Tono teal corporativo #00796B: mismo caso que emerald contra success verde.",
-      "cipsa": "Marca CIPSA: verde corporativo del cliente; misma excepcion que emerald."
+      "cipsa": "Marca CIPSA: verde corporativo del cliente; misma excepcion que emerald.",
+      "navy": "Tono navy de deck: no cumple AA como acento sobre superficie oscura por ser un azul profundo. Se usa solo en presentaciones corporativas."
     }
-  }
+  },
+  "semanticsNote": "Variantes por tema: sobre superficie clara (#ffffff) los semanticos claros no llegan a AA (success 2.28, warning 2.15, error 3.76, info 3.68)."
 }

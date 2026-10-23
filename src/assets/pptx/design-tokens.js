@@ -1,7 +1,12 @@
 /**
  * Design tokens del sistema de presentaciones G360.
- * Fuente unica de verdad: todas las paletas, tipografia y espaciados
- * se definen aqui y son consumidos por themes/ y layouts/.
+ *
+ * Fuente unica de verdad: las paletas, tipografia y espaciados se definen aqui
+ * y son consumidos por themes/ y layouts/.
+ *
+ * Los pasos de ACENTO salen de las familias de acento (misma fuente que las
+ * apps web, Python, Go y Rust). Los neutros son propios del medio: una
+ * presentacion se imprime sobre blanco, no sobre el fondo oscuro de la app.
  *
  * Principios:
  *  - Formato 16:9 widescreen (13.333 x 7.5 in), tipo deck corporativo.
@@ -10,66 +15,105 @@
  *  - Texto principal casi-negro, secundario gris slate.
  */
 
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const families = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '..', 'config', 'accent-families.json'), 'utf8')
+).families;
+
+/**
+ * Convierte un color al formato de pptxgenjs (sin #, mayusculas).
+ * @param {string} value - Color
+ * @returns {string}
+ */
+function hex(value) {
+  return String(value).replace('#', '').toUpperCase();
+}
+
+/**
+ * Mezcla un color con blanco para obtener un tinte solido (slides no usan rgba).
+ * @param {string} value - Color base
+ * @param {number} [ratio=0.12] - Proporcion del color
+ * @returns {string} Hex sin #
+ */
+function tint(value, ratio = 0.12) {
+  const source = String(value).replace('#', '');
+  const channels = [0, 2, 4].map((index) => parseInt(source.slice(index, index + 2), 16));
+  return channels
+    .map((channel) => Math.round(255 * (1 - ratio) + channel * ratio))
+    .map((channel) => channel.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase();
+}
+
+/**
+ * Pasos de acento de una familia, en formato deck.
+ * @param {string} familyName - Familia de acento
+ * @returns {Object} accent, accentDark, accentBright, accentSoft, onAccent
+ */
+function accentSteps(familyName) {
+  const family = families[familyName];
+  if (!family) {
+    throw new Error(`Familia de acento desconocida para el deck: "${familyName}"`);
+  }
+  return {
+    accent: hex(family.accent),
+    accentDark: hex(family.accentStrong),
+    accentBright: hex(family.accentBright),
+    accentSoft: tint(family.accent),
+    onAccent: hex(family.onAccent),
+  };
+}
+
+/** Semanticos de deck: el medio es claro, asi que van las variantes claras. */
+const DECK_SEMANTICS = {
+  warning: 'B45309',
+  warningSoft: 'FDF3E3',
+  info: '0369A1',
+  violet: '7C3AED',
+  success: '15803D',
+  danger: 'DC2626',
+};
+
 /** Paletas de marca disponibles */
 export const PALETTES = {
   /** G360 — esmeralda tech sobre slate neutro */
   g360: {
-    accent: '10B981',
-    accentDark: '047857',
-    accentSoft: 'E7F6F0',
-    onAccent: 'FFFFFF',
+    ...accentSteps('emerald'),
     text: '0F172A',
     textMuted: '64748B',
     bg: 'FFFFFF',
     surface: 'F3F5F9',
     border: 'E3E8F0',
-    warning: 'B45309',
-    warningSoft: 'FDF3E3',
-    info: '3B82F6',
-    violet: '8B5CF6',
-    success: '059669',
-    danger: 'DC2626',
-    coverTitle: '064E3B',
+    ...DECK_SEMANTICS,
+    coverTitle: hex(families.emerald.accentStrong),
   },
 
-  /** CIPSA — verde corporativo (alineado al manual de ventas-pulse) */
+  /** CIPSA — verde corporativo (familia cipsa, la misma que usan sus apps) */
   cipsa: {
-    accent: '008F5D',
-    accentDark: '0B6B47',
-    accentSoft: 'E3F0EB',
-    onAccent: 'FFFFFF',
+    ...accentSteps('cipsa'),
     text: '1F2937',
     textMuted: '64748B',
     bg: 'FFFFFF',
     surface: 'F8FAF9',
     border: 'C8E6D8',
-    warning: 'B45309',
-    warningSoft: 'FBF1E4',
-    info: '0369A1',
-    violet: '6D28D9',
-    success: '008F5D',
-    danger: 'DC2626',
-    coverTitle: '0B6B47',
+    ...DECK_SEMANTICS,
+    coverTitle: hex(families.cipsa.accentStrong),
   },
 
   /** Corporate — azul marino neutral para apps sin marca definida */
   corporate: {
-    accent: '1E40AF',
-    accentDark: '172554',
-    accentSoft: 'E7ECF9',
-    onAccent: 'FFFFFF',
+    ...accentSteps('navy'),
     text: '0F172A',
     textMuted: '64748B',
     bg: 'FFFFFF',
     surface: 'F4F6FB',
     border: 'D6DEF0',
-    warning: 'B45309',
-    warningSoft: 'FDF3E3',
-    info: '0E7490',
-    violet: '6D28D9',
-    success: '047857',
-    danger: 'DC2626',
-    coverTitle: '172554',
+    ...DECK_SEMANTICS,
+    coverTitle: hex(families.navy.accentStrong),
   },
 };
 
