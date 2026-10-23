@@ -4,116 +4,140 @@ from pathlib import Path
 
 _logger = logging.getLogger("g360.app")
 
-# Colores G360 estandar como referencia (v3: escala esmeralda + roles por tema)
-G360_DEFAULTS = {
-    "dark": {
-        "accent": "#10B981",
-        "accent_dark": "#047857",
-        "accent_bright": "#34D399",
-        "accent_soft": "#1F10B981",
-        "accent_hover": "#34D399",
-        "on_accent": "#06281C",
-        "success": "#34D399",
-        "warning": "#F59E0B",
-        "error": "#EF4444",
-        "info": "#3B82F6",
-        "violet": "#8B5CF6",
-        "pink": "#EC4899",
-        "cyan": "#06B6D4",
-        "orange": "#F97316",
-        "surface": "#141D33",
-        "surface_variant": "#1B2740",
-        "surface_sunken": "#0E1627",
-        "background": "#0A0F1E",
-        "border": "#FFFFFF17",
-        "text_muted": "#8FA0BA",
-        "text_primary": "#F1F5FB",
-        "text_secondary": "#C9D4E6",
-        "kpis": {
-            "primary": "#06B6D4",
-            "secondary": "#8B5CF6",
-            "tertiary": "#0EA5E9",
-            "quaternary": "#6366F1",
-            "quinary": "#EC4899",
-            "senary": "#F59E0B",
-            "septenary": "#EF4444",
-            "octonary": "#F97316",
-        },
-    },
-    "light": {
-        "accent": "#047857",
-        "accent_dark": "#065F46",
-        "accent_bright": "#00D084",
-        "accent_soft": "#1F047857",
-        "accent_hover": "#065F46",
-        "on_accent": "#FFFFFF",
-        "success": "#15803D",
-        "warning": "#B45309",
-        "error": "#DC2626",
-        "info": "#2563EB",
-        "violet": "#7C3AED",
-        "pink": "#DB2777",
-        "cyan": "#0891B2",
-        "orange": "#EA580C",
-        "surface": "#FFFFFF",
-        "surface_variant": "#F7F9FC",
-        "surface_sunken": "#EEF1F6",
-        "background": "#F3F5F9",
-        "border": "#E3E8F0",
-        "text_muted": "#64748B",
-        "text_primary": "#0F172A",
-        "text_secondary": "#334155",
-        "kpis": {
-            "primary": "#0891B2",
-            "secondary": "#7C3AED",
-            "tertiary": "#0284C7",
-            "quaternary": "#4F46E5",
-            "quinary": "#DB2777",
-            "senary": "#B45309",
-            "septenary": "#DC2626",
-            "octonary": "#EA580C",
-        },
-    },
-}
+# ---------------------------------------------------------------------------
+# Paleta desde los tokens G360
+#
+# Los tokens se generan con `g360 tokens` (o `g360 set-accent <familia>`) y
+# quedan en src/core/g360_tokens.py. Este modulo solo los adapta a los roles
+# que usa la app: no hay ningun color escrito a mano.
+#
+#   from src.core.g360_tokens import TOKENS
+# ---------------------------------------------------------------------------
+
+try:
+    from src.core.g360_tokens import TOKENS
+except ImportError as _exc:  # pragma: no cover
+    raise ImportError(
+        "Faltan los design tokens (src/core/g360_tokens.py). "
+        "Generalos con: g360 tokens --project ."
+    ) from _exc
+
+
+def _mix(a: str, b: str, ratio: float) -> str:
+    """Mezcla dos colores hex (ratio 0 = a, 1 = b)."""
+
+    def channels(value):
+        value = value.lstrip("#")
+        if len(value) == 3:
+            value = "".join(c * 2 for c in value)
+        return [int(value[i : i + 2], 16) for i in (0, 2, 4)]
+
+    ca, cb = channels(a), channels(b)
+    mixed = [round(ca[i] * (1 - ratio) + cb[i] * ratio) for i in range(3)]
+    return "#" + "".join(f"{c:02X}" for c in mixed)
+
+
+def _rgba(hex_color: str, opacity: float) -> str:
+    """Color hex con alpha en formato #RRGGBBAA."""
+    value = hex_color.lstrip("#")
+    if len(value) == 8:
+        return f"#{value.upper()}"
+    alpha = int(max(0.0, min(1.0, opacity)) * 255)
+    return f"#{alpha:02X}{value.upper()}"
+
+
+def _build_palette(mode: str) -> dict:
+    """Construye la paleta de la app a partir de los tokens del tema."""
+    tokens = TOKENS.get(mode, TOKENS["dark"])
+    chart = TOKENS.get("chart", {}).get(mode, [])
+
+    def chart_color(index: int) -> str:
+        """Color de la serie `index` de la paleta categorica."""
+        return chart[index].upper() if index < len(chart) else palette_accent
+
+    surface = tokens["surface"]
+    background = tokens["bg"]
+    text = tokens["text"]
+    muted = tokens["textMuted"]
+    palette_accent = tokens["accent"].upper()
+    palette = {
+        # Acento (roles canonicos)
+        "accent": tokens["accent"].upper(),
+        "accent_dark": tokens["accentStrong"].upper(),
+        "accent_bright": tokens["accentBright"].upper(),
+        "accent_soft": tokens["accentSoft"],
+        "accent_hover": tokens["accentHover"].upper(),
+        "on_accent": tokens["onAccent"].upper(),
+        # Estados
+        "success": tokens["success"].upper(),
+        "warning": tokens["warning"].upper(),
+        "error": tokens["error"].upper(),
+        "info": tokens["info"].upper(),
+        # Superficies
+        "background": background.upper(),
+        "surface": surface.upper(),
+        "surface_variant": tokens["surfaceAlt"].upper(),
+        "surface_sunken": _mix(surface, background, 0.45),
+        "border": tokens["border"],
+        # Texto
+        "text_primary": text.upper(),
+        "text_secondary": _mix(text, muted, 0.45),
+        "text_muted": muted.upper(),
+        # Series de datos (paleta categorica)
+        "cyan": chart_color(0),
+        "violet": chart_color(1),
+        "pink": chart_color(4),
+        "orange": chart_color(7),
+    }
+
+    # Escala de KPIs: una serie por rol, para que cada grafico tenga color propio.
+    kpi_roles = [
+        "primary",
+        "secondary",
+        "tertiary",
+        "quaternary",
+        "quinary",
+        "senary",
+        "septenary",
+        "octonary",
+    ]
+    palette["kpis"] = {role: chart_color(index) for index, role in enumerate(kpi_roles)}
+
+    return palette
 
 
 def get_colors(mode: str = None, skill_path: Path = None) -> dict:
     """
     Carga la paleta de colores para el modo especificado.
-    
+
     Prioridad:
-    1. skill.json del proyecto (si existe)
-    2. Configuracion guardada en ~/.g360/
-    3. Valores por defecto G360
-    
+    1. skill.json del proyecto (si define colores propios)
+    2. Tokens generados (src/core/g360_tokens.py)
+
     Args:
         mode: 'dark' o 'light'. Si es None, lee de la preferencia guardada.
         skill_path: Ruta al skill.json. Si es None, busca automaticamente.
-    
+
     Returns:
         dict con los colores aplicados
     """
-    # Determinar modo
     if mode is None:
         mode = load_theme_preference()
-    
-    # Cargar desde skill.json si existe
+
+    defaults = _build_palette(mode)
+
     skill_colors = _load_skill_colors(skill_path)
-    
-    # Combinar: defaults -> skill overrides
-    defaults = G360_DEFAULTS.get(mode, G360_DEFAULTS["dark"])
-    
-    if skill_colors:
-        # Skill tiene colores propios, usarlos
-        colors = {**defaults, **skill_colors}
-        # Asegurar que kpis se fusionen correctamente
-        if "kpis" in skill_colors:
-            colors["kpis"] = {**defaults.get("kpis", {}), **skill_colors["kpis"]}
-    else:
-        colors = defaults.copy()
-        if "kpis" not in colors:
-            colors["kpis"] = defaults.get("kpis", {}).copy()
-    
+
+    if not skill_colors:
+        return defaults
+
+    # Los tokens son la fuente de la paleta (acentos y neutros por tema).
+    # El skill.json solo puede ajustar la paleta de series (kpis): sobreescribir
+    # el acento ahi pisaria el tono claro con el oscuro.
+    colors = dict(defaults)
+    if "kpis" in skill_colors:
+        colors["kpis"] = {**defaults.get("kpis", {}), **skill_colors["kpis"]}
+
     return colors
 
 
@@ -122,7 +146,7 @@ def _load_skill_colors(skill_path: Path = None) -> dict | None:
     try:
         if skill_path is None:
             skill_path = _find_skill_json()
-        
+
         if skill_path and skill_path.exists():
             with open(skill_path, encoding="utf-8") as f:
                 data = json.load(f)
@@ -169,14 +193,16 @@ def _get_app_name() -> str:
         if skill_path and skill_path.exists():
             with open(skill_path, encoding="utf-8") as f:
                 data = json.load(f)
-                return data.get("name", Path(__file__).resolve().parent.parent.parent.name)
+                name = data.get("build", {}).get("name") or data.get("name")
+                if name:
+                    return str(name)
     except Exception as ex:
         _logger.debug("theme: app name not loaded from skill.json: %s", ex)
-    return Path(__file__).resolve().parent.parent.parent.name
+    return Path.cwd().name
 
 
 def load_theme_preference() -> str:
-    """Carga la preferencia de tema guardada (dark/light)."""
+    """Lee el modo de tema preferido (dark por defecto)."""
     try:
         config_file = get_theme_file()
         if config_file.exists():
@@ -189,24 +215,16 @@ def load_theme_preference() -> str:
 
 
 def save_theme_preference(mode: str):
-    """Guarda la preferencia de tema."""
+    """Guarda el modo de tema preferido."""
     try:
         config_file = get_theme_file()
         config_file.parent.mkdir(parents=True, exist_ok=True)
-        config = {"theme_mode": mode}
+        config = {}
+        if config_file.exists():
+            with open(config_file, encoding="utf-8") as f:
+                config = json.load(f)
+        config["theme_mode"] = mode
         with open(config_file, "w", encoding="utf-8") as f:
-            json.dump(config, f)
+            json.dump(config, f, indent=2)
     except Exception as ex:
-        _logger.debug("theme: preference not saved: %s", ex)
-
-
-def set_brand_colors(colors: dict):
-    """
-    Permite sobrescribir los colores de la marca en runtime.
-    Useful para apps que necesitan colores dinamicos.
-    """
-    global G360_DEFAULTS
-    # Actualizar solo los modos que existan
-    for mode in ["dark", "light"]:
-        if mode in G360_DEFAULTS and mode in colors:
-            G360_DEFAULTS[mode].update(colors[mode])
+        _logger.debug("theme: could not save preference: %s", ex)

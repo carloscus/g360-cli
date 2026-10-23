@@ -8,7 +8,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
 import { pathToFileURL } from 'url';
-import { loadDesignConfig } from './token-generator.js';
+import { loadDesignConfig, resolveTokens, renderCss, renderPython } from './token-generator.js';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname.replace(/^\//, ''));
 const ASSETS = path.join(__dirname, '..', 'assets');
@@ -68,5 +68,31 @@ describe('coherencia del sistema de diseño', () => {
         expect(value, `${name}.${role}`).toMatch(/^[0-9A-F]{6}$/);
       }
     }
+  });
+
+  it('should not keep a hardcoded palette in the polished python theme', () => {
+    const theme = fs.readFileSync(
+      path.join(ASSETS, 'templates', 'python-flet-polished', 'src', 'config', 'theme.py'),
+      'utf8'
+    );
+
+    // Solo se admiten hex en los fallbacks de los helpers de mezcla.
+    const hexes = theme.match(/#[0-9a-fA-F]{6}\b/g) ?? [];
+    expect(hexes, `theme.py no debe tener paleta propia (${hexes.join(' ')})`).toEqual([]);
+  });
+
+  it('should emit the chart palette in every stack', () => {
+    const tokens = resolveTokens({ skill: 'moderno' });
+
+    expect(tokens.chart.dark).toHaveLength(8);
+    expect(tokens.chart.light).toHaveLength(8);
+
+    const css = renderCss(tokens);
+    expect(css).toContain('--g360-chart-1:');
+    expect(css).toContain('--g360-chart-8:');
+
+    const python = renderPython(tokens);
+    expect(python).toContain('"chart"');
+    expect(python).toContain('"#06b6d4"');
   });
 });

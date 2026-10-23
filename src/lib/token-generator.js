@@ -29,6 +29,12 @@ const CONFIG_DIR = path.join(__dirname, '..', 'assets', 'config');
 export const ASSETS_DIR = path.join(__dirname, '..', 'assets');
 export const TEMPLATES_DIR = path.join(ASSETS_DIR, 'templates');
 
+/** Paleta categorica por defecto (series de datos). */
+const DEFAULT_CHART_PALETTE = {
+  dark: ['#06b6d4', '#8b5cf6', '#0ea5e9', '#6366f1', '#ec4899', '#f59e0b', '#ef4444', '#f97316'],
+  light: ['#0891b2', '#7c3aed', '#0284c7', '#4f46e5', '#db2777', '#b45309', '#dc2626', '#ea580c']
+};
+
 /** Roles y su valor por defecto (dark). */
 export const TOKEN_ROLES = [
   'bg', 'surface', 'surfaceAlt', 'overlay',
@@ -88,11 +94,15 @@ export const TOKEN_TARGETS = {
 export function loadDesignConfig() {
   const skills = fs.readJsonSync(path.join(CONFIG_DIR, 'g360-skills.json')).skills ?? [];
   const accent = fs.readJsonSync(path.join(CONFIG_DIR, 'accent-families.json'));
+  const charts = fs.readJsonSync(path.join(CONFIG_DIR, 'chart-palettes.json'));
+
   return {
     skills,
     families: accent.families ?? {},
     semantics: accent.semantics ?? {},
-    bases: accent.bases ?? {}
+    bases: accent.bases ?? {},
+    charts: charts.palettes ?? {},
+    chartRoles: charts.roles ?? {}
   };
 }
 
@@ -180,6 +190,10 @@ export function resolveTokens(options = {}) {
   const tokens = {
     dark,
     light,
+    chart: {
+      dark: config.charts?.g360?.dark ?? DEFAULT_CHART_PALETTE.dark,
+      light: config.charts?.g360?.light ?? DEFAULT_CHART_PALETTE.light
+    },
     effects,
     signature: skill?.signature ?? { mode: 'powered', text: 'powered by G360' },
     skill: skill?.name ?? null,
@@ -270,6 +284,10 @@ export function renderCss(tokens) {
     })
     .join('\n');
 
+  const chartBlock = (values, indent = '  ') => (values ?? [])
+    .map((color, index) => `${indent}--g360-chart-${index + 1}: ${normalizeColor(color)};`)
+    .join('\n');
+
   return `/* ============================================
  * G360 Design Tokens
  * Generado por \`g360 tokens\` — no editar a mano.
@@ -282,20 +300,24 @@ export function renderCss(tokens) {
 
 :root {
 ${block(tokens.dark)}
+${chartBlock(tokens.chart?.dark)}
 }
 
 @media (prefers-color-scheme: light) {
   :root {
 ${block(tokens.light, '    ')}
+${chartBlock(tokens.chart?.light, '    ')}
   }
 }
 
 html[data-theme="light"] {
 ${block(tokens.light)}
+${chartBlock(tokens.chart?.light)}
 }
 
 html[data-theme="dark"] {
 ${block(tokens.dark)}
+${chartBlock(tokens.chart?.dark)}
 }
 `;
 }
@@ -308,6 +330,10 @@ export function renderPython(tokens) {
   const dict = (values) => TOKEN_ROLES
     .filter((role) => values[role] !== undefined)
     .map((role) => `    "${role}": ${JSON.stringify(values[role])},`)
+    .join('\n');
+
+  const chartDict = ['dark', 'light']
+    .map((mode) => `        "${mode}": [${(tokens.chart?.[mode] ?? []).map((color) => JSON.stringify(color)).join(', ')}],`)
     .join('\n');
 
   return `"""G360 Design Tokens.
@@ -330,6 +356,9 @@ ${dict(tokens.dark)}
     "light": {
 ${dict(tokens.light)}
     },
+    "chart": {
+${chartDict}
+    },
 }
 `;
 }
@@ -350,6 +379,14 @@ export function renderGo(tokens) {
     .map((role) => `\t${JSON.stringify(role)}: ${JSON.stringify(values[role])},`)
     .join('\n');
 
+  const chartConsts = (values) => (values ?? [])
+    .map((color, index) => `    Chart${index + 1} = ${JSON.stringify(color)}`)
+    .join('\n');
+
+  const chartPairs = (values) => (values ?? [])
+    .map((color, index) => `\t${JSON.stringify(`chart${index + 1}`)}: ${JSON.stringify(color)},`)
+    .join('\n');
+
   return `// Package theme contiene los design tokens de G360.
 //
 // Generado por \`g360 tokens\` — no editar a mano.
@@ -366,10 +403,21 @@ const (
 ${consts(tokens.light).replace(/^/gm, '    ')}
 )
 
+// Paleta categorica para series de datos (tema oscuro).
+const (
+${chartConsts(tokens.chart?.dark)}
+)
+
+// Paleta categorica para series de datos (tema claro).
+const (
+${chartConsts(tokens.chart?.light).replace(/^/gm, '    ')}
+)
+
 // Dark devuelve el mapa de tokens del tema oscuro.
 func Dark() map[string]string {
 	return map[string]string{
 ${pairs(tokens.dark)}
+${chartPairs(tokens.chart?.dark)}
 	}
 }
 
@@ -377,6 +425,7 @@ ${pairs(tokens.dark)}
 func Light() map[string]string {
 	return map[string]string{
 ${pairs(tokens.light)}
+${chartPairs(tokens.chart?.light)}
 	}
 }
 `;
@@ -398,6 +447,14 @@ export function renderRust(tokens) {
     .map((role) => `    ("${role}", ${rustConst(role)}),`)
     .join('\n');
 
+  const chartConsts = (values) => (values ?? [])
+    .map((color, index) => `pub const CHART_${index + 1}: &str = ${JSON.stringify(color)};`)
+    .join('\n');
+
+  const chartPairs = (values) => (values ?? [])
+    .map((color, index) => `    ("chart${index + 1}", CHART_${index + 1}),`)
+    .join('\n');
+
   return `//! Design tokens de G360.
 //!
 //! Generado por \`g360 tokens\` — no editar a mano.
@@ -413,14 +470,26 @@ pub mod light {
 ${consts(tokens.light).replace(/^/gm, '    ')}
 }
 
+/// Paleta categorica para series de datos (tema oscuro).
+pub mod chart_dark {
+${chartConsts(tokens.chart?.dark).replace(/^/gm, '    ')}
+}
+
+/// Paleta categorica para series de datos (tema claro).
+pub mod chart_light {
+${chartConsts(tokens.chart?.light).replace(/^/gm, '    ')}
+}
+
 /// Tokens del tema oscuro como pares (nombre, valor).
 pub const DARK: &[(&str, &str)] = &[
 ${pairs(tokens.dark)}
+${chartPairs(tokens.chart?.dark)}
 ];
 
 /// Tokens del tema claro como pares (nombre, valor).
 pub const LIGHT: &[(&str, &str)] = &[
 ${pairs(tokens.light)}
+${chartPairs(tokens.chart?.light)}
 ];
 `;
 }
@@ -451,6 +520,67 @@ export function detectTokenTargets(projectDir) {
 }
 
 /**
+ * Sincroniza los archivos que no pueden leer custom properties: el manifest
+ * de la PWA y los meta theme-color del index.html.
+ * @param {string} projectDir - Directorio del proyecto
+ * @param {Object} tokens - Tokens resueltos
+ * @returns {Array<{file: string, changes: string[]}>} Archivos tocados
+ */
+export function patchWebMeta(projectDir, tokens) {
+  const touched = [];
+
+  // --- manifest.json de la PWA ---
+  const manifestPaths = ['public/manifest.json', 'manifest.json', 'src/manifest.json'];
+  for (const rel of manifestPaths) {
+    const manifestPath = path.join(projectDir, rel);
+    if (!fs.existsSync(manifestPath)) continue;
+
+    try {
+      const manifest = fs.readJsonSync(manifestPath);
+      const changes = [];
+
+      if (manifest.theme_color && manifest.theme_color !== tokens.dark.accent) {
+        changes.push(`theme_color ${manifest.theme_color} -> ${tokens.dark.accent}`);
+        manifest.theme_color = tokens.dark.accent;
+      }
+      if (manifest.background_color && manifest.background_color !== tokens.dark.bg) {
+        changes.push(`background_color ${manifest.background_color} -> ${tokens.dark.bg}`);
+        manifest.background_color = tokens.dark.bg;
+      }
+
+      if (changes.length > 0) {
+        fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+        touched.push({ file: rel, changes });
+      }
+    } catch {
+      // Un manifest invalido no debe romper la emision de tokens.
+    }
+    break;
+  }
+
+  // --- index.html: meta theme-color ---
+  const indexPath = path.join(projectDir, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    const original = fs.readFileSync(indexPath, 'utf8');
+    const updated = original.replace(
+      /<meta\s+name="theme-color"([^>]*?)content="#[0-9a-fA-F]{6}"([^>]*?)\/?>/g,
+      (match, before, after) => {
+        const isLight = /prefers-color-scheme:\s*light/i.test(before);
+        const color = isLight ? tokens.light.accent : tokens.dark.accent;
+        return `<meta name="theme-color"${before}content="${color}"${after}/>`;
+      }
+    );
+
+    if (updated !== original) {
+      fs.writeFileSync(indexPath, updated, 'utf8');
+      touched.push({ file: 'index.html', changes: ['meta theme-color actualizado'] });
+    }
+  }
+
+  return touched;
+}
+
+/**
  * Escribe los archivos de tokens del proyecto.
  * @param {string} projectDir - Directorio del proyecto
  * @param {Object} options - Opciones
@@ -458,7 +588,7 @@ export function detectTokenTargets(projectDir) {
  * @param {string} [options.accentFamily] - Familia de acento
  * @param {boolean} [options.dryRun=false] - No escribir
  * @param {Object} [options.config] - Config de diseño precargada
- * @returns {{written: Array, tokens: Object}}
+ * @returns {{written: Array, tokens: Object, patched: Array}}
  */
 export function writeTokens(projectDir, options = {}) {
   const tokens = resolveTokens(options);
@@ -487,7 +617,17 @@ export function writeTokens(projectDir, options = {}) {
     written.push({ stack: target.stack, file: target.file, path: filePath });
   }
 
-  return { written, tokens };
+  // Manifest PWA y theme-color: no pueden leer custom properties.
+  let patched = [];
+  if (targets.some((target) => target.stack === 'web')) {
+    if (options.dryRun) {
+      patched = [];
+    } else {
+      patched = patchWebMeta(projectDir, tokens);
+    }
+  }
+
+  return { written, tokens, patched };
 }
 
 /**

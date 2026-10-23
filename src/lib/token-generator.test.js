@@ -229,7 +229,7 @@ describe('token-generator', () => {
         fs.readFileSync(path.join(TEMPLATES_DIR, name, 'src/styles/g360-tokens.css'), 'utf8')
       );
 
-      const normalize = (content) => content.replace(/Skill: .*\| acento: .*/, 'X');
+      const normalize = (content) => content.replace(/Skill: .*\| acento: .*/, 'X').replace(/\r\n/g, '\n');
       const reference = normalize(files[0]);
 
       for (const content of files) {

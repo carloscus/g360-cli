@@ -61,6 +61,10 @@ export async function tokens(projectPath, options = {}) {
     console.log(`  ${icon} ${item.stack.padEnd(7)} ${chalk.gray(item.file)}`);
   }
 
+  for (const item of result.patched ?? []) {
+    console.log(`  ${chalk.green('+')} ${'meta'.padEnd(7)} ${chalk.gray(item.file)} ${chalk.gray(`(${item.changes.join('; ')})`)}`);
+  }
+
   if (verbose) {
     console.log(chalk.bold.yellow('\nTokens (dark):'));
     for (const [role, value] of Object.entries(resolved.dark)) {

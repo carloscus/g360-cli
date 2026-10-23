@@ -11,14 +11,18 @@
   "colors": {
     "bg": "#0b1220",
     "surface": "#1a2333",
-    "accent": "#34d399",
-    "accent_dark": "#047857",
+    "accent": "#00d084",
     "text": "#f0f6fc",
     "muted": "#8b949e",
-    "success": "#34d399",
+    "success": "#22c55e",
     "warning": "#f59e0b",
     "error": "#ef4444",
-    "info": "#3b82f6",
+    "accentStrong": "#047857",
+    "accentBright": "#34d399",
+    "accentSoft": "rgba(0, 208, 132, 0.12)",
+    "onAccent": "#06281c",
+    "info": "#3B82F6",
+    "accent_dark": "#047857",
     "violet": "#8b5cf6",
     "pink": "#ec4899",
     "cyan": "#06b6d4",
@@ -29,14 +33,11 @@
     "border": "#ffffff17",
     "text_muted": "#8fa0ba",
     "text_primary": "#f1f5fb",
-    "text_secondary": "#c9d4e6",
-    "accentStrong": "#047857",
-    "accentBright": "#6ee7b7",
-    "accentSoft": "rgba(52, 211, 153, 0.12)",
-    "onAccent": "#06281c"
+    "text_secondary": "#c9d4e6"
   },
   "effects": {
     "glassmorphism": true,
+    "blur": "12px",
     "rounded": "12px"
   },
   "signature": {
@@ -54,5 +55,6 @@
     "health": "/api/health",
     "data": "/api/data",
     "events": "/api/events"
-  }
+  },
+  "theme": "dark"
 }

@@ -42,5 +42,6 @@
     "state_management": "Usar atributos de clase para estado, evitar globales",
     "threading": "Usar threading.Thread para operaciones bloqueantes",
     "window_config": "width=1350, height=900, resizable=True, theme_mode=DARK"
-  }
+  },
+  "theme": "dark"
 }

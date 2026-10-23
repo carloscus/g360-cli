@@ -7,6 +7,36 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.20.0] - 2026-10-23
+
+### Added
+- **Capa de design tokens** (`src/lib/token-generator.js` + `g360 tokens`): una sola fuente (`g360-skills.json` + `accent-families.json`) emite los mismos roles en **CSS, Python, Go y Rust**. Antes la paleta estaba copiada a mano en 4 CSS, 3 temas Python y 25 snippets, y `g360 set-accent` solo reescribia `skill.json`: la familia de acento nunca llegaba a los estilos
+- **Semánticos por tema**: los de modo claro (#15803d / #b45309 / #dc2626 / #0369a1) llegan a AA sobre blanco; los anteriores no (2.28 / 2.15 / 3.76 / 3.68)
+- **Tema por skill**: `theme: dark|light` explicito; los skills claros (minimalista, flet-desktop-corporativo) conservan su propia base en modo claro
+- **Toggle explicito**: el CSS emite `html[data-theme="light"]` / `html[data-theme="dark"]` ademas de `prefers-color-scheme`, para que las apps con switch (Flet, React) puedan forzarlo
+- **Validacion de contraste en el generador**: `g360 tokens` avisa los pares que no llegan a AA (p. ej. `dark: accent/bg 3.52 < 4.5 (usar accentBright: 6.24)`) en vez de emitir una paleta invalida
+- **Paleta categorica para series** (`src/assets/config/chart-palettes.json`): 8 colores para KPIs y graficos, con variante por tema, emitidos como `--g360-chart-1..8` y `TOKENS["chart"]`
+- **`g360 audit`**: checks de autosuficiencia (AGENTS.md, comando de verificacion, README, lockfile, .env.example, tests honestos) y modo `--ecosystem` con resumen por repo
+- **`g360 agents`**: genera/actualiza el `AGENTS.md` de un repo con el comando de verificacion derivado del stack real; idempotente, con markers para no pisar el contenido manual, y `--env-example`
+- **`g360 bring brand/<marca>`**: aplica la familia de acento de la marca (antes tomaba un hex propio, que estaba mal para CIPSA)
+- **Manifest PWA y theme-color**: `g360 tokens` los sincroniza (no pueden leer custom properties)
+
+### Changed
+- **Plantillas web**: token file canonico + `@import`; se eliminan los `:root` duplicados (incluido el de modo claro que pisaba los tokens), se define `--g360-border` y el overlay deja de estar hardcodeado. Los 4 templates (React, Svelte, Solid, Lit) quedan con tokens identicos
+- **Snippets**: 25/25 tokenizados (0 hex en los 31 de Flet/CustomTkinter); `flet-glass-theme` se construye desde los tokens
+- **Temas Python** (Flet, Flet-migrate, CustomTkinter): +10 roles (accentStrong/Bright/Soft, onAccent, border, info, overlay) para paridad con web
+- **`python-flet-polished`**: su `theme.py` deja de tener paleta propia y se construye desde los tokens; la escala de KPIs viene de la paleta categorica
+- **`brand.json`**: declara `accentFamily` en vez de `primary_color` (habia 4 fuentes de verdad de color)
+- **Deck (PPTX)**: los pasos de acento salen de las familias; los neutros siguen siendo del medio (impresion sobre blanco)
+- **Skills**: `flet-desktop-polished` alineado a su familia (emerald) y todos los `skill.json` de plantilla sincronizados con la fuente
+
+### Fixed
+- Los bloques `:root` de modo claro de las plantillas pisaban los tokens: cualquier re-tematizacion se rompia
+- `web-pwa` usaba `var(--g360-border)` sin definirlo
+- `g360 bring brand/cipsa` pintaba CIPSA de esmeralda (tomaba el `primary_color` equivocado)
+
+---
+
 ## [1.19.0] - 2026-10-19
 
 ### Added

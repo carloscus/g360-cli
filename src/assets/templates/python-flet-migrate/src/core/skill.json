@@ -25,8 +25,8 @@
     "rounded": "12px"
   },
   "signature": {
-    "mode": "powered",
-    "text": "powered by G360"
+    "mode": "own",
+    "text": "G360 Desktop"
   },
   "build": {
     "tool": "flet",
@@ -35,5 +35,6 @@
   },
   "dependencies": {
     "flet": ">=0.25.0"
-  }
+  },
+  "theme": "dark"
 }
