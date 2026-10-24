@@ -1,7 +1,6 @@
-import pandas as pd
 import re
-from typing import Optional
 
+import pandas as pd
 
 ENTITY_MAP = {
     "cliente": {"id": "ID_CLIENTE", "nombre": "NOM_CLIENTE", "label": "CLIENTE_LABEL"},
@@ -59,9 +58,17 @@ REQUIRED_COLUMNS = ["SOLES", "CANTIDAD", "ID_ARTICULO", "ID_CLIENTE", "TPO_DOC",
 # SERIE_DOC, NRO_DOC: floats (204.0, 56287.0) — truncate decimals
 
 ID_COLS_PRESERVE_ZEROS = (
-    "ID_ARTICULO", "ID_CLIENTE", "ID_VENDEDOR", "ID_LINEA",
-    "ID_GRUPO", "ID_TIPO", "ID_FAMILIA", "COD_SUCURSAL",
-    "NRO_DOC", "SERIE_DOC", "DOC_CLIENTE"
+    "ID_ARTICULO",
+    "ID_CLIENTE",
+    "ID_VENDEDOR",
+    "ID_LINEA",
+    "ID_GRUPO",
+    "ID_TIPO",
+    "ID_FAMILIA",
+    "COD_SUCURSAL",
+    "NRO_DOC",
+    "SERIE_DOC",
+    "DOC_CLIENTE",
 )
 
 ID_COLS_STRIP_ZEROS = ()
@@ -130,9 +137,11 @@ def clean_erp_headers(df: pd.DataFrame) -> pd.DataFrame:
     """
     for idx, row in df.iterrows():
         row_str = " ".join([str(v).strip().upper() for v in row if pd.notna(v)])
-        if any(kw in row_str for kw in ["ID_VENDEDOR", "ID_CLIENTE", "ID_ARTICULO", "NOM_VENDEDOR"]):
+        if any(
+            kw in row_str for kw in ["ID_VENDEDOR", "ID_CLIENTE", "ID_ARTICULO", "NOM_VENDEDOR"]
+        ):
             df.columns = df.iloc[idx]
-            df = df.iloc[idx + 1:].reset_index(drop=True)
+            df = df.iloc[idx + 1 :].reset_index(drop=True)
             break
 
     new_cols = []
@@ -203,14 +212,18 @@ def normalize_ids(df: pd.DataFrame, column: str) -> pd.DataFrame:
                 f = float(s)
                 if f == int(f):
                     # Para columnas que preservan ceros, usar zfill después
-                    s = str(int(f)) if not preserve_zeros else s.split(".")[0].zfill(len(s.split(".")[0]))
+                    s = (
+                        str(int(f))
+                        if not preserve_zeros
+                        else s.split(".")[0].zfill(len(s.split(".")[0]))
+                    )
             except (ValueError, OverflowError):
                 pass
         # Eliminar solo caracteres no alfanuméricos (excepto guiones)
         s = re.sub(r"[^A-Z0-9\-]", "", s.upper())
         # Para columnas que NO preservan ceros, eliminar ceros iniciales
         if not preserve_zeros and s:
-            s = s.lstrip('0')
+            s = s.lstrip("0")
         return s
 
     df[column] = df[column].apply(_clean_id)
@@ -260,7 +273,9 @@ def build_entity_labels(df: pd.DataFrame) -> pd.DataFrame:
 
         if id_exists and name_exists:
             df[label_col] = df.apply(
-                lambda r: format_entity_label(r[id_col], r[name_col]),
+                lambda r, id_col=id_col, name_col=name_col: format_entity_label(
+                    r[id_col], r[name_col]
+                ),
                 axis=1,
             )
         elif id_exists:
@@ -335,7 +350,7 @@ def get_entity_columns(entity: str) -> dict:
     return ENTITY_MAP.get(entity, {})
 
 
-def detectar_tipo_documento(df: pd.DataFrame) -> Optional[str]:
+def detectar_tipo_documento(df: pd.DataFrame) -> str | None:
     """Detecta el tipo de documento (Factura, Boleta, NC) basado en TPO_DOC."""
     col = next((c for c in df.columns if "TPO_DOC" in c), None)
     if col is None:
@@ -362,7 +377,7 @@ def get_doc_label(tipo_doc: str) -> str:
     return DOC_TYPE_LABELS.get(str(tipo_doc).upper().strip(), str(tipo_doc))
 
 
-def parse_excel_date(value) -> Optional[pd.Timestamp]:
+def parse_excel_date(value) -> pd.Timestamp | None:
     """
     Convierte fecha estilo Excel a datetime.
 
@@ -418,7 +433,7 @@ def parse_excel_date(value) -> Optional[pd.Timestamp]:
         return None
 
 
-def parse_mes_column(mes_str: str, anho: str = None) -> tuple:
+def parse_mes_column(mes_str: str, anho: str | None = None) -> tuple:
     """
     Parsea la columna MES formato '04-ABRIL' -> (4, 'ABRIL', 'YYYY-MM').
     Si anho no se provee, usa el anio actual.

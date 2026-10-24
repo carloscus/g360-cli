@@ -32,19 +32,31 @@ Autor: G360 Ecosystem
 Version: 1.0
 """
 
-import pandas as pd
-import numpy as np
-from typing import Optional, Dict, Tuple
 from datetime import datetime
-from .utils import clean_erp_headers, normalize_ids, build_doc_completo, build_entity_labels, NC_PREFIXES, ERP_TPO_DOC_NC, ERP_TPO_DOC_NDB, validate_columns, parse_excel_date
-from .processor_sku import ProcessorSKU
-from .processor_segmentacion import ProcessorSegmentacion
-from .logger import get_logger
+from typing import Any
+
+import numpy as np
+import pandas as pd
+
 from .commercial_engine import (
+    calculate_prices,
     classify_base,
     parse_referencia,
     resolve_document_relationships,
-    calculate_prices,
+)
+from .logger import get_logger
+from .processor_segmentacion import ProcessorSegmentacion
+from .processor_sku import ProcessorSKU
+from .utils import (
+    ERP_TPO_DOC_NC,
+    ERP_TPO_DOC_NDB,
+    NC_PREFIXES,
+    build_doc_completo,
+    build_entity_labels,
+    clean_erp_headers,
+    normalize_ids,
+    parse_excel_date,
+    validate_columns,
 )
 
 log = get_logger("processor")
@@ -76,13 +88,16 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
         Raises:
             ValueError: Si faltan columnas ERP minimas requeridas.
         """
-        self.df: Optional[pd.DataFrame] = None
+        self.df: pd.DataFrame | None = None
         self.devolucion_threshold = devolucion_threshold
         self.profile = "asistente"
-        self._cache: Dict[str, any] = {}
-        log.info("Inicializando InsightProcessor con %d filas, umbral devolucion=%.1f%%", len(df), devolucion_threshold)
+        self._cache: dict[str, Any] = {}
+        log.info(
+            "Inicializando InsightProcessor con %d filas, umbral devolucion=%.1f%%",
+            len(df),
+            devolucion_threshold,
+        )
         self._process(df)
-
 
     def _process(self, df: pd.DataFrame):
         """
@@ -116,14 +131,31 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
         log.info("Headers limpiados: %d filas restantes", len(self.df))
 
         # Paso 1b: Validar formato ERP conocido (dgvVentas)
-        expected_cols = {"ANHO", "MES", "ID_CLIENTE", "NOM_CLIENTE", "ID_ARTICULO",
-                         "NOM_ARTICULO", "ID_VENDEDOR", "NOM_VENDEDOR", "TPO_DOC",
-                         "SERIE_DOC", "NRO_DOC", "FECHA_ORIG", "REFERENCIA",
-                         "CANTIDAD", "SOLES", "ESTADO_LINEA"}
+        expected_cols = {
+            "ANHO",
+            "MES",
+            "ID_CLIENTE",
+            "NOM_CLIENTE",
+            "ID_ARTICULO",
+            "NOM_ARTICULO",
+            "ID_VENDEDOR",
+            "NOM_VENDEDOR",
+            "TPO_DOC",
+            "SERIE_DOC",
+            "NRO_DOC",
+            "FECHA_ORIG",
+            "REFERENCIA",
+            "CANTIDAD",
+            "SOLES",
+            "ESTADO_LINEA",
+        }
         found_cols = set(self.df.columns)
         missing_known = expected_cols - found_cols
         if missing_known:
-            log.warning("Columnas ERP conocidas faltantes: %s — el archivo puede no ser dgvVentas", missing_known)
+            log.warning(
+                "Columnas ERP conocidas faltantes: %s — el archivo puede no ser dgvVentas",
+                missing_known,
+            )
 
         # Paso 1c: Eliminar fila de totales del reporte ERP
         # Se identifica porque tiene TPO_DOC, ID_CLIENTE y FECHA_ORIG vacios
@@ -139,8 +171,18 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
 
         # Paso 2: Normalizacion de IDs clave para consistencia en agrupaciones
         # Se preservan ceros a la izquierda en columnas críticas (ver utils.py)
-        for col in ["ID_VENDEDOR", "ID_CLIENTE", "ID_ARTICULO", "NRO_DOC", "SERIE_DOC",
-                     "ID_LINEA", "ID_GRUPO", "ID_TIPO", "ID_FAMILIA", "COD_SUCURSAL"]:
+        for col in [
+            "ID_VENDEDOR",
+            "ID_CLIENTE",
+            "ID_ARTICULO",
+            "NRO_DOC",
+            "SERIE_DOC",
+            "ID_LINEA",
+            "ID_GRUPO",
+            "ID_TIPO",
+            "ID_FAMILIA",
+            "COD_SUCURSAL",
+        ]:
             self.df = normalize_ids(self.df, col)
 
         # Paso 2b: Construir columna DOC_COMPLETO (tipo + serie + numero)
@@ -177,8 +219,12 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
         self._parse_fechas()
         self._detect_stock_dormido()
         self._detect_profile()
-        log.info("Pipeline completado - perfil=%s, filas=%d, columnas=%d", self.profile, len(self.df), len(self.df.columns))
-
+        log.info(
+            "Pipeline completado - perfil=%s, filas=%d, columnas=%d",
+            self.profile,
+            len(self.df),
+            len(self.df.columns),
+        )
 
     def _convert_numeric_columns(self):
         """
@@ -196,7 +242,6 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
         for col in numeric_cols:
             if col in self.df.columns:
                 self.df[col] = pd.to_numeric(self.df[col], errors="coerce").fillna(0)
-
 
     def _normalize_nc(self):
         """
@@ -226,15 +271,13 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
             # Vectorized approach for better performance
             # Mascara: documentos que son Notas de Credito o anulaciones
             nc_pattern = "|".join([f"^{p}" for p in NC_PREFIXES]) + "|^NOTA"
-            mask_nc = self.df[tpo_col].astype(str).str.upper().str.contains(
-                nc_pattern, na=False
-            )
+            mask_nc = self.df[tpo_col].astype(str).str.upper().str.contains(nc_pattern, na=False)
             # Mascara: montos que son positivos (necesitan inversion de signo)
             mask_positivo = self.df[soles_col] > 0
-            
+
             # Combined mask: NC AND positive amount
             combined_mask = mask_nc & mask_positivo
-            
+
             # Apply sign inversion using vectorized operations
             if combined_mask.any():
                 self.df.loc[combined_mask, soles_col] = -self.df.loc[combined_mask, soles_col]
@@ -258,7 +301,6 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
         # Agrupar por NRO_DOC y sumar SOLES (NC ya estan normalizadas)
         total_por_doc = self.df.groupby("NRO_DOC")["SOLES"].transform("sum")
         self.df["MONTO_FACTURA"] = total_por_doc.round(2)
-
 
     def _calculate_kpis(self):
         """
@@ -307,7 +349,6 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
         # Venta Neta = Bruta - Devoluciones
         self.df["VENTA_NETA"] = self.df["VENTA_BRUTA"] - self.df["MONTO_NC"]
 
-
     def _parse_fechas(self):
         """
         Convierte la columna FECHA_ORIG de string a datetime.
@@ -325,14 +366,21 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
             return
 
         try:
-            if self.df["FECHA_ORIG"].apply(lambda x: isinstance(x, (int, float)) and not pd.isna(x)).all():
-                self.df["FECHA_DT"] = pd.Timestamp("1899-12-30") + pd.to_timedelta(self.df["FECHA_ORIG"], unit='D')
+            if (
+                self.df["FECHA_ORIG"]
+                .apply(lambda x: isinstance(x, (int, float)) and not pd.isna(x))
+                .all()
+            ):
+                self.df["FECHA_DT"] = pd.Timestamp("1899-12-30") + pd.to_timedelta(
+                    self.df["FECHA_ORIG"], unit="D"
+                )
             else:
                 # ERP format: DD/MM/YYYY — dayfirst=True handles this
-                self.df["FECHA_DT"] = pd.to_datetime(self.df["FECHA_ORIG"], dayfirst=True, errors='coerce')
+                self.df["FECHA_DT"] = pd.to_datetime(
+                    self.df["FECHA_ORIG"], dayfirst=True, errors="coerce"
+                )
         except Exception:
             self.df["FECHA_DT"] = self.df["FECHA_ORIG"].apply(parse_excel_date)
-
 
     def _detect_profile(self):
         """
@@ -389,30 +437,25 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
             # En caso de error, columna en 0
             self.df["STOCK_DORMIDO"] = 0
 
-
     def _cache_key(self, method_name: str, **kwargs) -> str:
         """Genera clave de cache para un metodo con sus argumentos."""
         args_str = ",".join(f"{k}={v}" for k, v in sorted(kwargs.items()))
         return f"{method_name}({args_str})"
 
-
-    def _get_cached(self, key: str) -> Optional[any]:
+    def _get_cached(self, key: str) -> Any | None:
         """Retorna valor cacheado si existe y no ha expirado."""
         entry = self._cache.get(key)
         if entry:
             return entry["value"]
         return None
 
-
-    def _set_cached(self, key: str, value: any):
+    def _set_cached(self, key: str, value: Any):
         """Almacena valor en cache."""
         self._cache[key] = {"value": value}
-
 
     def clear_cache(self):
         """Limpia toda la cache de resultados."""
         self._cache.clear()
-
 
     def get_venta_bruta_total(self) -> float:
         """
@@ -426,7 +469,6 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
         """
         return self.df["VENTA_BRUTA"].sum() if "VENTA_BRUTA" in self.df.columns else 0.0
 
-
     def get_venta_neta_total(self) -> float:
         """
         Retorna la suma total de Venta Neta del dataset.
@@ -438,7 +480,6 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
             float: Total de venta neta en soles. 0.0 si la columna no existe.
         """
         return self.df["VENTA_NETA"].sum() if "VENTA_NETA" in self.df.columns else 0.0
-
 
     def get_tasa_devolucion(self) -> float:
         """
@@ -462,7 +503,6 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
             return 0.0
         return (monto_nc / venta_bruta) * 100
 
-
     def is_devolucion_alert(self) -> bool:
         """
         Verifica si la tasa de devolucion supera el umbral configurado.
@@ -471,7 +511,6 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
             bool: True si la tasa de devolucion > devolucion_threshold.
         """
         return self.get_tasa_devolucion() > self.devolucion_threshold
-
 
     def get_stats_generales(self) -> dict:
         """
@@ -500,7 +539,7 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
         n_docs = self.df["NRO_DOC"].nunique() if "NRO_DOC" in self.df.columns else 0
         v_neta = self.get_venta_neta_total()
         ticket_prom = v_neta / n_docs if n_docs > 0 else 0.0
-        
+
         skus_ped = 0.0
         if "NRO_DOC" in self.df.columns and "ID_ARTICULO" in self.df.columns and n_docs > 0:
             try:
@@ -534,7 +573,6 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
         }
         return stats
 
-
     def get_resumen_por_mes(self) -> pd.DataFrame:
         """
         Genera resumen temporal agrupado por la columna MES del ERP.
@@ -551,15 +589,20 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
         if not mes_col:
             return pd.DataFrame()
 
-        resumen = self.df.groupby(mes_col).agg(
-            total_soles=("SOLES", "sum"),
-            venta_bruta=("VENTA_BRUTA", "sum"),
-            venta_neta=("VENTA_NETA", "sum"),
-            n_documentos=("NRO_DOC", "nunique") if "NRO_DOC" in self.df.columns else ("SOLES", "count"),
-        ).reset_index()
+        resumen = (
+            self.df.groupby(mes_col)
+            .agg(
+                total_soles=("SOLES", "sum"),
+                venta_bruta=("VENTA_BRUTA", "sum"),
+                venta_neta=("VENTA_NETA", "sum"),
+                n_documentos=("NRO_DOC", "nunique")
+                if "NRO_DOC" in self.df.columns
+                else ("SOLES", "count"),
+            )
+            .reset_index()
+        )
 
         return resumen
-
 
     def get_resumen_temporal(self) -> pd.DataFrame:
         """
@@ -580,19 +623,24 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
         df_temp = self.df.dropna(subset=["FECHA_DT"]).copy()
         df_temp["MES_ANIO"] = df_temp["FECHA_DT"].dt.to_period("M")
 
-        resumen = df_temp.groupby("MES_ANIO").agg(
-            total_soles=("SOLES", "sum"),
-            venta_bruta=("VENTA_BRUTA", "sum"),
-            venta_neta=("VENTA_NETA", "sum"),
-            n_documentos=("NRO_DOC", "nunique") if "NRO_DOC" in self.df.columns else ("SOLES", "count"),
-        ).reset_index()
+        resumen = (
+            df_temp.groupby("MES_ANIO")
+            .agg(
+                total_soles=("SOLES", "sum"),
+                venta_bruta=("VENTA_BRUTA", "sum"),
+                venta_neta=("VENTA_NETA", "sum"),
+                n_documentos=("NRO_DOC", "nunique")
+                if "NRO_DOC" in self.df.columns
+                else ("SOLES", "count"),
+            )
+            .reset_index()
+        )
 
         resumen["MES_ANIO"] = resumen["MES_ANIO"].astype(str)
 
         return resumen
 
-
-    def get_rango_fechas(self) -> Tuple[Optional[datetime], Optional[datetime]]:
+    def get_rango_fechas(self) -> tuple[datetime | None, datetime | None]:
         """
         Retorna el rango de fechas del dataset (min y max).
 
@@ -604,7 +652,9 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
         """
         if "FECHA_DT" not in self.df.columns:
             if "FECHA_ORIG" in self.df.columns:
-                fechas = pd.to_datetime(self.df["FECHA_ORIG"], dayfirst=True, errors="coerce").dropna()
+                fechas = pd.to_datetime(
+                    self.df["FECHA_ORIG"], dayfirst=True, errors="coerce"
+                ).dropna()
                 if fechas.empty:
                     return None, None
                 return fechas.min(), fechas.max()
@@ -615,7 +665,6 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
             return None, None
 
         return fechas.min(), fechas.max()
-
 
     def get_data(self) -> pd.DataFrame:
         """
@@ -630,5 +679,3 @@ class InsightProcessor(ProcessorSKU, ProcessorSegmentacion):
                           MONTO_NC, ES_VENTA, PRECIO_UNID, FECHA_DT).
         """
         return self.df
-
-

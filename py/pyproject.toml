@@ -4,9 +4,9 @@ build-backend = "hatchling.build"
 
 [project]
 name = "g360-core"
-version = "0.1.0"
+version = "0.2.0"
 description = "G360 ERP data ingestion engine — normalize .xls/.xlsx from SAP, StarSoft, Spring"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [
     { name = "ccusi", email = "ccusi@cipsa.com.pe" },
@@ -14,6 +14,8 @@ authors = [
 keywords = ["g360", "erp", "data", "normalization", "flet"]
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: MIT License",
 ]
 
@@ -26,9 +28,68 @@ dependencies = [
 
 [project.optional-dependencies]
 flet = ["flet>=0.25.0"]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=1.1",
+    "ruff>=0.17",
+    "mypy>=2.4",
+]
 
 [project.urls]
-Homepage = "https://github.com/ccusi/g360-cli"
+Homepage = "https://github.com/carloscus/g360-cli"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/g360_core"]
+
+# ---------------------------------------------------------------------------
+# Ruff: linter + formatter (reemplaza flake8 + isort + black).
+# Misma config que se comparte con los proyectos del ecosistema.
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4", "RUF"]
+ignore = [
+    "E501",   # el formatter resuelve el ancho de linea
+    "RUF001", # reglas ambiguas con caracteres unicode
+    "RUF002",
+    "RUF003",
+    "B008",   # llamadas en defaults (pydantic lo usa)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+"src/g360_core/ingestion.py" = ["E402"]
+
+# ---------------------------------------------------------------------------
+# Mypy: el contrato entre repos (common, normalizer, field_keywords) se
+# chequea estricto; el resto se migra de a poco.
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+files = ["src/g360_core"]
+ignore_missing_imports = true
+warn_unused_configs = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "g360_core.common",
+    "g360_core.normalizer",
+    "g360_core.field_keywords",
+]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true
+warn_return_any = true
+no_implicit_optional = true
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

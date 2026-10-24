@@ -1,14 +1,12 @@
 """SKU drilldown methods for InsightProcessor — extracted from processor.py."""
 
-import pandas as pd
-import numpy as np
-from typing import Optional
 from datetime import datetime
+
+import pandas as pd
 
 
 class ProcessorSKU:
     """Mixin class with all SKU-level analysis methods."""
-
 
     def get_historial_sku(self, sku: str) -> pd.DataFrame:
         """
@@ -77,19 +75,27 @@ class ProcessorSKU:
             return pd.DataFrame()
 
         # Agregar por sucursal
-        resumen = df_sku.groupby(sucursal_col).agg(
-            precio_promedio=("PRECIO_UNID", "mean"),
-            precio_min=("PRECIO_UNID", "min"),
-            precio_max=("PRECIO_UNID", "max"),
-            total_soles=("SOLES", "sum"),
-            cantidad=("CANTIDAD", "sum"),
-            n_compras=("NRO_DOC", "nunique") if "NRO_DOC" in self.df.columns else ("SOLES", "count"),
-        ).reset_index()
+        resumen = (
+            df_sku.groupby(sucursal_col)
+            .agg(
+                precio_promedio=("PRECIO_UNID", "mean"),
+                precio_min=("PRECIO_UNID", "min"),
+                precio_max=("PRECIO_UNID", "max"),
+                total_soles=("SOLES", "sum"),
+                cantidad=("CANTIDAD", "sum"),
+                n_compras=("NRO_DOC", "nunique")
+                if "NRO_DOC" in self.df.columns
+                else ("SOLES", "count"),
+            )
+            .reset_index()
+        )
 
         # Calcular desviacion vs precio global promedio
         precio_global = resumen["precio_promedio"].mean()
         if precio_global != 0:
-            resumen["desviacion_pct"] = ((resumen["precio_promedio"] - precio_global) / precio_global * 100).round(1)
+            resumen["desviacion_pct"] = (
+                (resumen["precio_promedio"] - precio_global) / precio_global * 100
+            ).round(1)
         else:
             resumen["desviacion_pct"] = 0.0
         resumen["precio_global"] = round(precio_global, 4)
@@ -336,7 +342,7 @@ class ProcessorSKU:
         df_sku = self.df[self.df["ID_ARTICULO"] == sku]
         return df_sku[vendedor_col].nunique()
 
-    def query_sku_drilldown(self, sku: str, ref_date: datetime = None) -> dict:
+    def query_sku_drilldown(self, sku: str, ref_date: datetime | None = None) -> dict:
         """
         Analiza a fondo un SKU respondiendo a montos de este mes, año, comparativa YoY,
         clientes principales, precios negociados e historiales de facturas.
@@ -347,7 +353,7 @@ class ProcessorSKU:
                 ref_date = max_dt if pd.notna(max_dt) else datetime.now()
             else:
                 ref_date = datetime.now()
-            
+
         df_sku = self.df[self.df["ID_ARTICULO"] == sku]
         if df_sku.empty or "FECHA_DT" not in df_sku.columns:
             return {}
@@ -355,29 +361,65 @@ class ProcessorSKU:
         year_curr = ref_date.year
         month_curr = ref_date.month
 
-        mask_month_curr = (df_sku["FECHA_DT"].dt.year == year_curr) & (df_sku["FECHA_DT"].dt.month == month_curr)
-        mask_month_prev = (df_sku["FECHA_DT"].dt.year == year_curr - 1) & (df_sku["FECHA_DT"].dt.month == month_curr)
-        mask_ytd_curr = (df_sku["FECHA_DT"].dt.year == year_curr) & (df_sku["FECHA_DT"].dt.month <= month_curr)
-        mask_ytd_prev = (df_sku["FECHA_DT"].dt.year == year_curr - 1) & (df_sku["FECHA_DT"].dt.month <= month_curr)
+        mask_month_curr = (df_sku["FECHA_DT"].dt.year == year_curr) & (
+            df_sku["FECHA_DT"].dt.month == month_curr
+        )
+        mask_month_prev = (df_sku["FECHA_DT"].dt.year == year_curr - 1) & (
+            df_sku["FECHA_DT"].dt.month == month_curr
+        )
+        mask_ytd_curr = (df_sku["FECHA_DT"].dt.year == year_curr) & (
+            df_sku["FECHA_DT"].dt.month <= month_curr
+        )
+        mask_ytd_prev = (df_sku["FECHA_DT"].dt.year == year_curr - 1) & (
+            df_sku["FECHA_DT"].dt.month <= month_curr
+        )
 
         v_mes_curr = df_sku[mask_month_curr]["SOLES"].sum()
         v_mes_prev = df_sku[mask_month_prev]["SOLES"].sum()
         v_ytd_curr = df_sku[mask_ytd_curr]["SOLES"].sum()
         v_ytd_prev = df_sku[mask_ytd_prev]["SOLES"].sum()
 
-        var_mes = ((v_mes_curr - v_mes_prev) / v_mes_prev * 100) if v_mes_prev != 0 else (100.0 if v_mes_curr > 0 else 0.0)
-        var_ytd = ((v_ytd_curr - v_ytd_prev) / v_ytd_prev * 100) if v_ytd_prev != 0 else (100.0 if v_ytd_curr > 0 else 0.0)
+        var_mes = (
+            ((v_mes_curr - v_mes_prev) / v_mes_prev * 100)
+            if v_mes_prev != 0
+            else (100.0 if v_mes_curr > 0 else 0.0)
+        )
+        var_ytd = (
+            ((v_ytd_curr - v_ytd_prev) / v_ytd_prev * 100)
+            if v_ytd_prev != 0
+            else (100.0 if v_ytd_curr > 0 else 0.0)
+        )
 
-        cliente_group = ["ID_CLIENTE"] + (["NOM_CLIENTE"] if "NOM_CLIENTE" in df_sku.columns else [])
-        clientes_analytics = df_sku.groupby(cliente_group).agg(
-            cantidad_total=("CANTIDAD", "sum"),
-            soles_totales=("SOLES", "sum"),
-            precio_promedio=("PRECIO_UNID", "mean"),
-            precio_min=("PRECIO_UNID", "min"),
-            precio_max=("PRECIO_UNID", "max")
-        ).reset_index().sort_values("soles_totales", ascending=False)
+        cliente_group = ["ID_CLIENTE"] + (
+            ["NOM_CLIENTE"] if "NOM_CLIENTE" in df_sku.columns else []
+        )
+        clientes_analytics = (
+            df_sku.groupby(cliente_group)
+            .agg(
+                cantidad_total=("CANTIDAD", "sum"),
+                soles_totales=("SOLES", "sum"),
+                precio_promedio=("PRECIO_UNID", "mean"),
+                precio_min=("PRECIO_UNID", "min"),
+                precio_max=("PRECIO_UNID", "max"),
+            )
+            .reset_index()
+            .sort_values("soles_totales", ascending=False)
+        )
 
-        invoice_cols = [c for c in ["NRO_DOC", "TPO_DOC", "SERIE_DOC", "FECHA_DT", "NOM_CLIENTE", "CANTIDAD", "PRECIO_UNID", "SOLES"] if c in df_sku.columns]
+        invoice_cols = [
+            c
+            for c in [
+                "NRO_DOC",
+                "TPO_DOC",
+                "SERIE_DOC",
+                "FECHA_DT",
+                "NOM_CLIENTE",
+                "CANTIDAD",
+                "PRECIO_UNID",
+                "SOLES",
+            ]
+            if c in df_sku.columns
+        ]
         invoices = df_sku[invoice_cols].sort_values("FECHA_DT", ascending=False)
 
         return {
@@ -392,7 +434,7 @@ class ProcessorSKU:
                 "variacion_ytd_pct": round(var_ytd, 2),
             },
             "clientes": clientes_analytics,
-            "facturas": invoices
+            "facturas": invoices,
         }
 
     def get_ndb_por_sku(self, sku: str) -> pd.DataFrame:
@@ -417,11 +459,25 @@ class ProcessorSKU:
         if df_sku.empty:
             return pd.DataFrame()
 
-        df_ndb = df_sku[df_sku["ES_NDB"] == True]
+        df_ndb = df_sku[df_sku["ES_NDB"]]
         if df_ndb.empty:
             return pd.DataFrame()
 
-        ndb_cols = [c for c in ["NRO_DOC", "TPO_DOC", "SERIE_DOC", "FECHA_DT",
-                                "ID_CLIENTE", "NOM_CLIENTE", "ID_VENDEDOR", "NOM_VENDEDOR",
-                                "CANTIDAD", "PRECIO_UNID", "SOLES"] if c in df_ndb.columns]
+        ndb_cols = [
+            c
+            for c in [
+                "NRO_DOC",
+                "TPO_DOC",
+                "SERIE_DOC",
+                "FECHA_DT",
+                "ID_CLIENTE",
+                "NOM_CLIENTE",
+                "ID_VENDEDOR",
+                "NOM_VENDEDOR",
+                "CANTIDAD",
+                "PRECIO_UNID",
+                "SOLES",
+            ]
+            if c in df_ndb.columns
+        ]
         return df_ndb[ndb_cols].sort_values("FECHA_DT", ascending=False)
