@@ -326,6 +326,7 @@ Los colores salen de los tokens del proyecto, no de constantes escritas a mano.
 | Stack | Archivo de tokens | Cómo se consume |
 |-------|-------------------|-----------------|
 | Web (React/Svelte/Solid/Lit/PWA) | `src/styles/g360-tokens.css` | `var(--g360-accent)`, `var(--g360-surface)`, ... |
+| Tailwind v4 | `src/styles/g360-tokens.tailwind.css` | `bg-g360-accent`, `text-g360-muted`, ... |
 | Python (Flet/CustomTkinter) | `src/core/g360_theme.py` | `theme.accent`, `theme.surface`, ... (lee `skill.json`) |
 | Go | `internal/theme/tokens.go` | `theme.Accent` |
 | Rust / Tauri | `src-tauri/src/theme.rs` | `theme::dark::ACCENT` |
@@ -337,9 +338,14 @@ Reglas:
   reemitir, no hardcodearlo en el componente.
 - Para cambiar la identidad: `g360 set-accent <familia>` — reemite los tokens
   de todos los stacks del proyecto.
-- Para regenerar: `g360 tokens [ruta]`.
+- Para regenerar: `g360 tokens [ruta]` (+ `--wire-css` para conectar el token
+  file con las hojas de estilo del proyecto).
 - Un componente debe funcionar igual en todos los stacks: si un rol existe en
   CSS, tiene que existir en Python, Go y Rust con el mismo nombre.
+- **Tema**: el CSS declara `color-scheme: dark light` y cada rol con
+  `light-dark(oscuro, claro)`. Un toggle de app es
+  `html[data-theme="light"] { color-scheme: light; }`. No escribir reglas de
+  tema a mano.
 
 ### Nombres de Archivos
 

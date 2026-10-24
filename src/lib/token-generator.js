@@ -84,6 +84,7 @@ export const MIN_CONTRAST = 4.5;
 /** Destinos por stack. */
 export const TOKEN_TARGETS = {
   web: 'src/styles/g360-tokens.css',
+  tailwind: 'src/styles/g360-tokens.tailwind.css',
   python: 'src/core/g360_tokens.py',
   go: 'internal/theme/tokens.go',
   rust: 'src-tauri/src/theme.rs'
@@ -105,6 +106,26 @@ export function loadDesignConfig() {
     charts: charts.palettes ?? {},
     chartRoles: charts.roles ?? {}
   };
+}
+
+/**
+ * Detecta la version mayor de Tailwind del proyecto (null si no usa Tailwind).
+ * @param {string} projectDir - Directorio del proyecto
+ * @returns {number|null} Version mayor
+ */
+export function detectTailwindVersion(projectDir) {
+  const pkgPath = path.join(projectDir, 'package.json');
+  if (!fs.existsSync(pkgPath)) return null;
+
+  try {
+    const pkg = fs.readJsonSync(pkgPath);
+    const declared = pkg.devDependencies?.tailwindcss ?? pkg.dependencies?.tailwindcss;
+    if (!declared) return null;
+    const major = parseInt(String(declared).replace(/[^\d.]/g, ''), 10);
+    return Number.isNaN(major) ? null : major;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -323,6 +344,14 @@ function normalizeColor(value) {
 
 /**
  * Emite las custom properties CSS.
+ *
+ * Cada rol se emite dos veces: el valor oscuro como fallback y despues
+ * `light-dark()` (Chrome 123+, Safari 17.5+, Firefox 120+). Si el navegador
+ * no soporta `light-dark()`, la declaracion invalida y queda el fallback.
+ *
+ * El tema lo decide `color-scheme`: `dark light` sigue la preferencia del
+ * sistema, y un toggle de app se hace con `html[data-theme="light"]`.
+ *
  * @param {Object} tokens - Tokens resueltos
  * @returns {string} Contenido CSS
  */
@@ -330,48 +359,95 @@ export function renderCss(tokens) {
   const block = (values, indent = '  ') => TOKEN_ROLES
     .filter((role) => values[role] !== undefined)
     .flatMap((role) => {
-      const lines = [`${indent}--g360-${kebab(role)}: ${normalizeColor(values[role])};`];
+      const lines = [];
+      const dark = normalizeColor(values[role]);
+      const light = normalizeColor(tokens.light[role]);
+      lines.push(`${indent}--g360-${kebab(role)}: ${dark};`);
+      if (dark !== light) {
+        lines.push(`${indent}--g360-${kebab(role)}: light-dark(${dark}, ${light});`);
+      }
       for (const alias of CSS_ALIASES[role] ?? []) {
-        lines.push(`${indent}--g360-${alias}: ${normalizeColor(values[role])};`);
+        lines.push(`${indent}--g360-${alias}: ${dark};`);
       }
       return lines;
     })
     .join('\n');
 
   const chartBlock = (values, indent = '  ') => (values ?? [])
-    .map((color, index) => `${indent}--g360-chart-${index + 1}: ${normalizeColor(color)};`)
+    .flatMap((color, index) => {
+      const dark = normalizeColor(color);
+      const light = normalizeColor(tokens.chart?.light?.[index] ?? color);
+      const lines = [`${indent}--g360-chart-${index + 1}: ${dark};`];
+      if (dark !== light) {
+        lines.push(`${indent}--g360-chart-${index + 1}: light-dark(${dark}, ${light});`);
+      }
+      return lines;
+    })
     .join('\n');
 
   return `/* ============================================
  * G360 Design Tokens
- * Generado por \`g360 tokens\` â€” no editar a mano.
+ * Generado por \`g360 tokens\` — no editar a mano.
  * Skill: ${tokens.skill ?? 'default'} | acento: ${tokens.accentFamily} | tema: ${tokens.theme ?? 'dark'}
  *
- * El tema por defecto es ${tokens.theme ?? 'dark'}. Para forzar el otro:
- *   <html data-theme="light">  (o "dark")
- * Sin data-theme se respeta la preferencia del sistema.
+ * Tema: \`color-scheme\` decide. \`dark light\` = sigue al sistema.
+ * Toggle manual: <html data-theme="light"> (o "dark").
  * ============================================ */
 
 :root {
+  color-scheme: dark light;
+
 ${block(tokens.dark)}
 ${chartBlock(tokens.chart?.dark)}
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-${block(tokens.light, '    ')}
-${chartBlock(tokens.chart?.light, '    ')}
-  }
+html[data-theme="light"] { color-scheme: light; }
+html[data-theme="dark"] { color-scheme: dark; }
+`;
 }
 
-html[data-theme="light"] {
-${block(tokens.light)}
-${chartBlock(tokens.chart?.light)}
-}
+/**
+ * Emite el bloque `@theme` de Tailwind v4 (CSS-first: el tema vive en CSS,
+ * no en un tailwind.config.js). Importar este archivo despues de "tailwindcss".
+ * @param {Object} tokens - Tokens resueltos
+ * @returns {string} Contenido CSS
+ */
+export function renderTailwindTheme(tokens) {
+  const colorRoles = TOKEN_ROLES.filter((role) => !['font', 'fontMono', 'fontSize', 'blur', 'radius', 'radiusSm', 'spaceXs', 'spaceSm', 'spaceMd', 'spaceLg', 'spaceXl'].includes(role));
 
-html[data-theme="dark"] {
-${block(tokens.dark)}
-${chartBlock(tokens.chart?.dark)}
+  const colors = colorRoles
+    .filter((role) => tokens.dark[role] !== undefined)
+    .map((role) => `  --color-g360-${kebab(role)}: var(--g360-${kebab(role)});`)
+    .join('\n');
+
+  const chart = (tokens.chart?.dark ?? [])
+    .map((_, index) => `  --color-g360-chart-${index + 1}: var(--g360-chart-${index + 1});`)
+    .join('\n');
+
+  return `/* ============================================
+ * G360 Design Tokens — tema Tailwind v4
+ * Generado por \`g360 tokens\` — no editar a mano.
+ *
+ * Uso (en el CSS principal del proyecto):
+ *   @import "tailwindcss";
+ *   @import "./styles/g360-tokens.tailwind.css";
+ *
+ * A partir de aca: bg-g360-accent, text-g360-muted, border-g360-border, ...
+ * ============================================ */
+
+@theme {
+${colors}
+${chart}
+
+  --font-g360: var(--g360-font);
+  --font-g360-mono: var(--g360-font-mono);
+  --radius-g360: var(--g360-radius);
+  --radius-g360-sm: var(--g360-radius-sm);
+  --spacing-g360-xs: var(--g360-space-xs);
+  --spacing-g360-sm: var(--g360-space-sm);
+  --spacing-g360-md: var(--g360-space-md);
+  --spacing-g360-lg: var(--g360-space-lg);
+  --spacing-g360-xl: var(--g360-space-xl);
 }
 `;
 }
@@ -609,7 +685,8 @@ export function wireCss(projectDir, tokens, options = {}) {
 
   const isStylesheet = (file) =>
     file.endsWith('.css') &&
-    path.basename(file) !== path.basename(TOKEN_TARGETS.web) &&
+    // Los archivos generados por la herramienta no se rewirian.
+    !['g360-tokens.css', 'g360-tokens.tailwind.css'].includes(path.basename(file)) &&
     // Artefactos de build y galeria de plantillas: no se tocan.
     !file.split(path.sep).some((part) => ['g360', '_app', 'dist', 'build', 'out', '.svelte-kit', '.next'].includes(part));
 
@@ -774,6 +851,7 @@ export function writeTokens(projectDir, options = {}) {
   const tokens = resolveTokens(options);
   const targets = options.targets ?? detectTokenTargets(projectDir);
   const written = [];
+  const notes = [];
 
   const renderers = {
     web: renderCss,
@@ -797,6 +875,29 @@ export function writeTokens(projectDir, options = {}) {
     written.push({ stack: target.stack, file: target.file, path: filePath });
   }
 
+  // Tailwind v4 es CSS-first: el tema se emite como bloque @theme aparte.
+  // En v3 el proyecto usa tailwind.config.js y este archivo no aplica.
+  const tailwindMajor = detectTailwindVersion(projectDir);
+  if (tailwindMajor !== null && targets.some((item) => item.stack === 'web')) {
+    if (tailwindMajor >= 4) {
+      const tailwindPath = path.join(projectDir, TOKEN_TARGETS.tailwind);
+      if (!options.dryRun) {
+        fs.mkdirSync(path.dirname(tailwindPath), { recursive: true });
+        fs.writeFileSync(tailwindPath, renderTailwindTheme(tokens), 'utf8');
+      }
+      written.push({
+        stack: 'tailwind',
+        file: TOKEN_TARGETS.tailwind,
+        path: tailwindPath,
+        note: 'Tailwind v4: importar despues de "tailwindcss"'
+      });
+    } else {
+      notes.push(
+        `Tailwind v${tailwindMajor}: el tema va en tailwind.config.js (no se emite @theme)`
+      );
+    }
+  }
+
   // Manifest PWA y theme-color: no pueden leer custom properties.
   let patched = [];
   if (targets.some((target) => target.stack === 'web')) {
@@ -813,7 +914,7 @@ export function writeTokens(projectDir, options = {}) {
     wired = wireCss(projectDir, tokens, { dryRun: options.dryRun, css: renderCss(tokens) });
   }
 
-  return { written, tokens, patched, wired };
+  return { written, tokens, patched, wired, notes };
 }
 
 /**

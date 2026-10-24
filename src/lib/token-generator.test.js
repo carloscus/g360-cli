@@ -14,6 +14,7 @@ import {
   renderPython,
   renderGo,
   renderRust,
+  renderTailwindTheme,
   detectTokenTargets,
   writeTokens,
   readProjectSkill,
@@ -154,8 +155,27 @@ describe('token-generator', () => {
 
       expect(css).toContain(':root {');
       expect(css).toContain('--g360-accent: #00d084;');
-      expect(css).toContain('@media (prefers-color-scheme: light)');
       expect(css).toContain('--g360-border:');
+    });
+
+    it('should use light-dark() with a fallback and color-scheme', () => {
+      const css = renderCss(tokens);
+
+      // Fallback + light-dark: si el navegador no lo soporta, queda el oscuro.
+      expect(css).toContain('--g360-bg: #0b1220;');
+      expect(css).toContain('--g360-bg: light-dark(#0b1220, #ffffff);');
+      expect(css).toContain('color-scheme: dark light;');
+      expect(css).toContain('html[data-theme="light"] { color-scheme: light; }');
+      expect(css).toContain('html[data-theme="dark"] { color-scheme: dark; }');
+    });
+
+    it('should emit a Tailwind v4 theme block', () => {
+      const css = renderTailwindTheme(tokens);
+
+      expect(css).toContain('@theme {');
+      expect(css).toContain('--color-g360-accent: var(--g360-accent);');
+      expect(css).toContain('--color-g360-chart-1: var(--g360-chart-1);');
+      expect(css).toContain('--font-g360: var(--g360-font);');
     });
 
     it('should emit an explicit theme toggle', () => {

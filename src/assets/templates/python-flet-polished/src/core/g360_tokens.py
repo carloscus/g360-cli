@@ -1,6 +1,6 @@
 """G360 Design Tokens.
 
-Generado por `g360 tokens` — no editar a mano.
+Generado por `g360 tokens` â€” no editar a mano.
 Snapshot estatico: tras cambiar la familia de acento, regenerar con
 `g360 tokens --project <ruta>`.
 

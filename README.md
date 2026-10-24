@@ -260,6 +260,7 @@ g360 tokens [ruta] [opciones]
 | Stack | Archivo generado |
 |-------|------------------|
 | Web (React, Svelte, Solid, Lit, PWA) | `src/styles/g360-tokens.css` |
+| Tailwind v4 (CSS-first) | `src/styles/g360-tokens.tailwind.css` (bloque `@theme`) |
 | Python (Flet, CustomTkinter) | `src/core/g360_tokens.py` |
 | Go | `internal/theme/tokens.go` |
 | Rust / Tauri | `src-tauri/src/theme.rs` |
@@ -278,6 +279,36 @@ font · fontMono · fontSize · spaceXs..spaceXl
 
 En CSS se emiten como `--g360-*` (más los alias `--g360-muted` y
 `--g360-rounded` que ya usaban las plantillas y proyectos existentes).
+
+**Temas con `light-dark()`**: cada rol se declara dos veces —el valor oscuro
+como fallback y `light-dark(oscuro, claro)`— así funciona en navegadores sin
+`light-dark()` y el toggle real es `color-scheme`:
+
+```css
+:root { color-scheme: dark light; }   /* sigue al sistema */
+html[data-theme="light"] { color-scheme: light; }   /* toggle de la app */
+```
+
+**Tailwind**: con v4 (CSS-first) se emite además el bloque `@theme`, que
+expone los tokens como utilidades (`bg-g360-accent`, `text-g360-muted`,
+`border-g360-border`). En v3 el tema sigue en `tailwind.config.js` y la CLI lo
+avisa.
+
+**Opciones:**
+
+| Opción | Descripción |
+|--------|-------------|
+| `--skill <name>` | Skill a aplicar (por defecto, el del `skill.json`) |
+| `--accent <familia>` | Familia de acento a aplicar |
+| `--wire-css` | Conectar el token file con las hojas de estilo del proyecto |
+| `--dry-run` | Previsualizar sin escribir |
+| `--verbose` | Mostrar todos los tokens |
+
+`--wire-css` es quirúrgico: de cada bloque `:root` retira **solo** las
+variables de paleta (las propias de la app se conservan), agrega el `@import`
+al principio del archivo (CSS exige que los imports precedan a las reglas) y
+elimina el bloque de modo claro únicamente si define paleta. No toca
+artefactos de build ni la galería `g360/`.
 
 **Ejemplos:**
 
