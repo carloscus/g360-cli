@@ -112,6 +112,39 @@ function hasTestFiles(projectDir) {
 }
 
 /**
+ * Detecta el runner de tests Python sin ejecutar ni instalar dependencias.
+ * @param {string} projectDir - Directorio del proyecto
+ * @returns {{runner: 'pytest'|'unittest', testPath: string}|null}
+ */
+function detectPythonTests(projectDir) {
+  const files = walkFiles(projectDir, {
+    maxFiles: 600,
+    maxDepth: 6,
+    filter: (file) =>
+      !isFixturePath(projectDir, file) &&
+      TEST_FILE_PATTERNS.some((pattern) => pattern.test(path.basename(file)) && file.endsWith('.py'))
+  });
+
+  if (files.length === 0) return null;
+
+  let runner = 'pytest';
+  for (const file of files) {
+    const source = readText(file) ?? '';
+    if (/\bimport\s+unittest\b|\bfrom\s+unittest\s+import\b/.test(source)) {
+      runner = 'unittest';
+      break;
+    }
+    if (/\bimport\s+pytest\b|\bfrom\s+pytest\b/.test(source)) runner = 'pytest';
+  }
+
+  const relative = path.relative(projectDir, files[0]);
+  const parent = path.dirname(relative);
+  const testPath = parent === '.' ? '.' : parent;
+
+  return { runner, testPath };
+}
+
+/**
  * Resuelve el nombre del repo. En un worktree la carpeta se llama como la
  * rama, así que se resuelve el repo real desde el archivo `.git`.
  * @param {string} projectDir - Directorio del proyecto
@@ -173,10 +206,11 @@ function analyze(projectDir) {
   };
 
   const pkg = readJson('package.json');
-  const hasTestsDir = ['tests', 'test', '__tests__'].some((name) =>
-    fs.existsSync(path.join(projectDir, name))
-  );
-  const testFiles = hasTestFiles(projectDir);
+    const hasTestsDir = ['tests', 'test', '__tests__'].some((name) =>
+      fs.existsSync(path.join(projectDir, name))
+    );
+    const pythonTests = detectPythonTests(projectDir);
+    const testFiles = hasTestFiles(projectDir);
   const anyTests = hasTestsDir || testFiles;
 
   // Evidencia de Python: manifiesto, lockfile o código .py en el repo.
@@ -188,9 +222,11 @@ function analyze(projectDir) {
   // Node solo manda si tiene scripts reales de build/test/lint: hay repos con
   // un package.json de tooling (build de ejecutable) que en realidad son Python.
   const nodeScripts = pkg?.scripts ?? {};
-  const nodeHasRealScripts = Object.keys(nodeScripts).some((name) =>
-    ['test', 'build', 'lint', 'check', 'typecheck'].includes(name)
-  );
+  const nodeHasRealScripts = Object.entries(nodeScripts).some(([name, command]) => {
+    if (['build', 'lint', 'check', 'typecheck'].includes(name)) return true;
+    if (name !== 'test') return false;
+    return !/^\s*echo\b/i.test(command ?? '');
+  });
 
   if (has('go.mod')) {
     analysis.stack = 'go';
@@ -266,11 +302,20 @@ function analyze(projectDir) {
       analysis.install = null;
     }
 
-    if (anyTests) {
-      analysis.verify = has('uv.lock') ? 'uv run pytest' : 'pytest';
-      analysis.runner = 'pytest';
-      analysis.hasTests = true;
-      analysis.testPath = hasTestsDir ? 'tests/' : null;
+      if (pythonTests) {
+        const command = pythonTests.runner === 'unittest'
+          ? `python -m unittest discover -s ${pythonTests.testPath} -p "test*.py"`
+          : 'pytest';
+        analysis.verify = has('uv.lock') ? `uv run ${command}` : command;
+        analysis.runner = pythonTests.runner;
+        analysis.hasTests = true;
+        analysis.testPath = pythonTests.testPath === '.' ? null : `${pythonTests.testPath}/`;
+      } else if (anyTests) {
+        // Test path de convención, pero no se pudo detectar el runner.
+        analysis.verify = has('uv.lock') ? 'uv run pytest' : 'pytest';
+        analysis.runner = 'pytest';
+        analysis.hasTests = true;
+        analysis.testPath = hasTestsDir ? 'tests/' : null;
     } else {
       const srcDir = has('src') ? 'src' : '.';
       const compile = `python -m compileall ${srcDir}`;

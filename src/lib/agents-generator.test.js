@@ -118,6 +118,43 @@ describe('agentsGenerator', () => {
       expect(analysis.hasTests).toBe(false);
     });
 
+    it('should use unittest when a project has unittest.TestCase tests', () => {
+      write('pyproject.toml', '[project]\nname = "demo"\n');
+      write('uv.lock', 'version = 1\n');
+      write('src/test_app.py', 'import unittest\n\nclass TestApp(unittest.TestCase):\n    def test_ok(self):\n        self.assertEqual(1, 1)\n');
+
+      const analysis = agentsGenerator.analyze(tmpDir);
+
+      expect(analysis.runner).toBe('unittest');
+      expect(analysis.verify).toBe('uv run python -m unittest discover -s src -p "test*.py"');
+    });
+
+    it('should not mistake unittest.mock usage for the unittest runner', () => {
+      write('pyproject.toml', '[project]\nname = "demo"\n');
+      write('uv.lock', 'version = 1\n');
+      write('tests/test_app.py', 'from unittest.mock import Mock\nimport pytest\n\ndef test_uses_mock():\n    assert Mock() is not None\n');
+
+      const analysis = agentsGenerator.analyze(tmpDir);
+
+      expect(analysis.runner).toBe('pytest');
+      expect(analysis.verify).toBe('uv run pytest');
+    });
+
+    it('should prefer Python syntax verification over a placeholder Node test script', () => {
+      write('pyproject.toml', '[project]\nname = "demo"\n');
+      write('uv.lock', 'version = 1\n');
+      write('package.json', JSON.stringify({
+        name: 'demo',
+        scripts: { test: 'echo "Open test.html"' }
+      }));
+      write('src/main.py', 'print("hola")\n');
+
+      const analysis = agentsGenerator.analyze(tmpDir);
+
+      expect(analysis.stack).toBe('python');
+      expect(analysis.verify).toBe('uv run python -m compileall src');
+    });
+
     it('should not count vendored template tests as project tests', () => {
       write('pyproject.toml', '[project]\nname = "demo"\n');
       write('g360/templates/python-flet/src/test_app.py', 'def test_template_fixture():\n    assert True\n');

@@ -12,6 +12,7 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 ### Fixed
 - **`g360 agents` y `g360 audit`**: tests dentro de templates vendorizadas (`g360/templates`, `assets/templates`, `samples`, `examples`) ya no cuentan como tests del repo. Evita recomendar `uv run pytest` a proyectos que solo contienen tests de ejemplo.
 - **Comando de verificación Python sin tests**: usa `uv run python -m compileall` cuando existe `uv.lock`, asegurando que compile con el intérprete del proyecto.
+- **Runner Python**: distingue `pytest` de `unittest` en los archivos reales del proyecto; las pruebas `src/test_app.py` se verifican con `python -m unittest discover`.
 
 ---
 
