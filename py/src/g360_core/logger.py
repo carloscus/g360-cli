@@ -10,7 +10,7 @@ _DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 _configured = False
 
 
-def setup_logging(level: int = logging.INFO, log_file: str = None):
+def setup_logging(level: int = logging.INFO, log_file: str | None = None):
     """Configure root logger with console + optional file handler."""
     global _configured
     if _configured:

@@ -5,17 +5,20 @@ Lee archivos grandes y los procesa en un solo paso usando InsightProcessor.
 El chunking original causaba procesamiento duplicado; ahora se procesa
 todo el DataFrame de una vez para garantizar consistencia.
 """
-import pandas as pd
-from pathlib import Path
-from typing import Optional, Callable
+
 import gc
+from collections.abc import Callable
+from pathlib import Path
+
+import pandas as pd
+
 from .processor import InsightProcessor
 
 
 class BatchProcessor:
     """Procesa archivos ERP grandes con feedback de progreso."""
 
-    def __init__(self, progress_callback: Optional[Callable] = None):
+    def __init__(self, progress_callback: Callable | None = None):
         self.progress_callback = progress_callback
 
     def process_large_file(self, df: pd.DataFrame, filename: str) -> InsightProcessor:
@@ -40,8 +43,9 @@ class BatchProcessor:
 
         return processor
 
-    def read_with_progress(self, path: str, file_ext: str,
-                           on_progress: Callable[[float, str], None]) -> pd.DataFrame:
+    def read_with_progress(
+        self, path: str, file_ext: str, on_progress: Callable[[float, str], None]
+    ) -> pd.DataFrame:
         """
         Lee archivo con indicador de progreso.
 
@@ -59,7 +63,7 @@ class BatchProcessor:
         return df
 
 
-def read_erp_file(path: str, file_ext: str = None) -> pd.DataFrame:
+def read_erp_file(path: str, file_ext: str | None = None) -> pd.DataFrame:
     """
     Funcion unificada de lectura de archivos ERP.
 
@@ -81,25 +85,34 @@ def read_erp_file(path: str, file_ext: str = None) -> pd.DataFrame:
     Raises:
         ValueError: Si la extension no es soportada o hay error de lectura.
     """
-    if file_ext is None:
-        file_ext = Path(path).suffix.lower()
-    else:
-        file_ext = file_ext.lower()
+    file_ext = Path(path).suffix.lower() if file_ext is None else file_ext.lower()
 
     # Columnas críticas que deben preservar ceros a la izquierda
     critical_cols = [
-        "ID_ARTICULO", "ID_CLIENTE", "ID_VENDEDOR", "ID_LINEA",
-        "ID_GRUPO", "ID_TIPO", "ID_FAMILIA", "COD_SUCURSAL",
-        "NRO_DOC", "SERIE_DOC", "DOC_CLIENTE"
+        "ID_ARTICULO",
+        "ID_CLIENTE",
+        "ID_VENDEDOR",
+        "ID_LINEA",
+        "ID_GRUPO",
+        "ID_TIPO",
+        "ID_FAMILIA",
+        "COD_SUCURSAL",
+        "NRO_DOC",
+        "SERIE_DOC",
+        "DOC_CLIENTE",
     ]
 
-    if file_ext == '.csv':
+    if file_ext == ".csv":
         # Para CSV, leer todo como string inicialmente
         df = pd.read_csv(
-            path, dtype=str, encoding='utf-8-sig',
-            sep=None, engine='python', low_memory=False,
+            path,
+            dtype=str,
+            encoding="utf-8-sig",
+            sep=None,
+            engine="python",
+            low_memory=False,
         )
-    elif file_ext in ('.xls', '.xlsx'):
+    elif file_ext in (".xls", ".xlsx"):
         engine = "xlrd" if file_ext == ".xls" else "openpyxl"
         try:
             # Leer Excel con dtype=str para forzar texto en TODAS las columnas
@@ -107,8 +120,8 @@ def read_erp_file(path: str, file_ext: str = None) -> pd.DataFrame:
             df = pd.read_excel(path, dtype=str, engine=engine)
         except Exception as ex:
             raise ValueError(
-                f"Error leyendo archivo Excel ({file_ext}) con motor '{engine}': {ex}"
-            )
+                f"Error leyendo archivo Excel ({file_ext}) con motor '{engine}'"
+            ) from ex
     else:
         raise ValueError(f"Extension '{file_ext}' no soportada. Use .xls, .xlsx, .csv")
 

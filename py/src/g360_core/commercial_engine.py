@@ -12,11 +12,12 @@ Principio: toda regla de negocio vive aquí, no en processor.py ni pipeline.py.
 """
 
 import re
-import pandas as pd
-import numpy as np
 
-from .utils import NC_PREFIXES, ND_PREFIXES
+import numpy as np
+import pandas as pd
+
 from .logger import get_logger
+from .utils import NC_PREFIXES, ND_PREFIXES
 
 log = get_logger("commercial_engine")
 
@@ -36,6 +37,7 @@ REF_PATTERN = re.compile(r"^([A-Z0-9]+)/(\d+)-(\d+)$")
 
 # ─── Helpers internos ─────────────────────────────────────────────────────────
 
+
 def _find_fae_col(df: pd.DataFrame) -> str:
     """Encuentra la columna CANTIDAD FAE (puede venir como CANTIDAD_FAE)."""
     for col in df.columns:
@@ -54,6 +56,7 @@ def _find_tpo_col(df: pd.DataFrame) -> str:
 
 
 # ─── Paso 1: Parseo de REFERENCIA ────────────────────────────────────────────
+
 
 def parse_referencia(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -85,6 +88,7 @@ def parse_referencia(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ─── Paso 2: Clasificación primaria ──────────────────────────────────────────
+
 
 def classify_base(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -133,6 +137,7 @@ def classify_base(df: pd.DataFrame) -> pd.DataFrame:
 
 # ─── Paso 3: Resolución de relaciones documentales ──────────────────────────
 
+
 def _normalize_doc_id(val) -> str:
     """Normaliza ID de documento: quita '.0' de floats, espacios, mayúsculas."""
     s = str(val).strip().upper()
@@ -167,7 +172,9 @@ def build_invoice_index(df: pd.DataFrame) -> dict:
     facturas["_IDX_TIPO"] = facturas["TPO_DOC"].astype(str).str.upper().str.strip()
     facturas["_IDX_SERIE"] = facturas["SERIE_DOC"].apply(_normalize_doc_id)
     facturas["_IDX_NRO"] = facturas["NRO_DOC"].apply(_normalize_doc_id)
-    facturas["_IDX_SKU"] = facturas["ID_ARTICULO"].astype(str).str.strip() if "ID_ARTICULO" in facturas.columns else ""
+    facturas["_IDX_SKU"] = (
+        facturas["ID_ARTICULO"].astype(str).str.strip() if "ID_ARTICULO" in facturas.columns else ""
+    )
 
     # Convertir a numérico
     facturas[fae_col] = pd.to_numeric(facturas[fae_col], errors="coerce").fillna(0)
@@ -217,13 +224,10 @@ def resolve_document_relationships(df: pd.DataFrame) -> pd.DataFrame:
         sku = str(df.at[idx_row, "ID_ARTICULO"]).strip() if "ID_ARTICULO" in df.columns else ""
 
         key_con_sku = (ref_tipo, ref_serie, ref_numero, sku)
-        key_sin_sku = (ref_tipo, ref_serie, ref_numero, "")
 
         if key_con_sku in idx:
             factura = idx[key_con_sku]
-            cant_fae_ajuste = abs(
-                pd.to_numeric(df.at[idx_row, fae_col], errors="coerce") or 0
-            )
+            cant_fae_ajuste = abs(pd.to_numeric(df.at[idx_row, fae_col], errors="coerce") or 0)
             cant_factura = abs(factura.get("CANTIDAD", 0))
 
             if cant_fae_ajuste == 0:
@@ -235,9 +239,7 @@ def resolve_document_relationships(df: pd.DataFrame) -> pd.DataFrame:
             else:
                 df.at[idx_row, "SUBTIPO_AJUSTE"] = SUBTIPO_SIN_BASE
         else:
-            cant_fae_val = abs(
-                pd.to_numeric(df.at[idx_row, fae_col], errors="coerce") or 0
-            )
+            cant_fae_val = abs(pd.to_numeric(df.at[idx_row, fae_col], errors="coerce") or 0)
             if cant_fae_val == 1:
                 df.at[idx_row, "SUBTIPO_AJUSTE"] = SUBTIPO_CARGO_FIJO
             else:
@@ -247,6 +249,7 @@ def resolve_document_relationships(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ─── Paso 4: Cálculo de precios ─────────────────────────────────────────────
+
 
 def calculate_prices(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -263,11 +266,7 @@ def calculate_prices(df: pd.DataFrame) -> pd.DataFrame:
         cant = pd.to_numeric(df["CANTIDAD"], errors="coerce").fillna(0)
         soles = pd.to_numeric(df["SOLES"], errors="coerce").fillna(0)
         mask_fisica = cant != 0
-        df["PRECIO_BASE"] = np.where(
-            mask_fisica,
-            np.round(soles.abs() / cant.abs(), 4),
-            np.nan
-        )
+        df["PRECIO_BASE"] = np.where(mask_fisica, np.round(soles.abs() / cant.abs(), 4), np.nan)
     else:
         df["PRECIO_BASE"] = np.nan
 
@@ -280,11 +279,7 @@ def calculate_prices(df: pd.DataFrame) -> pd.DataFrame:
         es_ajuste_precio = subtipo.isin([SUBTIPO_PRECIO_LINEA, SUBTIPO_PRECIO_PARCIAL])
         mask_recargo = es_ajuste_precio & (cant_fae != 0)
 
-        df["RECARGO_UNITARIO"] = np.where(
-            mask_recargo,
-            np.round(soles / cant_fae.abs(), 4),
-            np.nan
-        )
+        df["RECARGO_UNITARIO"] = np.where(mask_recargo, np.round(soles / cant_fae.abs(), 4), np.nan)
     else:
         df["RECARGO_UNITARIO"] = np.nan
 
@@ -295,9 +290,7 @@ def calculate_prices(df: pd.DataFrame) -> pd.DataFrame:
         base_val = df["PRECIO_BASE"].fillna(0)
         recargo_val = df.get("RECARGO_UNITARIO", pd.Series(0)).fillna(0)
         df["PRECIO_EFECTIVO"] = np.where(
-            df["PRECIO_BASE"].notna(),
-            np.round(base_val + recargo_val, 4),
-            np.nan
+            df["PRECIO_BASE"].notna(), np.round(base_val + recargo_val, 4), np.nan
         )
     else:
         df["PRECIO_EFECTIVO"] = np.nan

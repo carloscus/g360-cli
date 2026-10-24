@@ -12,60 +12,81 @@ Fases:
 """
 
 from pathlib import Path
-from typing import Optional
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
-from .logger import get_logger
 from .commercial_engine import (
+    calculate_prices,
     classify_base,
     parse_referencia,
     resolve_document_relationships,
-    calculate_prices,
 )
+from .logger import get_logger
 
 log = get_logger("ingestion")
 
 # ─── Constantes ──────────────────────────────────────────────────────────────
 
 MESES_ESP = {
-    "ENERO": "01", "FEBRERO": "02", "MARZO": "03", "ABRIL": "04",
-    "MAYO": "05", "JUNIO": "06", "JULIO": "07", "AGOSTO": "08",
-    "SETIEMBRE": "09", "OCTUBRE": "10", "NOVIEMBRE": "11", "DICIEMBRE": "12",
+    "ENERO": "01",
+    "FEBRERO": "02",
+    "MARZO": "03",
+    "ABRIL": "04",
+    "MAYO": "05",
+    "JUNIO": "06",
+    "JULIO": "07",
+    "AGOSTO": "08",
+    "SETIEMBRE": "09",
+    "OCTUBRE": "10",
+    "NOVIEMBRE": "11",
+    "DICIEMBRE": "12",
 }
 
 MOLDE_INMUTABLE = [
     "FECHA_PROCESO",
-    "EMPRESA_RUC",       # RUC o DNI del cliente
+    "EMPRESA_RUC",  # RUC o DNI del cliente
     "CLIENTE_TIPO_DOC",  # "RUC" o "DNI"
-    "EMPRESA_NOM",       # Nombre legal del cliente
-    "SUCURSAL_ID",       # ID único de sucursal
-    "CLIENTE_UI",        # Nombre display con sucursal
-    "PRODUCTO_NOM",      # Nombre del artículo
-    "VENDEDOR_NOM",      # Nombre del vendedor
-    "TIPO_DOC",          # Tipo de comprobante (F01, BDI, NCR, NDB, etc.)
-    "CATEGORIA_OP",      # VENTA, DEVOLUCION, AJUSTE
-    "SUBTIPO_AJUSTE",    # PRECIO_LINEA, PRECIO_PARCIAL, CARGO_FIJO, SIN_BASE
-    "CANT_FISICA",       # Cantidad física (positiva o negativa)
-    "NETO_SOLES",        # Monto en soles
-    "CANTIDAD_FAE",      # Cantidad financiera FAE (para ajustes de precio)
-    "PRECIO_BASE",       # Precio unitario base (solo movimientos físicos)
-    "PRECIO_EFECTIVO",   # Precio base + recargo unitario
-    "STOCK_DORMIDO",     # 1 si stock dormido (>90 días), 0 si no
+    "EMPRESA_NOM",  # Nombre legal del cliente
+    "SUCURSAL_ID",  # ID único de sucursal
+    "CLIENTE_UI",  # Nombre display con sucursal
+    "PRODUCTO_NOM",  # Nombre del artículo
+    "VENDEDOR_NOM",  # Nombre del vendedor
+    "TIPO_DOC",  # Tipo de comprobante (F01, BDI, NCR, NDB, etc.)
+    "CATEGORIA_OP",  # VENTA, DEVOLUCION, AJUSTE
+    "SUBTIPO_AJUSTE",  # PRECIO_LINEA, PRECIO_PARCIAL, CARGO_FIJO, SIN_BASE
+    "CANT_FISICA",  # Cantidad física (positiva o negativa)
+    "NETO_SOLES",  # Monto en soles
+    "CANTIDAD_FAE",  # Cantidad financiera FAE (para ajustes de precio)
+    "PRECIO_BASE",  # Precio unitario base (solo movimientos físicos)
+    "PRECIO_EFECTIVO",  # Precio base + recargo unitario
+    "STOCK_DORMIDO",  # 1 si stock dormido (>90 días), 0 si no
 ]
 
 COLUMNAS_ORIGEN_REQUERIDAS = {
-    "ANHO", "MES", "DOC_CLIENTE", "NOM_CLIENTE", "COD_SUCURSAL",
-    "NOM_SUCURSAL", "ID_ARTICULO", "NOM_ARTICULO", "ID_VENDEDOR",
-    "NOM_VENDEDOR", "TPO_DOC", "REFERENCIA", "FECHA_ORIG", "FECHA_REF",
-    "CANTIDAD", "SOLES",
+    "ANHO",
+    "MES",
+    "DOC_CLIENTE",
+    "NOM_CLIENTE",
+    "COD_SUCURSAL",
+    "NOM_SUCURSAL",
+    "ID_ARTICULO",
+    "NOM_ARTICULO",
+    "ID_VENDEDOR",
+    "NOM_VENDEDOR",
+    "TPO_DOC",
+    "REFERENCIA",
+    "FECHA_ORIG",
+    "FECHA_REF",
+    "CANTIDAD",
+    "SOLES",
 }
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # FASE 1: SANEAMIENTO DE LA INGESTA
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def clean_duplicate_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -101,10 +122,7 @@ def unify_currency(df: pd.DataFrame) -> pd.DataFrame:
         df = df.drop(columns=["DOLARES"])
 
     if "SOLES" in df.columns:
-        df["SOLES"] = (
-            pd.to_numeric(df["SOLES"], errors="coerce")
-            .fillna(0.0)
-        )
+        df["SOLES"] = pd.to_numeric(df["SOLES"], errors="coerce").fillna(0.0)
     return df
 
 
@@ -121,18 +139,9 @@ def build_fecha_proceso(df: pd.DataFrame) -> pd.DataFrame:
 
     if "ANHO" in df.columns and "MES" in df.columns:
         mes_num = (
-            df["MES"]
-            .astype(str)
-            .str.upper()
-            .str.strip()
-            .str.extract(r"(\d{2})", expand=False)
+            df["MES"].astype(str).str.upper().str.strip().str.extract(r"(\d{2})", expand=False)
         )
-        anho = (
-            df["ANHO"]
-            .astype(str)
-            .str.strip()
-            .str.extract(r"(\d{4})", expand=False)
-        )
+        anho = df["ANHO"].astype(str).str.strip().str.extract(r"(\d{4})", expand=False)
         valido = mes_num.notna() & anho.notna()
         fecha_proceso[valido] = pd.to_datetime(
             anho[valido] + "-" + mes_num[valido] + "-01",
@@ -152,6 +161,7 @@ def build_fecha_proceso(df: pd.DataFrame) -> pd.DataFrame:
 # ═══════════════════════════════════════════════════════════════════════════════
 # FASE 2: RESOLUCION DE JERARQUIA DE CLIENTES
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def resolve_client_hierarchy(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -212,7 +222,9 @@ def build_cliente_ui(df: pd.DataFrame) -> pd.DataFrame:
         "EMPRESA SIN SUCURSAL"
     """
     # EMPRESA_NOM debe existir (creada en resolve_client_hierarchy)
-    base_name = df.get("EMPRESA_NOM", pd.Series("", index=df.index)).fillna("").astype(str).str.strip()
+    base_name = (
+        df.get("EMPRESA_NOM", pd.Series("", index=df.index)).fillna("").astype(str).str.strip()
+    )
 
     # Manejar ausencia de COD_SUCURSAL
     if "COD_SUCURSAL" in df.columns:
@@ -223,7 +235,9 @@ def build_cliente_ui(df: pd.DataFrame) -> pd.DataFrame:
     # Obligar a string por si suc_cod es numérico
     suc_cod = suc_cod.astype(str).str.strip()
 
-    suc_nom = df.get("NOM_SUCURSAL", pd.Series("", index=df.index)).fillna("").astype(str).str.strip()
+    suc_nom = (
+        df.get("NOM_SUCURSAL", pd.Series("", index=df.index)).fillna("").astype(str).str.strip()
+    )
 
     # Por defecto: solo nombre de empresa
     df["CLIENTE_UI"] = base_name
@@ -245,6 +259,7 @@ def build_cliente_ui(df: pd.DataFrame) -> pd.DataFrame:
 # FASE 3: TIPIFICACION COMERCIAL Y TRAZABILIDAD
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def detect_stock_dormido(df: pd.DataFrame) -> pd.DataFrame:
     """
     Marca ES_STOCK_DORMIDO = 1 si FECHA_ORIG - FECHA_REF > 90 dias.
@@ -256,11 +271,13 @@ def detect_stock_dormido(df: pd.DataFrame) -> pd.DataFrame:
 
     orig = pd.to_datetime(
         df.get("FECHA_ORIG", pd.Series("", index=df.index)),
-        dayfirst=True, errors="coerce",
+        dayfirst=True,
+        errors="coerce",
     )
     ref = pd.to_datetime(
         df.get("FECHA_REF", pd.Series("", index=df.index)),
-        dayfirst=True, errors="coerce",
+        dayfirst=True,
+        errors="coerce",
     )
 
     delta = (orig - ref).dt.days
@@ -276,6 +293,7 @@ def detect_stock_dormido(df: pd.DataFrame) -> pd.DataFrame:
 # ═══════════════════════════════════════════════════════════════════════════════
 # FASE 4: EXPORTACION DEL MOLDE INMUTABLE
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def _find_fae_col(df: pd.DataFrame) -> str:
     """Encuentra la columna CANTIDAD FAE (puede venir como CANTIDAD_FAE)."""
@@ -352,7 +370,9 @@ def export_master(df: pd.DataFrame) -> pd.DataFrame:
     # Normalizaciones finales
     resultado["CANT_FISICA"] = pd.to_numeric(resultado["CANT_FISICA"], errors="coerce").fillna(0.0)
     resultado["NETO_SOLES"] = pd.to_numeric(resultado["NETO_SOLES"], errors="coerce").fillna(0.0)
-    resultado["CANTIDAD_FAE"] = pd.to_numeric(resultado["CANTIDAD_FAE"], errors="coerce").fillna(0.0)
+    resultado["CANTIDAD_FAE"] = pd.to_numeric(resultado["CANTIDAD_FAE"], errors="coerce").fillna(
+        0.0
+    )
     resultado["PRECIO_BASE"] = pd.to_numeric(resultado["PRECIO_BASE"], errors="coerce")
     resultado["PRECIO_EFECTIVO"] = pd.to_numeric(resultado["PRECIO_EFECTIVO"], errors="coerce")
     resultado["TIPO_DOC"] = resultado["TIPO_DOC"].astype(str).str.upper().str.strip()
@@ -379,9 +399,10 @@ def _default_value(col: str):
 # ORQUESTADOR PRINCIPAL
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def ingest_to_master(
     filepath: str,
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
     drop_totales: bool = True,
 ) -> pd.DataFrame:
     """
@@ -446,8 +467,8 @@ def ingest_to_master(
 
 
 def batch_ingest(
-    filepaths: List[str],
-    output_path: Optional[str] = None,
+    filepaths: list[str],
+    output_path: str | None = None,
     drop_totales: bool = True,
     merge_results: bool = True,
 ) -> pd.DataFrame:
@@ -476,12 +497,12 @@ def batch_ingest(
             master_df = ingest_to_master(
                 filepath=fp,
                 output_path=None,  # No guardar individualmente
-                drop_totales=drop_totales
+                drop_totales=drop_totales,
             )
             if not master_df.empty:
                 # Añadir columna de trazabilidad
-                master_df['ARCHIVO_ORIGEN'] = Path(fp).name
-                master_df['ORDEN_LOTE'] = i
+                master_df["ARCHIVO_ORIGEN"] = Path(fp).name
+                master_df["ORDEN_LOTE"] = i
                 results.append(master_df)
                 sources.append(Path(fp))
                 log.info("  ✓ %d filas procesadas", len(master_df))
@@ -493,12 +514,13 @@ def batch_ingest(
 
     if not results:
         log.warning("No se pudo procesar ningún archivo")
-        return pd.DataFrame(columns=MOLDE_INMUTABLE + ['ARCHIVO_ORIGEN', 'ORDEN_LOTE'])
+        return pd.DataFrame(columns=[*MOLDE_INMUTABLE, "ARCHIVO_ORIGEN", "ORDEN_LOTE"])
 
     if merge_results:
         combined = pd.concat(results, ignore_index=True)
-        log.info("=== BATCH COMPLETADO: %d filas totales de %d archivos ===",
-                len(combined), len(results))
+        log.info(
+            "=== BATCH COMPLETADO: %d filas totales de %d archivos ===", len(combined), len(results)
+        )
 
         if output_path:
             combined.to_csv(output_path, index=False, encoding="utf-8-sig")
@@ -510,11 +532,12 @@ def batch_ingest(
         return results
 
 
-
 # ─── Funciones auxiliares internas ──────────────────────────────────────────
+
 
 def _read_file(filepath: str) -> pd.DataFrame:
     from .batch_processor import read_erp_file
+
     try:
         ext = Path(filepath).suffix.lower()
         return read_erp_file(filepath, ext)
@@ -533,11 +556,7 @@ def _create_derived_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
     # FECHA_DT
     if "FECHA_PROCESO" in df.columns:
-        df["FECHA_DT"] = pd.to_datetime(
-            df["FECHA_PROCESO"],
-            dayfirst=True,
-            errors="coerce"
-        )
+        df["FECHA_DT"] = pd.to_datetime(df["FECHA_PROCESO"], dayfirst=True, errors="coerce")
 
     # Flags de documentos
     if "TPO_DOC" in df.columns:

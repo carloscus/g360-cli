@@ -195,9 +195,7 @@ async def _grab(page, out: Path, wait: float, window_wait: float = 25.0) -> None
         try:
             img = await loop.run_in_executor(None, _grab_window_sync, rect)
         except Exception as exc:
-            print(
-                f"G360_CAPTURE_ERROR:captura de ventana fallo: {exc}", file=sys.stderr
-            )
+            print(f"G360_CAPTURE_ERROR:captura de ventana fallo: {exc}", file=sys.stderr)
             _close_page(page)
             return
         if not img:
@@ -264,12 +262,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Captura screenshot de una app Flet")
     parser.add_argument("entry", help="Archivo entrypoint (ej. main.py)")
     parser.add_argument("--out", required=True, help="Ruta del PNG de salida")
-    parser.add_argument(
-        "--wait", type=float, default=3.0, help="Segundos de espera tras el render"
-    )
-    parser.add_argument(
-        "--timeout", type=float, default=45.0, help="Hard timeout en segundos"
-    )
+    parser.add_argument("--wait", type=float, default=3.0, help="Segundos de espera tras el render")
+    parser.add_argument("--timeout", type=float, default=45.0, help="Hard timeout en segundos")
     args = parser.parse_args()
 
     entry = Path(args.entry)
@@ -282,9 +276,7 @@ def main() -> int:
     try:
         import flet  # noqa: F401
     except ImportError:
-        print(
-            "G360_CAPTURE_ERROR:flet no instalado (pip install flet)", file=sys.stderr
-        )
+        print("G360_CAPTURE_ERROR:flet no instalado (pip install flet)", file=sys.stderr)
         return 3
 
     try:
