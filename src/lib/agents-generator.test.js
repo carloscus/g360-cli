@@ -107,6 +107,28 @@ describe('agentsGenerator', () => {
       expect(analysis.hasTests).toBe(false);
     });
 
+    it('should run compileall inside the uv environment when there are no tests', () => {
+      write('pyproject.toml', '[project]\nname = "demo"\n');
+      write('uv.lock', 'version = 1\n');
+      write('src/main.py', 'print("hola")\n');
+
+      const analysis = agentsGenerator.analyze(tmpDir);
+
+      expect(analysis.verify).toBe('uv run python -m compileall src');
+      expect(analysis.hasTests).toBe(false);
+    });
+
+    it('should not count vendored template tests as project tests', () => {
+      write('pyproject.toml', '[project]\nname = "demo"\n');
+      write('g360/templates/python-flet/src/test_app.py', 'def test_template_fixture():\n    assert True\n');
+
+      const analysis = agentsGenerator.analyze(tmpDir);
+
+      expect(analysis.stack).toBe('python');
+      expect(analysis.hasTests).toBe(false);
+      expect(analysis.verify).toBe('python -m compileall .');
+    });
+
     it('should detect go projects', () => {
       write('go.mod', 'module demo\n');
       write('main.go', 'package main\n');

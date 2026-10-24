@@ -23,6 +23,18 @@ export const TEST_FILE_PATTERNS = [
   /(^test_.+|.+_test)\.py$/i
 ];
 
+/**
+ * Detecta archivos que pertenecen a fixtures/plantillas de terceros, no al
+ * codigo ejecutable del proyecto. No contar sus tests ni variables de entorno.
+ * @param {string} projectDir - Raiz del proyecto
+ * @param {string} filePath - Ruta absoluta del archivo
+ * @returns {boolean}
+ */
+export function isFixturePath(projectDir, filePath) {
+  const parts = path.relative(projectDir, filePath).split(path.sep).map((part) => part.toLowerCase());
+  return parts.some((part) => ['templates', 'samples', 'examples'].includes(part));
+}
+
 const ENV_PATTERNS = [
   /process\.env\.([A-Z_][A-Z0-9_]*)/g,
   /process\.env\[['"]([A-Z_][A-Z0-9_]*)['"]\]/g,
@@ -91,6 +103,7 @@ export function detectEnvVars(projectDir) {
   const files = walkFiles(projectDir, {
     filter: (file) =>
       SOURCE_EXTENSIONS.has(path.extname(file).toLowerCase()) &&
+      !isFixturePath(projectDir, file) &&
       !TEST_FILE_PATTERNS.some((pattern) => pattern.test(path.basename(file)))
   });
 

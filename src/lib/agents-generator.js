@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { detectEnvVars, walkFiles } from './env-detector.js';
+import { detectEnvVars, isFixturePath, walkFiles } from './env-detector.js';
 
 /**
  * Generador de AGENTS.md por repo: deriva el comando de verificación real a
@@ -105,7 +105,10 @@ function extractDescription(readme) {
  */
 function hasTestFiles(projectDir) {
   const files = walkFiles(projectDir, { maxFiles: 600, maxDepth: 4 });
-  return files.some((file) => TEST_FILE_PATTERNS.some((pattern) => pattern.test(path.basename(file))));
+  return files.some((file) => {
+    return !isFixturePath(projectDir, file)
+      && TEST_FILE_PATTERNS.some((pattern) => pattern.test(path.basename(file)));
+  });
 }
 
 /**
@@ -270,7 +273,8 @@ function analyze(projectDir) {
       analysis.testPath = hasTestsDir ? 'tests/' : null;
     } else {
       const srcDir = has('src') ? 'src' : '.';
-      analysis.verify = `python -m compileall ${srcDir}`;
+      const compile = `python -m compileall ${srcDir}`;
+      analysis.verify = has('uv.lock') ? `uv run ${compile}` : compile;
       analysis.runner = 'sin tests (compileall)';
       analysis.hasTests = false;
     }
@@ -299,7 +303,10 @@ function renderSections(analysis) {
   lines.push(`- Stack: ${analysis.stack}${analysis.packageManager !== '-' ? ` (${analysis.packageManager})` : ''}`);
   lines.push(`- Tests: ${analysis.runner}${analysis.testPath ? ` en \`${analysis.testPath}\`` : ''}`);
   if (analysis.runner === 'sin script de test' || analysis.runner === 'sin tests (compileall)') {
-    lines.push('- ⚠️ Sin verificación automática real: agregá un script `test` (Node) o tests con `pytest` para que el repo sea verificable.');
+    const recommendation = analysis.stack === 'python'
+      ? 'agregá tests de comportamiento con `pytest`; compileall solo detecta errores de sintaxis.'
+      : 'agregá un script `test` con tests de comportamiento.';
+    lines.push(`- ⚠️ Sin suite de tests: ${recommendation}`);
   }
   lines.push('');
 

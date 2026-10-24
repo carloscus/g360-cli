@@ -182,6 +182,22 @@ describe('autonomyAuditor', () => {
       expect(byId(findings, 'skipped-tests').message).toContain('skip condicional');
     });
 
+    it('should ignore tests inside vendored templates', () => {
+      write('g360/templates/python-flet/src/test_app.py', [
+        'import pytest',
+        '',
+        '@pytest.mark.xfail',
+        'def test_template_placeholder():',
+        '    assert False',
+        ''
+      ].join('\n'));
+
+      const { findings } = autonomyAuditor.check(tmpDir);
+
+      expect(byId(findings, 'skipped-tests').status).toBe('pass');
+      expect(byId(findings, 'skipped-tests').message).toBe('Sin tests deshabilitados detectados');
+    });
+
     it('should not flag normal test files', () => {
       write('tests/app.test.js', "import { it, expect } from 'vitest';\nit('works', () => { expect(true).toBe(true); });\n");
 

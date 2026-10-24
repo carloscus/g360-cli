@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { detectEnvVars, walkFiles } from './env-detector.js';
+import { detectEnvVars, isFixturePath, walkFiles } from './env-detector.js';
 
 /**
  * Checks de autosuficiencia: el repositorio debe poder compilar, ejecutarse y
@@ -341,7 +341,9 @@ function hasSkipPattern(content, patterns) {
 function checkSkippedTests(projectDir) {
   const testFiles = walk(projectDir, {
     maxFiles: MAX_TEST_FILES,
-    filter: (file) => TEST_FILE_PATTERNS.some((pattern) => pattern.test(path.basename(file)))
+    filter: (file) =>
+      !isFixturePath(projectDir, file) &&
+      TEST_FILE_PATTERNS.some((pattern) => pattern.test(path.basename(file)))
   });
 
   const hard = testFiles.filter((file) => {
