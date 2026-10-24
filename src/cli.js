@@ -146,6 +146,7 @@ program
   .option('--skill <name>', 'Skill to apply (default: el del skill.json del proyecto)')
   .option('--accent <family>', 'Familia de acento a aplicar')
   .option('--dry-run', 'Preview without writing')
+  .option('--wire-css', 'Conectar el token file con las hojas de estilo del proyecto')
   .option('--verbose', 'Show detailed output')
   .action(tokens);
 

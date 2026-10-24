@@ -2,6 +2,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { contrastRatio, hueOf, luminance } from './accent-families.js';
+import { detectEnvVars, walkFiles } from './env-detector.js';
 
 /**
  * Generador de design tokens.
@@ -556,10 +557,15 @@ export function detectTokenTargets(projectDir) {
   const has = (rel) => fs.existsSync(path.join(projectDir, rel));
   const targets = [];
 
-  if (has('package.json') || has('index.html') || has('src')) {
+  // Python: si hay pyproject/requirements/main.py, es Python (aunque tenga src/).
+  const isPython = has('pyproject.toml') || has('requirements.txt') || has('main.py') || has('run.py');
+  // Web: package.json o index.html (un src/ solo no alcanza).
+  const isWeb = has('package.json') || has('index.html');
+
+  if (isWeb && !isPython) {
     targets.push({ stack: 'web', file: TOKEN_TARGETS.web });
   }
-  if (has('pyproject.toml') || has('requirements.txt') || has('main.py')) {
+  if (isPython) {
     targets.push({ stack: 'python', file: TOKEN_TARGETS.python });
   }
   if (has('go.mod')) {
@@ -572,6 +578,127 @@ export function detectTokenTargets(projectDir) {
   return targets;
 }
 
+/**
+ * Conecta el archivo de tokens con las hojas de estilo del proyecto.
+ *
+ * Transformacion quirurgica:
+ *  1. De cada bloque `:root` se retiran SOLO las variables de paleta que
+ *     define el token file; las propias de la app se conservan.
+ *  2. Se agrega el `@import` al principio del archivo (CSS exige que los
+ *     imports precedan a las reglas; un `@import` en el medio se ignora).
+ *  3. El bloque de modo claro se elimina solo si define paleta (si no,
+ *     pisaria los tokens).
+ *
+ * @param {string} projectDir - Directorio del proyecto
+ * @param {Object} tokens - Tokens resueltos
+ * @param {Object} [options] - Opciones
+ * @param {boolean} [options.dryRun=false] - No escribir
+ * @param {string} [options.css] - CSS renderizado (para dry-run)
+ * @returns {Array<{file: string, changes: string[], missing: string[]}>} Hojas tocadas
+ */
+export function wireCss(projectDir, tokens, options = {}) {
+  const tokenFile = path.join(projectDir, TOKEN_TARGETS.web);
+  // En dry-run el archivo no existe todavia: se usa el contenido renderizado.
+  const tokenCss = options.css
+    ?? (fs.existsSync(tokenFile) ? fs.readFileSync(tokenFile, 'utf8') : renderCss(tokens));
+  if (!tokenCss) return [];
+
+  const paletteVars = new Set(
+    [...tokenCss.matchAll(/(--g360-[a-z0-9-]+)\s*:/g)].map((match) => match[1])
+  );
+
+  const isStylesheet = (file) =>
+    file.endsWith('.css') &&
+    path.basename(file) !== path.basename(TOKEN_TARGETS.web) &&
+    // Artefactos de build y galeria de plantillas: no se tocan.
+    !file.split(path.sep).some((part) => ['g360', '_app', 'dist', 'build', 'out', '.svelte-kit', '.next'].includes(part));
+
+  const stylesheets = walkFiles(projectDir, {
+    maxFiles: 200,
+    maxDepth: 4,
+    filter: isStylesheet
+  });
+
+  // Variables definidas en cualquier parte del proyecto (para no falsos positivos).
+  const definedAnywhere = new Set(paletteVars);
+  for (const file of stylesheets) {
+    const content = fs.readFileSync(file, 'utf8');
+    for (const match of content.matchAll(/(--[a-z0-9-]+)\s*:/g)) definedAnywhere.add(match[1]);
+  }
+
+  const touched = [];
+
+  for (const file of stylesheets) {
+    const original = fs.readFileSync(file, 'utf8');
+    if (!original.includes('--g360-')) continue;
+
+    const importPath = `./${path
+      .relative(path.dirname(file), tokenFile)
+      .split(path.sep)
+      .join('/')}`;
+
+    let content = original;
+    const changes = [];
+
+    // 1. Retirar de cada :root las variables de paleta (las de la app quedan).
+    content = content.replace(/:root\s*\{([^}]*)\}/g, (match, body) => {
+      const kept = body
+        .split(';')
+        .filter((declaration) => {
+          const name = declaration.match(/(--[a-z0-9-]+)\s*:/i)?.[1];
+          return !name || !paletteVars.has(name);
+        })
+        .map((declaration) => declaration.trim())
+        .filter(Boolean);
+
+      if (kept.length === 0) {
+        changes.push(':root de paleta eliminado');
+        return '';
+      }
+
+      changes.push(`:root sin paleta (${kept.length} variable(s) propias conservadas)`);
+      return `:root {\n  ${kept.join(';\n  ')};\n}`;
+    });
+
+    // 2. Modo claro: se elimina solo si define paleta.
+    content = content.replace(
+      /@media\s*\(prefers-color-scheme:\s*light\)\s*\{\s*:root\s*\{([^}]*)\}\s*\}/g,
+      (match, body) => {
+        const definesPalette = [...body.matchAll(/(--g360-[a-z0-9-]+)\s*:/g)]
+          .some((found) => paletteVars.has(found[1]));
+        if (!definesPalette) return match;
+        changes.push(':root de modo claro eliminado');
+        return '';
+      }
+    );
+
+    // 3. Import al principio del archivo (CSS exige imports antes de las reglas).
+    if (!content.includes(`@import '${importPath}'`)) {
+      const importStatement = `@import '${importPath}';`;
+      const charset = content.match(/^@charset[^;]*;\s*/);
+      const offset = charset ? charset[0].length : 0;
+      content = content.slice(0, offset) + importStatement + '\n' + content.slice(offset);
+      changes.push('@import agregado al inicio');
+    }
+
+    // 4. Variables usadas y no definidas ni en los tokens ni en el proyecto.
+    const used = new Set(
+      [...content.matchAll(/var\((--[a-z0-9-]+)/g)].map((match) => match[1])
+    );
+    const missing = [...used].filter((name) => !definedAnywhere.has(name));
+    if (missing.length > 0) changes.push(`sin definir: ${missing.join(', ')}`);
+
+    if (content === original) continue;
+
+    if (!options.dryRun) {
+      fs.writeFileSync(file, content, 'utf8');
+    }
+
+    touched.push({ file: path.relative(projectDir, file), changes, missing });
+  }
+
+  return touched;
+}
 /**
  * Sincroniza los archivos que no pueden leer custom properties: el manifest
  * de la PWA y los meta theme-color del index.html.
@@ -680,7 +807,13 @@ export function writeTokens(projectDir, options = {}) {
     }
   }
 
-  return { written, tokens, patched };
+  // Conectar el token file con las hojas de estilo del proyecto.
+  let wired = [];
+  if (options.wireCss && targets.some((target) => target.stack === 'web')) {
+    wired = wireCss(projectDir, tokens, { dryRun: options.dryRun, css: renderCss(tokens) });
+  }
+
+  return { written, tokens, patched, wired };
 }
 
 /**

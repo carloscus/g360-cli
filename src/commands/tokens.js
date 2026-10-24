@@ -15,7 +15,7 @@ import {
  * estilos (antes solo reescribia skill.json y el CSS se quedaba en verde).
  */
 export async function tokens(projectPath, options = {}) {
-  const { skill, accent, dryRun = false, verbose = false } = options;
+  const { skill, accent, dryRun = false, verbose = false, wireCss = false } = options;
   const projectDir = path.resolve(process.cwd(), projectPath);
 
   console.log(chalk.bold.cyan('\n🎨 G360 Tokens\n'));
@@ -37,6 +37,7 @@ export async function tokens(projectPath, options = {}) {
       accentFamily: family,
       // La paleta del proyecto manda: el catalogo aporta los defaults.
       colors: project.colors ?? undefined,
+      wireCss,
       dryRun
     });
   } catch (error) {
@@ -69,6 +70,11 @@ export async function tokens(projectPath, options = {}) {
 
   for (const item of result.patched ?? []) {
     console.log(`  ${chalk.green('+')} ${'meta'.padEnd(7)} ${chalk.gray(item.file)} ${chalk.gray(`(${item.changes.join('; ')})`)}`);
+  }
+
+  for (const item of result.wired ?? []) {
+    const warn = item.missing.length ? chalk.yellow(` [faltan: ${item.missing.join(', ')}]`) : '';
+    console.log(`  ${chalk.green('+')} ${'css'.padEnd(7)} ${chalk.gray(item.file)} ${chalk.gray(`(${item.changes.join('; ')})`)}${warn}`);
   }
 
   if (verbose) {
