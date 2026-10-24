@@ -58,6 +58,41 @@ describe('token-generator', () => {
     it('should throw for an unknown accent family', () => {
       expect(() => resolveTokens({ skill: 'moderno', accentFamily: 'no-existe' })).toThrow(/acento desconocida/);
     });
+
+    it('should use the project palette when the skill is not in the catalog', () => {
+      const tokens = resolveTokens({
+        skill: 'g360-stock-consolidator',
+        colors: { bg: '#ffffff', surface: '#ffffff', accent: '#00796B', text: '#0f172a', muted: '#64748b' }
+      });
+
+      expect(tokens.skill).toBe('g360-stock-consolidator');
+      expect(tokens.dark.accent).toBe('#00796B');
+      // Paleta clara: el proyecto manda en su tema, el alterno usa la base global.
+      expect(tokens.theme).toBe('light');
+      expect(tokens.light.bg).toBe('#ffffff');
+      expect(tokens.dark.bg).toBe('#0b1220');
+    });
+
+    it('should infer the accent family from the tone', () => {
+      const tokens = resolveTokens({
+        skill: 'propio',
+        colors: { bg: '#0b1220', surface: '#151e2e', accent: '#00796B', text: '#f0f4f8', muted: '#94a3b8' }
+      });
+
+      expect(tokens.accentFamily).toBe('teal');
+      expect(tokens.accentFamilyInferred).toBe(true);
+    });
+
+    it('should infer a light theme from a light background', () => {
+      const tokens = resolveTokens({
+        skill: 'propio',
+        colors: { bg: '#ffffff', surface: '#f8fafc', accent: '#00796B', text: '#0f172a', muted: '#64748b' }
+      });
+
+      expect(tokens.theme).toBe('light');
+      expect(tokens.light.bg).toBe('#ffffff');
+      expect(tokens.dark.bg).not.toBe('#ffffff');
+    });
   });
 
   describe('temas claro y oscuro', () => {

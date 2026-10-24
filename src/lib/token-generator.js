@@ -1,7 +1,7 @@
-import fs from 'fs-extra';
+﻿import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { contrastRatio } from './accent-families.js';
+import { contrastRatio, hueOf, luminance } from './accent-families.js';
 
 /**
  * Generador de design tokens.
@@ -121,13 +121,31 @@ export function resolveTokens(options = {}) {
     ? config.skills.find((item) => item.name === skillName)
     : null;
 
-  if (skillName && !skill) {
+  // Un proyecto puede declarar un skill propio (nombre propio, paleta propia).
+  // Si no esta en el catalogo pero trae colores, se usan esos.
+  const projectColors = options.colors ?? null;
+
+  if (skillName && !skill && !projectColors) {
     throw new Error(`Skill desconocido: "${skillName}". Disponibles: ${config.skills.map((s) => s.name).join(', ')}`);
   }
 
-  const colors = skill?.colors ?? {};
+  const colors = projectColors ?? skill?.colors ?? {};
   const effects = skill?.effects ?? { glassmorphism: true, blur: '16px', rounded: '16px' };
-  const familyName = options.accentFamily ?? skill?.accentFamily ?? 'emerald';
+
+  let familyName = options.accentFamily ?? skill?.accentFamily ?? null;
+  let inferred = false;
+
+  if (options.accentFamily && !config.families[options.accentFamily]) {
+    // Familia pedida explicitamente y no existe: es un error de tipeo.
+    throw new Error(`Familia de acento desconocida: "${options.accentFamily}"`);
+  }
+
+  if (!familyName || !config.families[familyName]) {
+    // Sin familia valida: se infiere por tono del acento.
+    familyName = inferFamily(colors.accent ?? '#00d084', config.families);
+    inferred = true;
+  }
+
   const family = config.families[familyName];
 
   if (!family) {
@@ -139,8 +157,8 @@ export function resolveTokens(options = {}) {
   const baseLight = config.bases?.light ?? { bg: '#ffffff', surface: '#f8fafc', text: '#1e293b', muted: '#64748b' };
 
   // Tema principal del skill: "dark" por defecto, "light" para los claros.
-  // El tema alterno usa la base global salvo que el skill declare la suya.
-  const primaryTheme = skill?.theme ?? 'dark';
+  // Si el proyecto no lo declara, se infiere del fondo (claro u oscuro).
+  const primaryTheme = skill?.theme ?? inferTheme(colors.bg ?? baseDark.bg);
   const darkNeutral = skill?.dark ?? (primaryTheme === 'dark' ? colors : baseDark);
   const lightNeutral = skill?.light ?? (primaryTheme === 'light' ? colors : baseLight);
 
@@ -196,14 +214,49 @@ export function resolveTokens(options = {}) {
     },
     effects,
     signature: skill?.signature ?? { mode: 'powered', text: 'powered by G360' },
-    skill: skill?.name ?? null,
+    skill: skill?.name ?? skillName ?? null,
     accentFamily: familyName,
+    accentFamilyInferred: inferred,
     theme: primaryTheme
   };
 
   tokens.issues = validateTokens(tokens);
 
   return tokens;
+}
+
+/**
+ * Infiere el tema (dark/light) a partir del color de fondo.
+ * @param {string} bg - Color de fondo
+ * @returns {'dark'|'light'}
+ */
+export function inferTheme(bg) {
+  if (!bg || !bg.startsWith('#') || bg.length < 7) return 'dark';
+  return luminance(bg) > 0.45 ? 'light' : 'dark';
+}
+
+/**
+ * Elige la familia de acento mas cercana por tono (hue).
+ * @param {string} accent - Color del acento
+ * @param {Object} families - Familias disponibles
+ * @returns {string} Nombre de la familia
+ */
+export function inferFamily(accent, families) {
+  if (!accent || !accent.startsWith('#')) return 'emerald';
+
+  const hue = hueOf(accent);
+  let best = 'emerald';
+  let bestDistance = Infinity;
+
+  for (const [name, family] of Object.entries(families)) {
+    const distance = Math.min(Math.abs(hue - family.hue), 360 - Math.abs(hue - family.hue));
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = name;
+    }
+  }
+
+  return best;
 }
 
 /**
@@ -290,7 +343,7 @@ export function renderCss(tokens) {
 
   return `/* ============================================
  * G360 Design Tokens
- * Generado por \`g360 tokens\` — no editar a mano.
+ * Generado por \`g360 tokens\` â€” no editar a mano.
  * Skill: ${tokens.skill ?? 'default'} | acento: ${tokens.accentFamily} | tema: ${tokens.theme ?? 'dark'}
  *
  * El tema por defecto es ${tokens.theme ?? 'dark'}. Para forzar el otro:
@@ -338,7 +391,7 @@ export function renderPython(tokens) {
 
   return `"""G360 Design Tokens.
 
-Generado por \`g360 tokens\` — no editar a mano.
+Generado por \`g360 tokens\` â€” no editar a mano.
 Snapshot estatico: tras cambiar la familia de acento, regenerar con
 \`g360 tokens --project <ruta>\`.
 
@@ -389,7 +442,7 @@ export function renderGo(tokens) {
 
   return `// Package theme contiene los design tokens de G360.
 //
-// Generado por \`g360 tokens\` — no editar a mano.
+// Generado por \`g360 tokens\` â€” no editar a mano.
 // Skill: ${tokens.skill ?? 'default'} | acento: ${tokens.accentFamily}
 package theme
 
@@ -457,7 +510,7 @@ export function renderRust(tokens) {
 
   return `//! Design tokens de G360.
 //!
-//! Generado por \`g360 tokens\` — no editar a mano.
+//! Generado por \`g360 tokens\` â€” no editar a mano.
 //! Skill: ${tokens.skill ?? 'default'} | acento: ${tokens.accentFamily}
 
 /// Tokens del tema oscuro (default).
@@ -587,7 +640,7 @@ export function patchWebMeta(projectDir, tokens) {
  * @param {string} [options.skill] - Skill a aplicar
  * @param {string} [options.accentFamily] - Familia de acento
  * @param {boolean} [options.dryRun=false] - No escribir
- * @param {Object} [options.config] - Config de diseño precargada
+ * @param {Object} [options.config] - Config de diseÃ±o precargada
  * @returns {{written: Array, tokens: Object, patched: Array}}
  */
 export function writeTokens(projectDir, options = {}) {
@@ -643,13 +696,15 @@ export function readProjectSkill(projectDir) {
       const skill = fs.readJsonSync(filePath);
       return {
         skill: skill.skill ?? skill.name ?? null,
-        accentFamily: skill.accentFamily ?? null
+        accentFamily: skill.accentFamily ?? null,
+        colors: skill.colors ?? null,
+        theme: skill.theme ?? null
       };
     } catch {
-      return { skill: null, accentFamily: null };
+      return { skill: null, accentFamily: null, colors: null, theme: null };
     }
   }
-  return { skill: null, accentFamily: null };
+  return { skill: null, accentFamily: null, colors: null, theme: null };
 }
 
 /**

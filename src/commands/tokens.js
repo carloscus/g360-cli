@@ -32,7 +32,13 @@ export async function tokens(projectPath, options = {}) {
 
   let result;
   try {
-    result = writeTokens(projectDir, { skill: skillName, accentFamily: family, dryRun });
+    result = writeTokens(projectDir, {
+      skill: skillName,
+      accentFamily: family,
+      // La paleta del proyecto manda: el catalogo aporta los defaults.
+      colors: project.colors ?? undefined,
+      dryRun
+    });
   } catch (error) {
     console.error(chalk.red(`❌ ${error.message}`));
     return;
@@ -41,7 +47,7 @@ export async function tokens(projectPath, options = {}) {
   const { written, tokens: resolved } = result;
 
   const primary = resolved[resolved.theme] ?? resolved.dark;
-  console.log(chalk.gray(`Skill: ${resolved.skill}   Acento: ${resolved.accentFamily}   Tema: ${resolved.theme}`));
+  console.log(chalk.gray(`Skill: ${resolved.skill ?? skillName}   Acento: ${resolved.accentFamily}${resolved.accentFamilyInferred ? ' (inferido)' : ''}   Tema: ${resolved.theme}`));
   console.log(chalk.gray(`Accent: ${primary.accent}   Surface: ${primary.surface}   Text: ${primary.text}\n`));
 
   if (resolved.issues?.length) {
