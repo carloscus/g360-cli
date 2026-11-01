@@ -370,7 +370,13 @@ describe('token-generator', () => {
           path.join(dir, 'src/styles/g360-tokens.css'),
           'utf8'
         );
-        expect(actual, `template ${name} desincronizado del generador`).toBe(expected);
+        // Normalizar \r\n: en Windows con autocrlf, el checkout deja CRLF en
+        // disco mientras el generador emite LF. El blob commiteado es LF.
+        const normalizeEol = (s) => s.replace(/\r\n/g, '\n');
+        expect(
+          normalizeEol(actual),
+          `template ${name} desincronizado del generador`
+        ).toBe(normalizeEol(expected));
       }
     });
 
