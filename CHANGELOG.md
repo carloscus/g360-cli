@@ -7,6 +7,28 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.20.2] - 2026-11-01
+
+### Fixed
+- **`g360 tokens`**: orden de argumentos de `light-dark()` corregido. El spec
+  CSS es `light-dark(<claro>, <oscuro>)`; el generador emitía `(oscuro, claro)`,
+  dejando los dos temas intercambiados en todo archivo generado (roles y
+  paleta chart). Detectado por el flujo multiagente (reviewer aislado) sobre
+  `g360-price-audit`; verificado contra los tokens resueltos.
+- **Templates web regenerados** (React, Svelte, Solid, Lit): sus
+  `g360-tokens.css` commiteados quedaron con el orden corregido.
+
+### Added
+- **Test de regresión semántico**: verifica cada línea `light-dark()` contra
+  `tokens.light`/`tokens.dark` (roles) y `tokens.chart` (índice), con parsing
+  que balancea paréntesis para soportar valores `rgba(...)` con comas. El test
+  previo consagraba el orden invertido.
+- **Guard generador↔template**: cada `g360-tokens.css` de plantilla debe ser
+  exactamente la salida actual de `renderCss(resolveTokens(...))`; impide que
+  generador y artefactos commiteados vuelvan a divergir.
+
+---
+
 ## [1.20.1] - 2026-10-24
 
 ### Fixed

@@ -161,12 +161,75 @@ describe('token-generator', () => {
     it('should use light-dark() with a fallback and color-scheme', () => {
       const css = renderCss(tokens);
 
-      // Fallback + light-dark: si el navegador no lo soporta, queda el oscuro.
+      // Fallback (valor oscuro) + light-dark: si el navegador no lo soporta,
+      // queda el oscuro. Orden del spec CSS: light-dark(<claro>, <oscuro>).
       expect(css).toContain('--g360-bg: #0b1220;');
-      expect(css).toContain('--g360-bg: light-dark(#0b1220, #ffffff);');
+      expect(css).toContain('--g360-bg: light-dark(#ffffff, #0b1220);');
       expect(css).toContain('color-scheme: dark light;');
       expect(css).toContain('html[data-theme="light"] { color-scheme: light; }');
       expect(css).toContain('html[data-theme="dark"] { color-scheme: dark; }');
+    });
+
+    it('should emit light-dark(light, dark) in that argument order for every role', () => {
+      // Regresión: el orden de los argumentos es un contrato CSS. El primer
+      // argumento aplica en tema claro, el segundo en oscuro (color-scheme).
+      const css = renderCss(tokens);
+      // Filtrado por línea (no por regex global con [^)]*): los valores
+      // rgba(...) contienen ')' y un patrón que no cruza paréntesis los
+      // excluiría silenciosamente del control de regresión.
+      const lightDarkLines = css
+        .split('\n')
+        .filter((l) => l.includes(': light-dark('));
+      expect(lightDarkLines.length).toBeGreaterThan(0);
+      // Garantía explícita: al menos un rol rgba queda bajo control.
+      expect(lightDarkLines.some((l) => l.includes('rgba('))).toBe(true);
+
+      // Separa los dos argumentos de light-dark() balanceando paréntesis.
+      // Un split por coma simple parte mal en rgba(a, b), rgba(c, d).
+      const splitArgs = (inner) => {
+        const args = [];
+        let depth = 0;
+        let current = '';
+        for (const ch of inner) {
+          if (ch === '(') depth++;
+          if (ch === ')') depth--;
+          if (ch === ',' && depth === 0) {
+            args.push(current.trim());
+            current = '';
+            continue;
+          }
+          current += ch;
+        }
+        args.push(current.trim());
+        return args;
+      };
+      const argOf = (line) => splitArgs(line.match(/light-dark\((.*)\);/)[1]);
+
+      const kebab = (role) => role.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+      const lower = (s) => String(s).toLowerCase();
+      const nonChart = lightDarkLines.filter((l) => !l.trim().startsWith('--g360-chart-'));
+      expect(nonChart.length).toBeGreaterThan(0);
+      for (const line of nonChart) {
+        const [, role] = line.trim().match(/--g360-([a-z0-9-]+):/);
+        const [lightValue, darkValue] = argOf(line);
+        const camelRole = TOKEN_ROLES.find((r) => kebab(r) === role);
+        expect(camelRole).toBeDefined();
+        // El primer argumento debe ser el valor del rol en tema claro...
+        expect(lower(lightValue)).toBe(lower(tokens.light[camelRole]));
+        // ...y el segundo, el valor del rol en tema oscuro (el fallback).
+        expect(lower(darkValue)).toBe(lower(tokens.dark[camelRole]));
+      }
+      // Paleta categórica: chart-N mapea a tokens.chart.light/dark por índice.
+      const chartLines = lightDarkLines.filter((l) => l.trim().startsWith('--g360-chart-'));
+      const chartCount = (tokens.chart?.dark ?? []).length;
+      if (chartCount > 0) {
+        expect(chartLines.length).toBe(chartCount);
+        for (let i = 0; i < chartCount; i++) {
+          const [lightValue, darkValue] = argOf(chartLines[i]);
+          expect(lower(lightValue)).toBe(lower(tokens.chart.light[i]));
+          expect(lower(darkValue)).toBe(lower(tokens.chart.dark[i]));
+        }
+      }
     });
 
     it('should emit a Tailwind v4 theme block', () => {
@@ -289,6 +352,25 @@ describe('token-generator', () => {
 
       for (const content of files) {
         expect(normalize(content)).toBe(reference);
+      }
+    });
+
+    it('should keep every template CSS in sync with the generator output', () => {
+      // El bug de light-dark() invertido ocurrió porque el generador y los
+      // CSS commiteados divergieron: este guard impide que vuelva a pasar.
+      for (const name of WEB_TEMPLATES) {
+        const dir = path.join(TEMPLATES_DIR, name);
+        const project = readProjectSkill(dir);
+        const expected = renderCss(resolveTokens({
+          skill: project.skill,
+          accentFamily: project.accentFamily,
+          colors: project.colors ?? undefined
+        }));
+        const actual = fs.readFileSync(
+          path.join(dir, 'src/styles/g360-tokens.css'),
+          'utf8'
+        );
+        expect(actual, `template ${name} desincronizado del generador`).toBe(expected);
       }
     });
 

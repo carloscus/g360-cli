@@ -364,7 +364,8 @@ export function renderCss(tokens) {
       const light = normalizeColor(tokens.light[role]);
       lines.push(`${indent}--g360-${kebab(role)}: ${dark};`);
       if (dark !== light) {
-        lines.push(`${indent}--g360-${kebab(role)}: light-dark(${dark}, ${light});`);
+        // CSS: light-dark(<valor en tema claro>, <valor en tema oscuro>).
+        lines.push(`${indent}--g360-${kebab(role)}: light-dark(${light}, ${dark});`);
       }
       for (const alias of CSS_ALIASES[role] ?? []) {
         lines.push(`${indent}--g360-${alias}: ${dark};`);
@@ -379,7 +380,7 @@ export function renderCss(tokens) {
       const light = normalizeColor(tokens.chart?.light?.[index] ?? color);
       const lines = [`${indent}--g360-chart-${index + 1}: ${dark};`];
       if (dark !== light) {
-        lines.push(`${indent}--g360-chart-${index + 1}: light-dark(${dark}, ${light});`);
+        lines.push(`${indent}--g360-chart-${index + 1}: light-dark(${light}, ${dark});`);
       }
       return lines;
     })
