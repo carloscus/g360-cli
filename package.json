@@ -1,80 +1,82 @@
-{
-  "name": "g360-cli",
-  "version": "1.20.2",
-  "description": "CLI tool for bootstrapping G360 projects with standardized structure, assets, identity, and ERP data processing",
-  "type": "module",
-  "main": "src/cli.js",
-  "bin": {
-    "g360": "src/cli.js"
-  },
-  "files": [
-    "src/",
-    "!src/assets/templates/**/node_modules",
-    "!src/assets/templates/**/package-lock.json",
-    "!src/assets/templates/**/__pycache__",
-    "!src/assets/templates/**/.pytest_cache",
-    "!src/**/*.test.js",
-    "!src/**/*.spec.js",
-    "py/",
-    "README.md",
-    "CHANGELOG.md",
-    "G360-CLI-SKILL.md",
-    "AGENTS-UIUX.md",
-    "FLET-NAMING-CONVENTIONS.md",
-    "FLET-DESKTOP-FEEDBACK.md",
-    "opencode-config.json",
-    "LICENSE",
-    "package.json"
-  ],
-  "scripts": {
-    "prepublishOnly": "vitest run && node scripts/validate-assets.js",
-    "test": "vitest",
-    "test:watch": "vitest --watch",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",
-    "build": "npm run build:portable",
-    "build:portable": "pkg . --targets node18-win-x64 --output dist/g360.exe",
-    "postinstall": "node -e \"try{require('child_process').execSync('python --version',{encoding:'utf8',stdio:'pipe'})}catch{console.log('⚠️  Python no detectado. Instala Python 3.11+ para funcionalidad completa.')}\""
-  },
-  "pkg": {
-    "assets": [
-      "src/assets/**/*",
-      "py/**/*"
-    ],
-    "outputPath": "dist",
-    "scripts": [],
-    "targets": "node18-win-x64"
-  },
-  "keywords": [
-    "g360",
-    "cli",
-    "scaffolding",
-    "generator",
-    "erp",
-    "data-processing"
-  ],
-  "author": "Carlos Cusi",
-  "license": "MIT",
-  "dependencies": {
-    "ajv": "^8.20.0",
-    "chalk": "^5.6.2",
-    "commander": "^14.0.3",
-    "fs-extra": "^11.3.4",
-    "inquirer": "^13.4.2",
-    "ora": "^9.4.0",
-    "pptxgenjs": "^4.0.1",
-    "winston": "^3.19.0"
-  },
-  "devDependencies": {
-    "@vitest/ui": "^4.1.6",
-    "pkg": "^5.8.1",
-    "vitest": "^4.1.6"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/carloscus/g360-cli.git"
-  }
+﻿{
+    "name":  "g360-cli",
+    "version":  "1.20.3",
+    "description":  "CLI tool for bootstrapping G360 projects with standardized structure, assets, identity, and ERP data processing",
+    "type":  "module",
+    "main":  "src/cli.js",
+    "bin":  {
+                "g360":  "src/cli.js"
+            },
+    "files":  [
+                  "src/",
+                  "!src/assets/templates/**/node_modules",
+                  "!src/assets/templates/**/package-lock.json",
+                  "!src/assets/templates/**/__pycache__",
+                  "!src/assets/templates/**/.pytest_cache",
+                  "!src/**/*.test.js",
+                  "!src/**/*.spec.js",
+                  "py/",
+                  "README.md",
+                  "CHANGELOG.md",
+                  "G360-CLI-SKILL.md",
+                  "AGENTS-UIUX.md",
+                  "FLET-NAMING-CONVENTIONS.md",
+                  "FLET-DESKTOP-FEEDBACK.md",
+                  "opencode-config.json",
+                  "LICENSE",
+                  "package.json"
+              ],
+    "scripts":  {
+                    "prepublishOnly":  "vitest run \u0026\u0026 node scripts/validate-assets.js",
+                    "test":  "vitest",
+                    "test:watch":  "vitest --watch",
+                    "test:ui":  "vitest --ui",
+                    "test:coverage":  "vitest --coverage",
+                    "build":  "npm run build:portable",
+                    "build:portable":  "pkg . --targets node18-win-x64 --output dist/g360.exe",
+                    "postinstall":  "node -e \"try{require(\u0027child_process\u0027).execSync(\u0027python --version\u0027,{encoding:\u0027utf8\u0027,stdio:\u0027pipe\u0027})}catch{console.log(\u0027âš ï¸  Python no detectado. Instala Python 3.11+ para funcionalidad completa.\u0027)}\""
+                },
+    "pkg":  {
+                "assets":  [
+                               "src/assets/**/*",
+                               "py/**/*"
+                           ],
+                "outputPath":  "dist",
+                "scripts":  [
+
+                            ],
+                "targets":  "node18-win-x64"
+            },
+    "keywords":  [
+                     "g360",
+                     "cli",
+                     "scaffolding",
+                     "generator",
+                     "erp",
+                     "data-processing"
+                 ],
+    "author":  "Carlos Cusi",
+    "license":  "MIT",
+    "dependencies":  {
+                         "ajv":  "^8.20.0",
+                         "chalk":  "^5.6.2",
+                         "commander":  "^14.0.3",
+                         "fs-extra":  "^11.3.4",
+                         "inquirer":  "^13.4.2",
+                         "ora":  "^9.4.0",
+                         "pptxgenjs":  "^4.0.1",
+                         "winston":  "^3.19.0"
+                     },
+    "devDependencies":  {
+                            "@vitest/ui":  "^4.1.6",
+                            "pkg":  "^5.8.1",
+                            "vitest":  "^4.1.6"
+                        },
+    "engines":  {
+                    "node":  "\u003e=18.0.0"
+                },
+    "repository":  {
+                       "type":  "git",
+                       "url":  "https://github.com/carloscus/g360-cli.git"
+                   }
 }
