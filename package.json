@@ -1,4 +1,4 @@
-﻿{
+{
     "name":  "g360-cli",
     "version":  "1.20.3",
     "description":  "CLI tool for bootstrapping G360 projects with standardized structure, assets, identity, and ERP data processing",

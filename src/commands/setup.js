@@ -20,7 +20,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ASSETS_DIR = path.join(__dirname, '../../assets/harness');
+// Ruta robusta a assets: funciona tanto en dev como en global install
+// En dev: __dirname = src/commands/, assets = src/assets/harness/
+// En global: __dirname = node_modules/g360-cli/src/commands/, assets = node_modules/g360-cli/src/assets/harness/
+const ASSETS_DIR = path.resolve(__dirname, '../assets/harness');
 
 /**
  * Rutas de instalación por plataforma
