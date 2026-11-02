@@ -35,6 +35,7 @@ const pptx = lazy('./commands/pptx.js', 'pptx');
 const capture = lazy('./commands/capture.js', 'capture');
 const planUi = lazy('./commands/plan-ui.js', 'planUi');
 const setAccent = lazy('./commands/set-accent.js', 'setAccent');
+const setup = lazy('./commands/setup.js', 'setup');
 
 // Comando config (no requiere archivo separado)
 function configAction(options) {
@@ -293,5 +294,14 @@ program
   .option('-o, --out <file>', 'Save plan to file (e.g. UI-PLAN.md)')
   .option('--print', 'Print plan to stdout')
   .action(planUi);
+
+program
+  .command('setup')
+  .description('Instala la configuración global del sistema multiagente G360')
+  .option('--platform <platform>', 'Platform: opencode, kilo, cline, all (default: all)', 'all')
+  .option('--reset', 'Overwrite existing configuration')
+  .option('--dry-run', 'Preview without writing')
+  .option('--model <model>', 'Default model: free, paid (default: free)')
+  .action(setup);
 
 program.parse();

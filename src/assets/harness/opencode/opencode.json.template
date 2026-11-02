@@ -1,0 +1,191 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "username": "ccusi",
+  "instructions": [
+    "C:/Users/ccusi/.agents/AGENTS.md"
+  ],
+  "model": "nvidia/z-ai/glm-5.3-flash",
+  "small_model": "nvidia/deepseek-ai/deepseek-v4.1-flash",
+  "shell": "pwsh",
+  "logLevel": "WARN",
+  "share": "disabled",
+  "autoupdate": true,
+  "snapshot": false,
+  "subagent_depth": 1,
+  "agents": {
+    "orchestrator": {
+      "description": "Orquestador principal: clasifica complejidad, invoca subagentes, consolida entregables. No escribe código.",
+      "mode": "primary",
+      "model": "nvidia/z-ai/glm-5.3-flash",
+      "steps": 40,
+      "permissions": [
+        { "action": "subagent", "resource": "*", "effect": "deny" },
+        { "action": "subagent", "resource": "architect", "effect": "allow" },
+        { "action": "subagent", "resource": "explore", "effect": "allow" },
+        { "action": "subagent", "resource": "reviewer", "effect": "allow" },
+        { "action": "subagent", "resource": "security-auditor", "effect": "allow" },
+        { "action": "subagent", "resource": "data-specialist", "effect": "allow" },
+        { "action": "subagent", "resource": "qa-specialist", "effect": "allow" },
+        { "action": "shell", "resource": "npm publish *", "effect": "deny" },
+        { "action": "shell", "resource": "git push *", "effect": "deny" },
+        { "action": "shell", "resource": "docker *", "effect": "deny" },
+        { "action": "shell", "resource": "rm -rf *", "effect": "deny" }
+      ]
+    },
+    "reviewer": {
+      "description": "Revisor crítico independiente (Goldfish). Revisa diffs desde perspectiva totalmente independiente, sin ver historial de conversación del agente diseñador. Solo lectura — nunca modifica archivos.",
+      "mode": "subagent",
+      "model": "nvidia/z-ai/glm-5.3-flash",
+      "steps": 15,
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "write", "resource": "*", "effect": "deny" },
+        { "action": "patch", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "git diff*", "effect": "allow" },
+        { "action": "shell", "resource": "git log*", "effect": "allow" },
+        { "action": "shell", "resource": "git show*", "effect": "allow" },
+        { "action": "shell", "resource": "git status*", "effect": "allow" },
+        { "action": "read", "resource": "*", "effect": "allow" },
+        { "action": "glob", "resource": "*", "effect": "allow" },
+        { "action": "grep", "resource": "*", "effect": "allow" }
+      ]
+    },
+    "security-auditor": {
+      "description": "Auditor de seguridad y compatibilidad cross-stack. Revisa cambios en busca de vulnerabilidades, exposición de credenciales, CVEs en dependencias nuevas, y romper compatibilidad entre repositorios del ecosistema G360. Solo lectura.",
+      "mode": "subagent",
+      "model": "nvidia/z-ai/glm-5.3-flash",
+      "steps": 12,
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "write", "resource": "*", "effect": "deny" },
+        { "action": "patch", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "git diff*", "effect": "allow" },
+        { "action": "shell", "resource": "git log*", "effect": "allow" },
+        { "action": "shell", "resource": "git show*", "effect": "allow" },
+        { "action": "shell", "resource": "git status*", "effect": "allow" },
+        { "action": "shell", "resource": "npm audit *", "effect": "allow" },
+        { "action": "shell", "resource": "npm ls *", "effect": "allow" },
+        { "action": "read", "resource": "*", "effect": "allow" },
+        { "action": "glob", "resource": "*", "effect": "allow" },
+        { "action": "grep", "resource": "*", "effect": "allow" }
+      ]
+    },
+    "data-specialist": {
+      "description": "Especialista en datos y migraciones. Audita cambios en esquemas de base de datos, procesadores de datos ERP, contratos de intercambio (Excel/CSV/JSON), y estrategias de migración incremental.",
+      "mode": "subagent",
+      "model": "nvidia/z-ai/glm-5.3-flash",
+      "steps": 15,
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "write", "resource": "*", "effect": "deny" },
+        { "action": "patch", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "git *", "effect": "allow" },
+        { "action": "shell", "resource": "sqlite3 *", "effect": "ask" },
+        { "action": "shell", "resource": "uv run *", "effect": "allow" },
+        { "action": "shell", "resource": "python *", "effect": "allow" },
+        { "action": "read", "resource": "*", "effect": "allow" },
+        { "action": "glob", "resource": "*", "effect": "allow" },
+        { "action": "grep", "resource": "*", "effect": "allow" }
+      ]
+    },
+    "qa-specialist": {
+      "description": "QA y pruebas de regresión. Ejecuta suites de tests del repositorio, detecta regresiones, propone nuevos tests si el cambio requiere cobertura adicional. No modifica código.",
+      "mode": "subagent",
+      "model": "nvidia/z-ai/glm-5.3-flash",
+      "steps": 10,
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "write", "resource": "*", "effect": "deny" },
+        { "action": "patch", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "npm test *", "effect": "allow" },
+        { "action": "shell", "resource": "npm run test *", "effect": "allow" },
+        { "action": "shell", "resource": "npx vitest *", "effect": "allow" },
+        { "action": "shell", "resource": "uv run pytest *", "effect": "allow" },
+        { "action": "shell", "resource": "pytest *", "effect": "allow" },
+        { "action": "shell", "resource": "go test *", "effect": "allow" },
+        { "action": "shell", "resource": "cargo test *", "effect": "allow" },
+        { "action": "shell", "resource": "g360 audit *", "effect": "allow" },
+        { "action": "shell", "resource": "git diff *", "effect": "allow" },
+        { "action": "shell", "resource": "git status *", "effect": "allow" },
+        { "action": "read", "resource": "*", "effect": "allow" },
+        { "action": "glob", "resource": "*", "effect": "allow" },
+        { "action": "grep", "resource": "*", "effect": "allow" }
+      ]
+    }
+  },
+  "compaction": {
+    "auto": true,
+    "keep": {
+      "tokens": 8000
+    },
+    "buffer": "20%"
+  },
+  "tool_output": {
+    "max_lines": 400,
+    "max_bytes": 16384
+  },
+  "formatter": {
+    "ruff": {
+      "command": [
+        "ruff",
+        "format",
+        "$FILE"
+      ]
+    }
+  },
+  "attachment": {
+    "image": {
+      "auto_resize": true,
+      "max_width": 768,
+      "max_height": 768,
+      "max_base64_bytes": 524288
+    }
+  },
+  "provider": {
+    "agnes": {},
+    "nvidia": {}
+  },
+  "disabled_providers": [
+    "anthropic",
+    "azure",
+    "bedrock",
+    "cohere",
+    "deepseek",
+    "fireworks",
+    "google",
+    "groq",
+    "openai",
+    "together"
+  ],
+  "permission": {
+    "bash": {
+      "rm *": "ask",
+      "Remove-Item *": "ask",
+      "del *": "ask",
+      "rd *": "ask",
+      "rmdir *": "ask",
+      "git push --force*": "ask",
+      "git push -f*": "ask",
+      "git reset --hard*": "ask",
+      "git push *": "ask",
+      "npm publish *": "ask",
+      "docker *": "ask",
+      "curl *": "ask",
+      "wget *": "ask"
+    }
+  },
+  "command": {
+    "ui-preview": {
+      "description": "Capturar screenshot de la app Flet para preview visual",
+      "agent": "build",
+      "template": "Capture the current Windows desktop to review the running Flet app after visual changes.\n\n1. Make sure the Flet app is running.\n2. Run in PowerShell: `node \"$HOME\\.config\\opencode\\ui-preview\\screenshot.js\" \"$env:TEMP\\flet-preview.png\" 3`\n3. Inspect the screenshot at `$env:TEMP\\flet-preview.png`.\n4. Report visual issues such as layout problems, text overflow, alignment, and spacing.\n\nIf the app is not running, start it in a separate terminal, wait for it to load, then capture the desktop. This command uses native Windows capture; do not use Bash, WSL, or /tmp."
+    },
+    "flet-run": {
+      "description": "Ejecutar app Flet para preview visual",
+      "agent": "build",
+      "template": "Start a Flet application for visual preview.\n\nUsage: /flet-run <app_module>\n\nExample: /flet-run src.main\n\nRun the app in a separate PowerShell terminal with `flet run <app.py>`, wait for it to load, then use /ui-preview to capture the Windows desktop."
+    }
+  }
+}
