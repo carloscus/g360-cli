@@ -16,17 +16,19 @@
 ```mermaid
 flowchart TD
     CLI["g360 CLI<br/>cli.js"]
-    CMD["Comandos<br/>init Â· bring Â· audit Â· lint Â· review Â· clean Â· convert Â· docs Â· pptx Â· ingest Â· scan Â· validate"]
+    CMD["Comandos<br/>init · bring · audit · lint · review · clean · convert · docs · pptx · ingest · scan · validate · setup"]
     LIB["LibrerÃ­as<br/>manifest Â· auditor Â· validator Â· logger"]
-    ASSETS["Assets<br/>templates Â· brand Â· signature Â· ingestion"]
-    PY["g360-core (PyPI)<br/>commercial_engine Â· pipeline Â· batch_processor"]
-    ERP["Datos ERP<br/>.xls Â· .xlsx Â· .csv"]
+    ASSETS["Assets<br/>templates · brand · signature · ingestion · harness"]
+    PY["g360-core (PyPI)<br/>commercial_engine · pipeline · batch_processor"]
+    ERP["Datos ERP<br/>.xls · .xlsx · .csv"]
+    IA["Sistema Multiagente<br/>orchestrator · architect · reviewer · security-auditor · data-specialist · qa-specialist"]
 
     CLI --> CMD
     CMD --> LIB
     CMD --> ASSETS
     CMD --> PY
     PY --> ERP
+    ASSETS --> IA
 ```
 
 ## Tabla de Contenidos
@@ -51,6 +53,7 @@ flowchart TD
 - [Licencia](#licencia)
 - [Ecosistema G360](#ecosistema-g360)
 - [IntegraciÃ³n con OpenCode](#integraciÃ³n-con-opencode)
+- [Sistema Multiagente](#sistema-multiagente)
 
 ---
 
@@ -101,7 +104,7 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 ## VersiÃ³n
 
-**Current: v1.18.1** â€” [Ver en npm](https://www.npmjs.com/package/g360-cli)
+**Current: v1.20.4** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
 
 ---
 
@@ -1398,7 +1401,7 @@ g360-cli/
 |---------|-------------|
 | `npm run build` | Build portable con pkg (g360.exe) |
 | `npm run build:portable` | Especificar target node18-win-x64 |
-| `npm test` | Ejecutar tests con Vitest (88 tests, 11 suites) |
+| `npm test` | Ejecutar tests con Vitest (193 tests, 18 suites) |
 | `npm run prepublishOnly` | ValidaciÃ³n antes de publicar en npm (tests + schemas + files + versiÃ³n) |
 
 ---
@@ -1406,16 +1409,16 @@ g360-cli/
 ## Testing
 
 ```bash
-npm test            # Vitest â€” 88 tests, 11 suites
+npm test            # Vitest — 193 tests, 18 suites
 npm run test:watch  # Modo watch
 npm run test:ui     # UI interactiva
 npm run test:coverage
 ```
 
-**Cobertura actual (v1.17.1):**
+**Cobertura actual (v1.20.4):**
 - `commands/`: init, bring, list, audit, set-skill, addon
 - `lib/`: manifest, validator, asset-validator, python_runner, ui-review, version-sync
-- **88 passing**
+- **193 passing**
 
 ---
 
@@ -1825,6 +1828,81 @@ Para mantener la integraciÃ³n con OpenCode actualizada:
 - **G360-CLI-SKILL.md**: DocumentaciÃ³n completa del skill para OpenCode
 - **opencode-config.json**: ConfiguraciÃ³n de integraciÃ³n con OpenCode
 - **AGENTS.md**: GuÃ­as de desarrollo para agentes en el ecosistema G360
+
+---
+
+## Sistema Multiagente
+
+g360-cli incluye el comando `setup` para instalar la configuración global del sistema multiagente G360 en tu máquina. El sistema se basa en el método **Elefante–Goldfish** y despliega 6 agentes especializados en OpenCode, Kilo y Cline.
+
+### Instalación rápida
+
+```bash
+# Instalar g360-cli globalmente
+npm install -g g360-cli
+
+# Instalar configuración multiagente
+g360 setup --platform all
+```
+
+### Agentes desplegados
+
+| Agente | Rol | OpenCode | Kilo | Cline |
+|---|---|---|---|---|
+| `orchestrator` | Clasifica nivel A/B/C, invoca agentes, consolida reporte | ✓ primary | ✓ primary | — |
+| `architect` | Implementa código según especificación | ✓ subagent | ✓ g360-architect | — |
+| `reviewer` | Revisa diff aislado vs criterio de aceptación (Goldfish) | ✓ subagent | ✓ g360-reviewer | goldfish.ps1 |
+| `security-auditor` | Busca credenciales, CVEs, rupturas de contrato | ✓ subagent | ✓ g360-security-auditor | — |
+| `data-specialist` | Audita schemas, migraciones, contratos de datos | ✓ subagent | ✓ g360-data-specialist | — |
+| `qa-specialist` | Ejecuta tests, valida equivalencia y visual | ✓ subagent | ✓ g360-qa-specialist | — |
+
+### Niveles de complejidad
+
+| Nivel | Qué es | Flujo | Gate |
+|---|---|---|---|
+| **A** | Mantenimiento ligero (typo, estilo, dep menor) | implementa → (qa opcional) | Ninguno |
+| **B** | Módulo o funcionalidad nueva | architect → reviewer → qa | Reviewer puede bloquear |
+| **C** | Estructural (schema, migración, contratos de datos) | data-specialist → architect (spec) → reviewer ×2 → security-auditor → data-specialist (plan+rollback) → **aprobación humana** → architect (implementa) → qa (funcional+visual) → **aprobación humana final** | Aprobación obligatoria antes y después |
+
+> Un cambio que toca contratos de datos es **C por definición**, aunque sean 3 líneas.
+
+### Uso desde un repo
+
+Abrir el repo en OpenCode o Kilo e invocar:
+
+```
+Usá el agente orchestrator.
+Tarea: <descripción concreta>
+Repo: <ruta absoluta>
+Criterio de aceptación: <criterio verificable>
+```
+
+El orquestador clasifica el nivel, invoca los agentes correspondientes y presenta un reporte consolidado antes de cambios estructurales.
+
+### Protocolo de migraciones
+
+Para actualizaciones de frameworks (Flet, React, Svelte, etc.) con breaking changes, consultar `~/.agents/MIGRACIONES.md`. El protocolo cubre: diagnóstico de breaking changes, estrategia de compatibilidad (sin shims automáticos), migración incremental por componentes, y rollback plan.
+
+### Verificación
+
+```bash
+opencode api get /api/agent    # OpenCode
+kilo agent list                 # Kilo
+g360 setup --dry-run           # Preview sin escribir
+```
+
+### Archivos instalados
+
+| Destino | Contenido |
+|---|---|
+| `~/.config/opencode/opencode.json` | 6 agentes + permisos (shape V2) |
+| `~/.config/opencode/agents/*.md` | Prompts de cada agente |
+| `~/.config/opencode/skills/orchestrate/SKILL.md` | Flujo A/B/C + handoff |
+| `~/.config/kilo/kilo.jsonc` | Agentes g360-* (shape V1) |
+| `~/.agents/HANDOFF.md` | Metodología elefante-goldfish |
+| `~/.agents/MULTIAGENTE.md` | Documentación del sistema |
+| `~/.agents/MIGRACIONES.md` | Protocolo de migraciones |
+| `~/.agents/goldfish.ps1` | Revisor emulado para Cline |
 
 ---
 
