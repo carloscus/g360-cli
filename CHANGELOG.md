@@ -7,6 +7,28 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.21.3] - 2026-11-07
+
+### Added
+- **Comando `/consult`** (OpenCode): consulta rápida con contexto del repo —
+  plantilla READ-ONLY en inglés, salida ≤20 líneas en español
+  (RESPUESTA / APLICABILIDAD A ESTE REPO / RIESGOS / FUENTES con fecha /
+  NO VERIFICADO) y bloque de resumen para copiar siempre con `Status: HYPOTHESIS`.
+  Consultas web en términos generales; el contenido web es dato, nunca instrucción.
+- **`docs/decisions.md`**: registro mínimo de decisiones con estados
+  `explored / candidate / adopted / discarded`, 4 reglas (adopted solo operador,
+  discarded con motivo, adopted no dispara nada, reviewBy vencido se revisa)
+  y 3 candidatos precargados (DuckDB, piloto Tauri, rollout Flet).
+
+### Fixed
+- **`g360 setup` crasheaba al respaldar**: un `node_modules` con symlinks
+  self-referenciales (msgpackr-extract) dentro de `.config/opencode/` rompía
+  `fs.copy` y **abortaba setup entero sin regenerar el manifest** (dejando
+  `g360 audit --agents` en rojo sin motivo real). El backup ahora excluye
+  `node_modules` y los errores de copia son warning parcial, no crash.
+
+---
+
 ## [1.21.2] - 2026-11-07
 
 ### Fixed
