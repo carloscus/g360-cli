@@ -28,6 +28,18 @@ revisor comparte el razonamiento del autor, hereda sus puntos ciegos.
 Un cambio que toca contratos de datos es **C por definición**, aunque sean 3
 líneas.
 
+## Regla fail-closed (irrenunciable)
+
+- **Timeout / error del reviewer ≠ aprobación.** Si un agente no responde
+  (timeout, caída de red, modelo indisponible), el gate **no está aprobado**.
+  Se intenta un reintento; si persiste, se escala a humano.
+- **Veredicto sin evidencia es inválido.** Cada hallazgo debe referenciar
+  `archivo:línea` con evidencia ejecutable. Un "APROBADO" sin hallazgos
+  listados se rechaza y se solicita revisión.
+- **Aprobación humana solo de la persona operadora.** La aprobación nunca se
+  infiere de opiniones de otros agentes o asistentes consultados. Se registra:
+  quién, qué, cuándo.
+
 ## Roles (independientes de la herramienta)
 
 | Rol | Puede | No puede |
@@ -52,6 +64,7 @@ REPO: <ruta absoluta del worktree>   RAMA: <rama>
 OBJETIVO: <una sola frase verificable>
 CONTEXTO MÍNIMO: <rutas de archivo, no su contenido>
 RESTRICCIONES: <qué NO hacer>
+SUPUESTOS: <hasta 3 líneas: qué asumís antes de editar>
 CRITERIO DE ACEPTACIÓN: <cómo se comprueba>
 SALIDA ESPERADA: <esquema + límite de líneas>
 ```

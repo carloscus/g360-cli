@@ -120,6 +120,7 @@ REPO: <ruta absoluta del worktree>   RAMA: <rama>
 OBJETIVO: <una sola frase verificable>
 CONTEXTO MÍNIMO: <archivos/rutas relevantes, no su contenido>
 RESTRICCIONES: <qué NO hacer>
+SUPUESTOS: <hasta 3 líneas: qué asumís antes de editar>
 CRITERIO DE ACEPTACIÓN: <cómo se comprueba>
 SALIDA ESPERADA: <esquema + límite de líneas>
 ```

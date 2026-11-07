@@ -17,9 +17,15 @@ Regla de idioma aplicada a **todos** los repos, comandos, nombres de agente y me
 | Título de app / ventana / PPTX | Español | "Horas Extras" |
 | Textos de UI, mensajes de error | Español | "No se encontró el archivo" |
 | README y documentación para usuarios | Español | — |
-| Documentación técnica y comentarios de código | Inglés | `// normalize headers before processing` |
+| Comentarios de código y documentación técnica | Español (audiencia: equipo hispanohablante) | `// normaliza el encabezado antes de comparar` |
 
 Slug ≠ nombre visible. El nombre visible es metadato, nunca se deriva del slug.
+
+**Un idioma por archivo, sin mezclar.** Un archivo está entero en español o
+entero en inglés; no se alternan idiomas línea por línea. Excepción: los
+términos de negocio sin traducción limpia (vigencia, NC, saldo) se quedan en
+español dentro de texto en inglés, y se registran en la tabla de dominio de
+este glosario.
 
 ---
 
