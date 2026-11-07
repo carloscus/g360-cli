@@ -2,6 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 import { autonomyAuditor } from './autonomy-auditor.js';
+import { readJsonSafe } from './json-io.js';
 
 /**
  * @typedef {Object} AuditIssue
@@ -103,7 +104,7 @@ export const auditor = {
     const pkgPath = path.join(projectDir, 'package.json');
     if (fs.existsSync(pkgPath)) {
       try {
-        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+        const pkg = readJsonSafe(pkgPath);
         const isG360Tool = 
           pkg.name?.startsWith('g360-') || 
           (pkg.keywords && pkg.keywords.some(k => k.includes('g360'))) ||
@@ -136,7 +137,7 @@ export const auditor = {
     const pkgPath = path.join(projectDir, 'package.json');
     if (fs.existsSync(pkgPath)) {
       try {
-        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+        const pkg = readJsonSafe(pkgPath);
         const isG360Tool = 
           pkg.name?.startsWith('g360-') || 
           (pkg.keywords && pkg.keywords.some(k => k.includes('g360'))) ||

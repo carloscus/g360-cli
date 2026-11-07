@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
+import { readJsonSafe } from '../lib/json-io.js';
 import { fileURLToPath } from 'url';
 import { accentTokensFor } from '../lib/accent-families.js';
 
@@ -102,7 +103,7 @@ function detectProject(dir) {
       type = 'web';
       if (fs.existsSync(pkgJson)) {
         try {
-          const pkg = JSON.parse(fs.readFileSync(pkgJson, 'utf8'));
+          const pkg = readJsonSafe(pkgJson);
           const deps = Object.keys(pkg.dependencies || {});
           if (deps.some(d => d.includes('react'))) framework = 'react';
           else if (deps.some(d => d.includes('lit'))) framework = 'lit';

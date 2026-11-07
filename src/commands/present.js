@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
+import { readJsonSafe } from '../lib/json-io.js';
 
 export async function present(projectPath, options) {
   const { depth = 3 } = options;
@@ -16,7 +17,7 @@ export async function present(projectPath, options) {
 
   const manifestPath = path.join(targetDir, 'g360-manifest.json');
   if (fs.existsSync(manifestPath)) {
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    const manifest = readJsonSafe(manifestPath);
     console.log(chalk.yellow('📋 Project Info:'));
     console.log(chalk.gray(`  Name: ${manifest.name || 'Unknown'}`));
     console.log(chalk.gray(`  Template: ${manifest.template || 'Unknown'}`));

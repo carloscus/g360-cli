@@ -53,6 +53,11 @@ export async function lint(targetPath, options) {
     findings.push(...checkSyntaxErrors(targetDir));
   }
 
+  if (level === 'all' || level === 'encoding') {
+    checkMojibake(targetDir, findings);
+    checkBom(targetDir, findings);
+  }
+
   if (level === 'all' || level === 'structure') {
     findings.push(...checkProjectStructure(targetDir));
   }
@@ -533,4 +538,52 @@ function hashString(str) {
     hash |= 0;
   }
   return hash.toString();
+}
+
+/**
+ * Checks for mojibake in Markdown files (double-encoded UTF-8).
+ * Patterns: Â, Ã followed by accent letters, â€ (UTF-8 em-dash misread).
+ */
+function checkMojibake(targetDir, findings) {
+  const MOJIBAKE_RE = /Â[¿ÓÁÉÍÚñ]|Ã[óáéíúñ]|â€|ðŸ/g;
+  walkProject(targetDir, {
+    onFile: (filePath) => {
+      if (!filePath.endsWith('.md')) return;
+      const content = fs.readFileSync(filePath, 'utf8');
+      const matches = content.match(MOJIBAKE_RE);
+      if (matches && matches.length > 0) {
+        findings.push({
+          severity: 'warning',
+          file: path.relative(targetDir, filePath),
+          type: 'mojibake',
+          message: `Mojo detectado: ${matches.length} carácter(es) doble-codificado(s). Ejecutar reconversión quirúrgica.`,
+          current: `${matches.length} ocurrencias`,
+          recommended: 'Re-escribir las líneas afectadas en UTF-8 directo (no pasar por Latin-1)',
+        });
+      }
+    },
+  });
+}
+
+/**
+ * Checks for BOM in JSON files.
+ */
+function checkBom(targetDir, findings) {
+  const BOM = '\uFEFF';
+  walkProject(targetDir, {
+    onFile: (filePath) => {
+      if (!filePath.endsWith('.json')) return;
+      const buf = fs.readFileSync(filePath);
+      if (buf.length >= 3 && buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF) {
+        findings.push({
+          severity: 'critical',
+          file: path.relative(targetDir, filePath),
+          type: 'bom-json',
+          message: 'BOM (Byte Order Mark) detectado en JSON. Puede causar JSON.parse crash.',
+          current: 'Archivo con BOM',
+          recommended: 'Reguardar el archivo en UTF-8 sin BOM (.editorconfig charset=utf-8 ayuda)',
+        });
+      }
+    },
+  });
 }

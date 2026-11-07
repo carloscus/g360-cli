@@ -11,7 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm downloads](https://img.shields.io/npm/dm/g360-cli?color=94a3b8)](https://www.npmjs.com/package/g360-cli)
 
-## Â¿CÃ³mo estÃ¡ organizado el proyecto?
+## ¿CÃ³mo estÃ¡ organizado el proyecto?
 
 ```mermaid
 flowchart TD
@@ -102,9 +102,9 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 ---
 
-## VersiÃ³n
+## Versión
 
-**Current: v1.20.4** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
+**Current: v1.20.8** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
 
 ---
 
@@ -130,16 +130,17 @@ g360 --version
 g360 health
 ```
 
-### Publicar nueva versiÃ³n
+### Publicar nueva versión
 
 ```bash
 npm version patch   # o minor / major
-git push --tags     # CI publica a npm y sube g360.exe al Release (requiere secret NPM_TOKEN)
+git push origin main
+npm publish --access public  # requiere 2FA en npm
 ```
 
-El workflow `.github/workflows/release.yml` corre tests + `validate-assets.js`,
-verifica que el tag coincida con `package.json`, publica a npm y adjunta
-`dist/g360.exe` al Release. Publicacion manual (sin CI): `npm publish`.
+La publicación es **manual** (sin CI). El workflow anterior se desactivó porque
+usaba Node 20 (EOL) y nunca se ejecutó en la práctica. Para futuros releases
+con CI + provenance, ver ítem de deuda: *trusted publishing con OIDC*.
 
 ---
 
@@ -283,8 +284,8 @@ font Â· fontMono Â· fontSize Â· spaceXs..spaceXl
 En CSS se emiten como `--g360-*` (mÃ¡s los alias `--g360-muted` y
 `--g360-rounded` que ya usaban las plantillas y proyectos existentes).
 
-**Temas con `light-dark()`**: cada rol se declara dos veces â€”el valor oscuro
-como fallback y `light-dark(oscuro, claro)`â€” asÃ­ funciona en navegadores sin
+**Temas con `light-dark()`**: cada rol se declara dos veces —el valor oscuro
+como fallback y `light-dark(oscuro, claro)`— asÃ­ funciona en navegadores sin
 `light-dark()` y el toggle real es `color-scheme`:
 
 ```css
@@ -469,8 +470,8 @@ g360 bring ingestion [opciones]
 | `--force` | Sobrescribir archivos existentes |
 
 **Archivos instalados:**
-- `src/core/ingestion.py` â€” NormalizaciÃ³n de datos (estabilizar_excel_crudo)
-- `src/ui/ingestion_panel.py` â€” Panel Flet para carga de archivos
+- `src/core/ingestion.py` — NormalizaciÃ³n de datos (estabilizar_excel_crudo)
+- `src/ui/ingestion_panel.py` — Panel Flet para carga de archivos
 
 **ImportaciÃ³n (auto-detects pip â†’ local):**
 ```python
@@ -484,7 +485,7 @@ El paquete pip acompaÃ±ante `g360-core` se publica en PyPI:
 pip install g360-core
 ```
 
-### `g360-core` â€” MÃ³dulos principales
+### `g360-core` — MÃ³dulos principales
 
 #### `commercial_engine.py`
 
@@ -501,8 +502,8 @@ Motor de lÃ³gica de negocio para clasificaciÃ³n documental. Ãšnica fuente 
 **ClasificaciÃ³n de documentos** (`classify_base` â†’ primero, `resolve_document_relationships` â†’ despuÃ©s para AJUSTE):
 ```
 TPO_DOC          CANTIDAD   â†’  CATEGORIA_OP   SUBTIPO_AJUSTE (cruce vs Ã­ndice)
-F01/BDI/F03/...  cualquiera â†’  VENTA          â€”
-NC*              â‰  0        â†’  DEVOLUCION     â€”
+F01/BDI/F03/...  cualquiera â†’  VENTA          —
+NC*              â‰  0        â†’  DEVOLUCION     —
 NC*              = 0        â†’  AJUSTE         (ver reglas de cruce abajo)
 ND*              cualquiera â†’  AJUSTE         (ver reglas de cruce abajo)
 ```
@@ -514,7 +515,7 @@ Clave con SKU coincide   CANTIDAD_FAE < CANT_FACT    â†’ PRECIO_PARCIAL
 Clave con SKU coincide   CANTIDAD_FAE > CANT_FACT    â†’ SIN_BASE
 Clave no coincide        CANTIDAD_FAE = 1            â†’ CARGO_FIJO
 Clave no coincide        CANTIDAD_FAE â‰  1            â†’ SIN_BASE
-Sin facturas en dataset  â€”                            â†’ SIN_BASE (todo AJUSTE)
+Sin facturas en dataset  —                            â†’ SIN_BASE (todo AJUSTE)
 ```
 > Ver detalle completo en [`BUSINESS_RULES.md`](./BUSINESS_RULES.md).
 
@@ -621,12 +622,12 @@ intencional, regenerá el manifest con `g360 setup --platform all`.
 
 | Check | Falla | Aviso |
 |-------|-------|-------|
-| `AGENTS.md` | No existe | â€” |
+| `AGENTS.md` | No existe | — |
 | Comando de verificaciÃ³n | No se declara en `AGENTS.md` | Solo estÃ¡ en el README |
-| `README.md` | No existe | â€” |
-| Lockfile | â€” | Declara dependencias sin lockfile |
-| `.env.example` | â€” | El cÃ³digo lee variables de entorno sin documentar |
-| Tests honestos | â€” | Hay `skip` / `xfail` / `todo` en archivos de test |
+| `README.md` | No existe | — |
+| Lockfile | — | Declara dependencias sin lockfile |
+| `.env.example` | — | El cÃ³digo lee variables de entorno sin documentar |
+| Tests honestos | — | Hay `skip` / `xfail` / `todo` en archivos de test |
 
 Criterio: `git clone <repo>` + un comando â‡’ la app levanta y los tests pasan,
 sin red y sin intervenciÃ³n humana.
@@ -957,7 +958,7 @@ g360 ingest reporte.xlsx -o mi_reporte.csv
 
 ### python-flet-polished â­ (Estandar actual)
 
-Plantilla desktop Python con Flet â€” patrones de UI avanzados heredados de produccion.
+Plantilla desktop Python con Flet — patrones de UI avanzados heredados de produccion.
 
 ```
 mi-proyecto/
@@ -1079,7 +1080,7 @@ mi-cli/
 
 ### python-flet (LEGACY)
 
-> âš ï¸ **Deprecado** â€” Usar `python-flet-polished` para nuevos proyectos.
+> âš ï¸ **Deprecado** — Usar `python-flet-polished` para nuevos proyectos.
 
 Plantilla GUI de escritorio con **Flet** para apps de contexto ERP.
 
@@ -1508,8 +1509,8 @@ g360 addon remove @google/design.md
 ```
 
 **Registro de addons:**
-- ðŸ›ï¸ Core Dev: Van a `dependencies` (producciÃ³n)
-- ðŸ› ï¸ Dev Tools: Van a `devDependencies` (desarrollo)
+- 🧪��›ï¸ Core Dev: Van a `dependencies` (producciÃ³n)
+- 🧪��› ï¸ Dev Tools: Van a `devDependencies` (desarrollo)
 
 ---
 
@@ -1696,7 +1697,7 @@ g360 pptx . --mode demo --theme corporate --out demo.pptx
 | # | Slide | Contenido |
 |---|-------|-----------|
 | 1 | Portada | Nombre + descripcion + tagline + version + logo |
-| 2 | Â¿Que es? | Descripcion + tarjetas usuario/tecnico + capacidades |
+| 2 | ¿Que es? | Descripcion + tarjetas usuario/tecnico + capacidades |
 | 3 | Modulos | Tabla de modulos + capturas laterales |
 | 4 | Flujo de trabajo | Pasos numerados + capturas |
 | 5-N | Features | Una por modulo UI detectado |
@@ -1709,8 +1710,8 @@ g360 pptx . --mode demo --theme corporate --out demo.pptx
 **Screenshots:**
 
 Colocar imagenes en `assets/screenshots/` para inclusion automatica con encaje proporcional (nunca distorsiona):
-- `dashboard.png` â€” vista principal
-- `kpi-card.png`, `modal-export.png` â€” componentes relevantes
+- `dashboard.png` — vista principal
+- `kpi-card.png`, `modal-export.png` — componentes relevantes
 
 Si no hay screenshots, se generan placeholders-guia ("CAPTURA PENDIENTE") que indican que capturar y donde guardarlo.
 
@@ -1774,7 +1775,7 @@ Para usar g360-cli con OpenCode:
 ```
 Usuario: "Quiero crear una app web para un cliente corporativo"
 OpenCode: "Te recomiendo usar el skill 'corporativo-movil' con la plantilla 'web-pwa'. 
-Â¿Quieres que inicialice el proyecto con g360 init mi-proyecto --skill corporativo-movil --template web-pwa?"
+¿Quieres que inicialice el proyecto con g360 init mi-proyecto --skill corporativo-movil --template web-pwa?"
 ```
 
 #### Agregar Componente

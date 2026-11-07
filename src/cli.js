@@ -2,7 +2,6 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { readFileSync } from 'node:fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -74,7 +73,8 @@ function configAction(options) {
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const pkg = JSON.parse(readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
+import { readJsonSafe } from './lib/json-io.js';
+const pkg = readJsonSafe(path.join(__dirname, '../package.json'));
 
 const program = new Command();
 

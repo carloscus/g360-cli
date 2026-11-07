@@ -7,6 +7,33 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.20.8] - 2026-11-07
+
+### Added
+- **`.editorconfig`**: charset utf-8 por defecto para prevenir BOM en futuros archivos.
+- **`.gitattributes`**: reglas de EOL (LF para texto, CRLF para scripts .bat/.ps1).
+- **`src/lib/json-io.js`**: helpers `readJsonSafe` / `writeJsonSafe` que strippean BOM
+  antes de parsear, previniendo crashes como `JSON.parse("﻿{") → SyntaxError`.
+- **`g360 lint encoding`**: nuevos checks de mojibake en Markdown y BOM en JSON
+  (integrado en el nivel `syntax`).
+
+### Changed
+- **`npm test`** ahora ejecuta `vitest run` (termina en vez de dejar watch activo).
+- **`cli.js`, `auditor.js`, `docs.js`, `present.js`**: lectores JSON改用 `readJsonSafe`
+  para ser resistentes a BOM.
+- **`.github/workflows/release.yml`** desactivado → `.github/workflows/release.yml.disabled`
+  (usaba Node 20 EOL y documentaba un flujo de CI que nunca se usó; el publish es manual).
+
+### Fixed
+- **Mojo quirúrgico en README**: sección "Publicar nueva versión" corregida para
+  reflejar el flujo manual real con 2FA. Versión actualizada a v1.20.8.
+
+### Removed
+- **`src/assets/harness/opencode/skills/g360-ui/SKILL.md`**: renombrado a
+  `g360-design` en commits anteriores; cleanup del asset viejo.
+
+---
+
 ## [1.20.7] - 2026-11-06
 
 ### Added

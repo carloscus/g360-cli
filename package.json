@@ -1,6 +1,6 @@
 {
   "name": "g360-cli",
-  "version": "1.20.7",
+  "version": "1.20.8",
   "description": "CLI tool for bootstrapping G360 projects with standardized structure, assets, identity, and ERP data processing",
   "type": "module",
   "main": "src/cli.js",
@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "prepublishOnly": "vitest run && node scripts/validate-assets.js",
-    "test": "vitest",
+    "test": "vitest run",
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
