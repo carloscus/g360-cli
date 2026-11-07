@@ -33,8 +33,9 @@ Nuevas funcionalidades, pantallas, componentes, APIs.
 
 ### Nivel C — Cambios estructurales
 Migraciones, modificación de arquitectura, bases de datos, contratos de datos.
-- **Flujo:** orquestador → data-specialist (inventario) → `architect` (spec) → reviewer ×2 → security-auditor → data-specialist (plan migración) → `architect` (implementa) → qa → **aprobación humana**
+- **Flujo:** orquestador → data-specialist (inventario) → `architect` (spec) → reviewer ×2 → security-auditor → data-specialist (plan migración + rollback) → **aprobación humana** → `architect` (implementa en worktree) → qa-specialist (funcional + visual) → **aprobación humana final**
 - **Duración estimada:** 8-20 rondas
+- **Protocolo detallado:** `~/.agents/MIGRACIONES.md`
 
 ## Pasos del flujo
 
@@ -139,7 +140,7 @@ campo declarado, el silencio se vuelve explícito.
 ## Reglas importantes
 
 1. **El reviewer siempre recibe contexto aislado:** la especificación + el diff. NO el historial de conversación.
-2. **Un cambio estructural (nivel C) siempre necesita aprobación humana antes de implementar.**
+2. **Un cambio estructural (nivel C) siempre necesita aprobación humana antes de implementar y después del QA.**
 3. **Nunca ejecutes `npm publish`, `git push`, o operaciones de deploy sin aprobación explícita.**
 4. **Cada cambio va en branch propio.** Si hay worktree existente, úsalo.
 5. **Si el reviewer marca un hallazgo CRÍTICO, el architect debe revisar antes de continuar.**

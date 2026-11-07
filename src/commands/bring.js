@@ -350,7 +350,7 @@ async function installHarness(targetDir, asset, dryRun, force) {
   const withScope = (s) => scope === 'all' || scope === s;
 
   if (withScope('opencode')) {
-    plan.push({ src: 'opencode/skills/g360-ui/SKILL.md', dest: '.opencode/skills/g360-ui/SKILL.md' });
+    plan.push({ src: 'opencode/skills/g360-design/SKILL.md', dest: '.opencode/skills/g360-design/SKILL.md' });
     for (const f of fs.readdirSync(path.join(harnessDir, 'opencode', 'commands'))) {
       if (f.endsWith('.md')) plan.push({ src: `opencode/commands/${f}`, dest: `.opencode/commands/${f}` });
     }
@@ -397,7 +397,7 @@ async function installHarness(targetDir, asset, dryRun, force) {
 
   console.log(chalk.green(`\n✅ Harness installed: ${copied} file(s)`));
   if (skipped > 0) console.log(chalk.yellow(`   ${skipped} skipped (exists — use --force to overwrite)`));
-  console.log(chalk.gray('   OpenCode: .opencode/skills/g360-ui + .opencode/commands/'));
+  console.log(chalk.gray('   OpenCode: .opencode/skills/g360-design + .opencode/commands/'));
   console.log(chalk.gray('   Kilo Code: .kilo/rules/ + .kilo/commands/ (+ legacy .kilocode/rules/)'));
   console.log();
 }

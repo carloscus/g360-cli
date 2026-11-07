@@ -180,7 +180,7 @@ export async function list(type, options) {
   if (!type || type === 'all' || type === 'harness') {
     console.log(chalk.bold.yellow('\n🤖 Harness:'));
     if (assets.harness.length) {
-      console.log(chalk.gray('  - opencode (skills/g360-ui + commands en .opencode/)'));
+      console.log(chalk.gray('  - opencode (skills/g360-design + commands en .opencode/)'));
       console.log(chalk.gray('  - kilocode (rules + commands en .kilo/, legacy .kilocode/)'));
       console.log(chalk.gray('    Run: g360 bring harness'));
     } else {

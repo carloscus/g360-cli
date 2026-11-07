@@ -18,12 +18,16 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createManifest } from '../lib/setup-manifest.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Ruta robusta a assets: funciona tanto en dev como en global install
 // En dev: __dirname = src/commands/, assets = src/assets/harness/
 // En global: __dirname = node_modules/g360-cli/src/commands/, assets = node_modules/g360-cli/src/assets/harness/
 const ASSETS_DIR = path.resolve(__dirname, '../assets/harness');
+
+// Home del usuario en formato POSIX (las configs de OpenCode/Kilo esperan `/`)
+const HOME_POSIX = (process.env.HOME || process.env.USERPROFILE).replace(/\\/g, '/');
 
 /**
  * Rutas de instalación por plataforma
@@ -61,12 +65,192 @@ const SHARED_FILES = [
 ];
 
 /**
+ * Configuración default para Kilo (shape V1).
+ * Sincronizada con el canon instalado (~/.config/kilo/kilo.jsonc):
+ * modelos con prefijo `kilo/`, prompts que referencian el esquema de
+ * HANDOFF.md, y permisos sin comandos destructivos.
+ */
+const DEFAULT_KILO_CONFIG = {
+  $schema: 'https://app.kilo.ai/config.json',
+  instructions: [
+    `${HOME_POSIX}/.agents/AGENTS.md`,
+    `${HOME_POSIX}/.agents/HANDOFF.md`,
+  ],
+  agent: {
+    'g360-orchestrator': {
+      description:
+        'Orquestador G360: clasifica nivel A/B/C, delega a subagentes, consolida el reporte. No escribe código.',
+      mode: 'primary',
+      model: 'kilo/kilo-auto/free',
+      prompt:
+        'Sos el orquestador del sistema multiagente G360. El método completo está en HANDOFF.md (ya cargado como instrucción) y el protocolo de migraciones en MIGRACIONES.md: niveles A/B/C, contrato de handoff y esquema de salida. Clasificá la tarea, delegá la implementación a `g360-architect` y la revisión a `g360-reviewer`; nivel C exige aprobación humana antes de implementar y aprobación final después del QA. No escribís código: todo cambio pasa por `g360-architect`. Nunca commit, push, publish ni migración destructiva sin pedido explícito. Entregá siempre el reporte con nivel, subagentes invocados, comando de verificación con su salida y estado final.\n\nRegla de handoff: cuando invoques a `g360-reviewer`, pasale el CRITERIO DE ACEPTACIÓN COMPLETO y la FÓRMULA/CONTRATO de verdad (no resúmenes — el reviewer no conoce el dominio). El reviewer es independiente: si no tiene el criterio concreto, puede fallar.',
+      maxSteps: 40,
+      permission: {
+        edit: 'deny',
+        webfetch: 'deny',
+        websearch: 'deny',
+        bash: {
+          '*': 'deny',
+          'git status': 'allow',
+          'git status *': 'allow',
+          'git diff': 'allow',
+          'git diff *': 'allow',
+          'git log': 'allow',
+          'git log *': 'allow',
+          'git show': 'allow',
+          'git show *': 'allow',
+          'g360 audit *': 'allow',
+        },
+        task: {
+          '*': 'deny',
+          'g360-architect': 'allow',
+          explore: 'allow',
+          'g360-reviewer': 'allow',
+          'g360-security-auditor': 'allow',
+          'g360-data-specialist': 'allow',
+          'g360-qa-specialist': 'allow',
+        },
+      },
+    },
+    'g360-architect': {
+      description:
+        'Arquitecto implementador. Único agente que escribe código. No publica, no despliega, no migra datos.',
+      mode: 'subagent',
+      model: 'kilo/nvidia/nemotron-3.5-lightning:free',
+      prompt:
+        'Sos el rol architect: el único agente del sistema que escribe código. Recibís una especificación, implementás el cambio mínimo y corrés el comando de verificación del repo reportando la salida exacta. No commiteás, no pusheás, no publicás, no desplegás, no migrás ni borrás datos, no instalás dependencias sin autorización. Si la especificación es ambigua, devolvés la pregunta concreta en vez de adivinar. Entregá CAMBIOS / VERIFICACIÓN / SALIDA / PENDIENTE.',
+      maxSteps: 40,
+      permission: {
+        webfetch: 'deny',
+        websearch: 'deny',
+        bash: {
+          '*': 'allow',
+          'git push*': 'deny',
+          'git push --force*': 'deny',
+          'git reset --hard*': 'deny',
+          'npm publish*': 'deny',
+          'docker *': 'deny',
+          'rm -rf *': 'deny',
+          'Remove-Item *': 'deny',
+        },
+      },
+    },
+    'g360-reviewer': {
+      description:
+        'Revisor crítico independiente (Goldfish). Ve solo la spec y el diff, nunca el historial. Solo lectura.',
+      mode: 'subagent',
+      model: 'kilo/kilo-auto/free',
+      prompt:
+        'Sos un revisor independiente. No participaste de la decisión que revisás y no tenés el historial de la conversación: eso es intencional. Tu trabajo es encontrar defectos reales, no validar al autor. Respondé con el esquema fijo de HANDOFF.md: VEREDICTO, CRÍTICOS (con archivo:línea y evidencia), ADVERTENCIAS y NO VERIFICADO. Un hallazgo sin evidencia ejecutable es advertencia, no crítico. No modificás archivos.',
+      maxSteps: 15,
+      permission: {
+        edit: 'deny',
+        webfetch: 'deny',
+        websearch: 'deny',
+        bash: {
+          '*': 'deny',
+          'git diff': 'allow',
+          'git diff *': 'allow',
+          'git log': 'allow',
+          'git log *': 'allow',
+          'git show': 'allow',
+          'git show *': 'allow',
+          'git status': 'allow',
+          'git status *': 'allow',
+        },
+      },
+    },
+    'g360-security-auditor': {
+      description:
+        'Auditor de seguridad y compatibilidad cross-stack (credenciales, CVEs, romper contratos entre repos G360). Solo lectura.',
+      mode: 'subagent',
+      model: 'kilo/kilo-auto/free',
+      prompt:
+        'Sos un auditor de seguridad y compatibilidad. Buscás credenciales expuestas, dependencias vulnerables o no fijadas, y rupturas de contrato entre repos del ecosistema G360. Respondé con el esquema fijo de HANDOFF.md. Sin evidencia ejecutable no hay crítico. No modificás archivos ni instalás dependencias.',
+      maxSteps: 12,
+      permission: {
+        edit: 'deny',
+        webfetch: 'deny',
+        websearch: 'deny',
+        bash: {
+          '*': 'deny',
+          'git diff': 'allow',
+          'git diff *': 'allow',
+          'git log': 'allow',
+          'git log *': 'allow',
+          'git show': 'allow',
+          'git show *': 'allow',
+          'git status': 'allow',
+          'git status *': 'allow',
+          'npm audit *': 'allow',
+          'npm ls *': 'allow',
+        },
+      },
+    },
+    'g360-data-specialist': {
+      description:
+        'Especialista en datos y migraciones: esquemas, procesadores ERP, contratos Excel/CSV/JSON, migración incremental.',
+      mode: 'subagent',
+      model: 'kilo/kilo-auto/free',
+      prompt:
+        'Sos especialista en datos y migraciones. Auditás cambios de esquema, procesadores de datos ERP y contratos de intercambio (Excel/CSV/JSON). Proponés migraciones incrementales con respaldo y rollback; nunca ejecutás una migración destructiva. Respondé con el esquema fijo de HANDOFF.md. No modificás archivos ni datos.',
+      maxSteps: 15,
+      permission: {
+        edit: 'deny',
+        webfetch: 'deny',
+        websearch: 'deny',
+        bash: {
+          '*': 'deny',
+          'git diff': 'allow',
+          'git diff *': 'allow',
+          'git log': 'allow',
+          'git log *': 'allow',
+          'git show': 'allow',
+          'git show *': 'allow',
+          'git status': 'allow',
+          'git status *': 'allow',
+        },
+      },
+    },
+    'g360-qa-specialist': {
+      description:
+        'QA y regresión: corre la suite del repo, valida equivalencia y visual (si aplica). No modifica código ni tests.',
+      mode: 'subagent',
+      model: 'kilo/kilo-auto/free',
+      prompt:
+        'Sos QA. Corrés el comando de verificación declarado en el AGENTS.md del repo y reportás la salida exacta. Si hay interfaz visual, capturás screenshots antes/después y validás dimensiones, alineación y consistencia UI (como advertencias, no como cambios automáticos). Si no hay suite de tests, lo decís explícitamente en vez de inventar evidencia. Proponés tests faltantes, pero no los escribís. Respondé con el esquema fijo de HANDOFF.md.',
+      maxSteps: 10,
+      permission: {
+        edit: 'deny',
+        webfetch: 'deny',
+        websearch: 'deny',
+        bash: {
+          '*': 'deny',
+          'npm test *': 'allow',
+          'npm run *': 'allow',
+          'npx vitest *': 'allow',
+          'pytest *': 'allow',
+          'uv run pytest *': 'allow',
+          'go test *': 'allow',
+          'cargo test *': 'allow',
+          'g360 audit *': 'allow',
+          'git diff': 'allow',
+          'git diff *': 'allow',
+          'git status': 'allow',
+          'git status *': 'allow',
+        },
+      },
+    },
+  },
+};
+
+/**
  * Configuración default del sistema multiagente (shape OpenCode V2)
  */
 const DEFAULT_OPENCODE_CONFIG = {
   $schema: 'https://opencode.ai/config.json',
   username: 'ccusi',
-  instructions: ['C:/Users/ccusi/.agents/AGENTS.md'],
+  instructions: [`${HOME_POSIX}/.agents/AGENTS.md`],
   model: 'nvidia/z-ai/glm-5.3-flash',
   small_model: 'nvidia/deepseek-ai/deepseek-v4.1-flash',
   shell: 'pwsh',
@@ -222,176 +406,6 @@ const DEFAULT_OPENCODE_CONFIG = {
 };
 
 /**
- * Forma V1 de permisos para Kilo
- */
-const DEFAULT_KILO_CONFIG = {
-  $schema: 'https://app.kilo.ai/config.json',
-  instructions: ['C:/Users/ccusi/.agents/AGENTS.md'],
-  agent: {
-    'g360-orchestrator': {
-      description:
-        'Orquestador G360: clasifica nivel A/B/C, invoca subagentes, consolida reporte. No escribe código.',
-      mode: 'primary',
-      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash',
-      prompt:
-        'Sos el orquestador del sistema multiagente G360. El método completo está en HANDOFF.md. Clasificá la tarea, delegá a g360-architect y revisá con g360-reviewer. Nivel C exige aprobación humana antes de implementar. Regla crítica: pasale el CRITERIO DE ACEPTACIÓN COMPLETO al reviewer.\n\nFormato de entrega:\n- Nivel: A/B/C\n- Subagentes invocados\n- Comando de verificación y salida\n- Estado: APROBADO/RECHAZADO/NECESITA-REVISION',
-      maxSteps: 40,
-      permission: {
-        edit: 'deny',
-        webfetch: 'deny',
-        websearch: 'deny',
-        bash: {
-          '*': 'deny',
-          'git status *': 'allow',
-          'git diff *': 'allow',
-          'git log *': 'allow',
-          'git show *': 'allow',
-          'g360 audit *': 'allow',
-        },
-        task: {
-          '*': 'deny',
-          'g360-architect': 'allow',
-          'g360-reviewer': 'allow',
-          'g360-security-auditor': 'allow',
-          'g360-data-specialist': 'allow',
-          'g360-qa-specialist': 'allow',
-          explore: 'allow',
-        },
-      },
-    },
-    'g360-architect': {
-      description:
-        'Arquitecto implementador. Escribe código según especificación. No publica ni migra.',
-      mode: 'subagent',
-      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash',
-      prompt:
-        'Sos el rol architect: el único agente que escribe código. Recibís una especificación del orquestador, implementás el cambio mínimo y corrés el comando de verificación. No commiteás, no pusheás, no publicás. Si la especificación es ambigua, devolvé la pregunta concreta.\n\nFormato de entrega:\n- CAMBIOS: lista de archivos modificados\n- VERIFICACIÓN: comando ejecutado\n- SALIDA: resultado\n- PENDIENTE: lo que quedó fuera de alcance',
-      maxSteps: 40,
-      permission: {
-        edit: 'allow',
-        webfetch: 'deny',
-        websearch: 'deny',
-        bash: {
-          '*': 'allow',
-          'git push*': 'deny',
-          'git push --force*': 'deny',
-          'npm publish*': 'deny',
-          'rm -rf*': 'deny',
-          'Remove-Item*': 'deny',
-        },
-      },
-    },
-    'g360-reviewer': {
-      description:
-        'Revisor crítico independiente (Goldfish). Solo lectura, nunca modifica archivos.',
-      mode: 'subagent',
-      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash',
-      prompt:
-        'Sos un revisor independiente. No participaste de la decisión que revisás. Tu trabajo es encontrar defectos reales, no validar al autor.\n\nEsquema de salida obligatorio:\nVEREDICTO: APROBADO | CONDICIONAL | RECHAZADO\nCRÍTICOS: <n> | ninguno\n  - [archivo:línea] <hallazgo> — <evidencia>\nADVERTENCIAS: <n> | ninguna\nNO VERIFICADO: <qué no se pudo comprobar y por qué',
-      maxSteps: 15,
-      permission: {
-        edit: 'deny',
-        webfetch: 'deny',
-        websearch: 'deny',
-        bash: {
-          '*': 'deny',
-          'git diff': 'allow',
-          'git diff *': 'allow',
-          'git log': 'allow',
-          'git log *': 'allow',
-          'git show': 'allow',
-          'git show *': 'allow',
-          'git status': 'allow',
-          'git status *': 'allow',
-        },
-      },
-    },
-    'g360-security-auditor': {
-      description:
-        'Auditor de seguridad y compatibilidad cross-stack. Solo lectura.',
-      mode: 'subagent',
-      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash',
-      prompt:
-        'Sos un auditor de seguridad. Buscás credenciales expuestas, dependencias vulnerables y rupturas de contrato entre repos G360.\n\nEsquema de salida: VEREDICTO + CRÍTICOS + ADVERTENCIAS + NO VERIFICADO',
-      maxSteps: 12,
-      permission: {
-        edit: 'deny',
-        webfetch: 'deny',
-        websearch: 'deny',
-        bash: {
-          '*': 'deny',
-          'git diff': 'allow',
-          'git diff *': 'allow',
-          'git log': 'allow',
-          'git log *': 'allow',
-          'git show': 'allow',
-          'git show *': 'allow',
-          'git status': 'allow',
-          'git status *': 'allow',
-          'npm audit *': 'allow',
-          'npm ls *': 'allow',
-        },
-      },
-    },
-    'g360-data-specialist': {
-      description:
-        'Especialista en datos y migraciones. Audita esquemas y contratos.',
-      mode: 'subagent',
-      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash',
-      prompt:
-        'Sos especialista en datos. Auditás cambios de esquema, procesadores ERP y contratos Excel/CSV/JSON. Proponés migraciones incrementales con rollback.',
-      maxSteps: 15,
-      permission: {
-        edit: 'deny',
-        webfetch: 'deny',
-        websearch: 'deny',
-        bash: {
-          '*': 'deny',
-          'git diff': 'allow',
-          'git diff *': 'allow',
-          'git log': 'allow',
-          'git log *': 'allow',
-          'git show': 'allow',
-          'git show *': 'allow',
-          'git status': 'allow',
-          'git status *': 'allow',
-          'sqlite3 *': 'ask',
-          'uv run *': 'allow',
-          'python *': 'allow',
-        },
-      },
-    },
-    'g360-qa-specialist': {
-      description:
-        'QA y regresión. Corre la suite de tests y reporta evidencia.',
-      mode: 'subagent',
-      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash',
-      prompt:
-        'Sos QA. Corrés el comando de verificación declarado en AGENTS.md y reportás la salida exacta. Si no hay suite, lo decís explícitamente.',
-      maxSteps: 10,
-      permission: {
-        edit: 'deny',
-        webfetch: 'deny',
-        websearch: 'deny',
-        bash: {
-          '*': 'deny',
-          'npm test *': 'allow',
-          'npm run *': 'allow',
-          'npx vitest *': 'allow',
-          'pytest *': 'allow',
-          'uv run pytest *': 'allow',
-          'go test *': 'allow',
-          'cargo test *': 'allow',
-          'g360 audit *': 'allow',
-          'git diff *': 'allow',
-          'git status *': 'allow',
-        },
-      },
-    },
-  },
-};
-
-/**
  * Verifica si la plataforma está configurada
  */
 function isPlatformInstalled(platform) {
@@ -432,6 +446,48 @@ async function copyAssets(srcPattern, destPath, dryRun = false) {
   } catch (err) {
     console.error(chalk.red(`  ✗ Failed to copy ${srcPattern}: ${err.message}`));
   }
+}
+
+/**
+ * Backup previo a la instalación.
+ *
+ * Copia los directorios que se van a sobrescribir a <base>/.backup/<fecha>/.
+ * Si ya existe un backup del mismo día se reutiliza (sin duplicados).
+ * @param {string} baseDir - Home del usuario
+ * @param {string[]} targets - Directorios relativos a respaldar (ej: '.config/opencode')
+ * @param {boolean} [dryRun=false] - Solo informar, no escribir
+ * @returns {Promise<{dir: string|null, reused: boolean}>}
+ */
+async function backupExisting(baseDir, targets, dryRun = false) {
+  const existing = targets.filter((target) => fs.existsSync(path.join(baseDir, target)));
+  if (existing.length === 0) return { dir: null, reused: false };
+
+  const backupRoot = path.join(baseDir, '.backup');
+  const now = new Date();
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const day = `${now.getFullYear()}${pad2(now.getMonth() + 1)}${pad2(now.getDate())}`;
+  const time = `${pad2(now.getHours())}${pad2(now.getMinutes())}${pad2(now.getSeconds())}`;
+
+  // Reutiliza el backup del mismo día si existe para no acumular copias
+  let dir = null;
+  if (fs.existsSync(backupRoot)) {
+    const todays = fs.readdirSync(backupRoot).filter((name) => name.startsWith(`${day}-`)).sort();
+    if (todays.length > 0) dir = path.join(backupRoot, todays[0]);
+  }
+  const reused = dir !== null;
+  if (dir === null) dir = path.join(backupRoot, `${day}-${time}`);
+
+  if (dryRun) {
+    const action = reused ? 'reuse backup in' : 'create backup in';
+    console.log(chalk.gray(`  [dry-run] would ${action} ${dir.replace(baseDir, '~')}`));
+    return { dir, reused };
+  }
+
+  await fs.ensureDir(dir);
+  for (const target of existing) {
+    await fs.copy(path.join(baseDir, target), path.join(dir, target), { overwrite: true });
+  }
+  return { dir, reused };
 }
 
 /**
@@ -590,6 +646,25 @@ export async function setup(options) {
       ? ['opencode', 'kilo', 'cline']
       : [platform];
 
+  if (reset) {
+    console.log(chalk.yellow('  [!] --reset eliminará la configuración existente antes de reinstalar\n'));
+  }
+
+  // Backup antes de escribir nada: respalda los directorios que esta
+  // corrida puede sobrescribir (docs compartidas van siempre a .agents)
+  const baseDir = process.env.HOME || process.env.USERPROFILE;
+  const targetMap = {
+    opencode: path.join('.config', 'opencode'),
+    kilo: path.join('.config', 'kilo'),
+    cline: '.agents',
+  };
+  const targets = [...new Set(platforms.map((p) => targetMap[p]).concat('.agents'))];
+  const backup = await backupExisting(baseDir, targets, dryRun);
+  if (backup.dir && !dryRun) {
+    const verb = backup.reused ? 'backup reutilizado en' : 'backup creado en';
+    console.log(chalk.green(`✓ ${verb} ${backup.dir.replace(baseDir, '~')}\n`));
+  }
+
   const results = [];
 
   for (const p of platforms) {
@@ -600,6 +675,14 @@ export async function setup(options) {
   // Install shared docs (always)
   console.log(chalk.bold('\n📚 Docs canónicas'));
   await installSharedDocs({ dryRun });
+
+  // Manifest de integridad para `g360 audit --agents`
+  if (dryRun) {
+    console.log(chalk.gray('\n  [dry-run] would create manifest in ~/.agents/.manifest.json'));
+  } else {
+    const { path: manifestPath, manifest } = await createManifest(baseDir);
+    console.log(chalk.green(`\n✓ manifest creado en ${manifestPath.replace(baseDir, '~')} (${manifest.files.length} archivos)`));
+  }
 
   // Summary
   console.log(chalk.bold('\n📊 Resumen\n'));

@@ -28,7 +28,7 @@ Toda generacion o refactor de UI obedece estas reglas, sin excepcion:
   loading, firma G360, menu export, busqueda.
 
 Verificar con `g360 review` (objetivo >= 90/100) antes de presentar.
-En proyectos con harness instalado, el skill `g360-ui` (OpenCode) y las
+En proyectos con harness instalado, el skill `g360-design` (OpenCode) y las
 rules `.kilo/rules/g360-*.md` (Kilo Code) aplican esta misma politica.
 
 ## Recursos Disponibles

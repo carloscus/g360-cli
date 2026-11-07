@@ -443,7 +443,7 @@ g360 bring harness [opciones]
 
 | Destino | Contenido |
 |---------|-----------|
-| `.opencode/skills/g360-ui/SKILL.md` | Skill primario UI (politica Less is More) |
+| `.opencode/skills/g360-design/SKILL.md` | Skill orquestador de diseño (politica Less is More + tokens dinamicos) |
 | `.opencode/commands/g360-review.md` | Slash command de revision UI |
 | `.opencode/commands/g360-ship.md` | Slash command del pipeline completo |
 | `.kilo/rules/g360-*.md` | Rules de politica + naming (Kilo Code) |
@@ -602,6 +602,20 @@ g360 audit [ruta] [opciones]
 | `--verbose` | Salida detallada |
 | `--no-autonomy` | Omitir los checks de autosuficiencia |
 | `--ecosystem` | Auditar todos los repos bajo `<ruta>/projects` y mostrar un resumen |
+| `--agents` | Verificar integridad de los prompts de agentes instalados (ver abajo) |
+
+**Verificación de integridad de agentes (`--agents`):**
+
+```bash
+g360 audit --agents
+# → verifica que los prompts de agentes no fueron alterados
+# → requiere `g360 setup --platform all` (crea ~/.agents/.manifest.json)
+```
+
+Compara los hashes SHA-256 guardados en `~/.agents/.manifest.json` contra
+los archivos instalados (`~/.agents/`, `~/.config/opencode/`, `~/.config/kilo/`).
+Si un prompt cambió desde el setup, lista las rutas y falla; si el cambio es
+intencional, regenerá el manifest con `g360 setup --platform all`.
 
 **Checks de autosuficiencia:**
 

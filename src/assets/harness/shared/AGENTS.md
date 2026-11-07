@@ -83,6 +83,8 @@ hereda sus puntos ciegos.
 - Kilo: `~/.config/kilo/kilo.jsonc` (agentes `g360-*`, shape V1).
 - Cline: sin subagentes; el revisor es `~/.agents/goldfish.ps1`.
 
+Protocolo especializado de migraciones: `~/.agents/MIGRACIONES.md`.
+
 ## Transferencia de conocimiento
 
 - En cada respuesta o Pull Request, resumí la decisión de diseño tomada para

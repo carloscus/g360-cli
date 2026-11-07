@@ -130,6 +130,7 @@ program
   .option('--verbose', 'Show detailed output')
   .option('--no-autonomy', 'Omitir los checks de autosuficiencia')
   .option('--ecosystem', 'Auditar todos los repos bajo <path>/projects y mostrar un resumen')
+  .option('--agents', 'Verificar integridad de los prompts de agentes instalados (manifest)')
   .action(audit);
 
 program

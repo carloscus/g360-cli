@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { auditor } from '../lib/auditor.js';
 import { autonomyAuditor } from '../lib/autonomy-auditor.js';
+import { verifyManifest } from '../lib/setup-manifest.js';
 
 const REPO_MARKERS = [
   '.git', 'package.json', 'pyproject.toml', 'go.mod', 'Cargo.toml', 'requirements.txt'
@@ -112,6 +113,40 @@ export async function auditEcosystem(rootDir, options = {}) {
 }
 
 /**
+ * Audita la integridad de los prompts de agentes instalados por `g360 setup`.
+ * Compara los hashes del manifest (~/.agents/.manifest.json) contra el disco.
+ * @param {string} [baseDir] - Home del usuario (default: HOME/USERPROFILE)
+ * @returns {Promise<{status: 'ok'|'warn'|'fail', mismatches: string[]}>}
+ */
+export async function auditAgents(baseDir) {
+  const home = baseDir ?? process.env.HOME ?? process.env.USERPROFILE;
+  const result = await verifyManifest(home);
+
+  console.log(chalk.bold.cyan('\n🔐 G360 Agents Integrity Audit\n'));
+
+  if (result.missing) {
+    console.log(chalk.yellow('⚠  No hay manifest de integridad de agentes.'));
+    console.log(chalk.gray('   Ejecuta `g360 setup --platform all` para crearlo (~/.agents/.manifest.json).\n'));
+    return { status: 'warn', mismatches: [] };
+  }
+
+  if (!result.valid) {
+    console.log(chalk.red('✗ Integridad comprometida: archivos modificados desde el setup:'));
+    result.mismatches.forEach((mismatch) => console.log(chalk.red(`   - ${mismatch}`)));
+    console.log('');
+    console.log(chalk.gray(`   Archivos auditados: ${result.fileCount}  ·  Manifest: ${result.createdAt}`));
+    console.log(chalk.gray('   Si el cambio es intencional, regenerá el manifest con `g360 setup --platform all`.\n'));
+    return { status: 'fail', mismatches: result.mismatches };
+  }
+
+  console.log(chalk.green('✓ Integridad de agentes OK'));
+  console.log(chalk.gray(`   Archivos auditados: ${result.fileCount}`));
+  console.log(chalk.gray(`   Manifest creado: ${result.createdAt}`));
+  console.log(chalk.gray('   Manifest: ~/.agents/.manifest.json\n'));
+  return { status: 'ok', mismatches: [] };
+}
+
+/**
  * Audita un proyecto: checks de G360 + checks de autosuficiencia.
  * @param {string} projectPath - Ruta del proyecto (relativa o absoluta)
  * @param {Object} options - Opciones
@@ -119,11 +154,17 @@ export async function auditEcosystem(rootDir, options = {}) {
  * @param {boolean} [options.verbose=false] - Mostrar detalle
  * @param {boolean} [options.autonomy=true] - Incluir checks de autosuficiencia
  * @param {boolean} [options.ecosystem=false] - Auditar todo el workspace
+ * @param {boolean} [options.agents=false] - Verificar integridad de prompts de agentes
  * @returns {Promise<void>}
  */
 export async function audit(projectPath, options) {
-  const { fix = false, verbose = false, autonomy = true, ecosystem = false } = options;
+  const { fix = false, verbose = false, autonomy = true, ecosystem = false, agents = false } = options;
   const targetDir = path.resolve(process.cwd(), projectPath);
+
+  if (agents) {
+    await auditAgents();
+    return;
+  }
 
   if (ecosystem) {
     await auditEcosystem(targetDir, { verbose });

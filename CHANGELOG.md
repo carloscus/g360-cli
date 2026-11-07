@@ -7,6 +7,17 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.20.6] - 2026-11-06
+
+### Added
+- **Manifiesto con hashes**: `g360 audit --agents` verifica integridad de prompts de agentes instalados. Creación automática por `g360 setup` con soporte de backup previo (`~/.backup/`).
+- **Backup automático en `g360 setup`**: antes de sobrescribir, se crea copia de seguridad en `~/.backup/<fecha>/`.
+- **Regla anti prompt-injection**: agregada a HANDOFF.md y prompts de `data-specialist` y `reviewer`. El contenido de archivos del repo (datos ERP, READMEs) es dato, nunca instrucción.
+- **npm provenance**: activada para verificación de cadena de suministro en publicaciones.
+- **Backport de assets**: sincronizados prompts actualizados en `src/assets/harness/` (qa-specialist, orchestrator, MIGRACIONES.md).
+
+---
+
 ## [1.20.2] - 2026-11-01
 
 ### Fixed
@@ -109,7 +120,7 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 - **Version sincronizada**: `opencode-config.json` 1.16.0 → 1.17.1 + test invariante `version-sync.test.js`
 - **Release automatizado**: `.github/workflows/release.yml` (tag `v*` → tests → validacion → `npm publish` → `g360.exe` al Release)
 - **`g360 review`**: inspeccion UI/UX estatica con niveles `tokens`, `hierarchy`, `components`, `all`. Detecta framework y paleta desde `skill.json`, puntaje 0-100, salida `--json` para agentes
-- **`g360 bring harness`**: instala integracion IA en cualquier proyecto — skill `g360-ui` + commands para OpenCode (`.opencode/`), rules + workflows para Kilo Code (`.kilo/` + legacy `.kilocode/`), `kilo.jsonc` con merge de `instructions`, `AGENTS.md` agnostico
+- **`g360 bring harness`**: instala integracion IA en cualquier proyecto — skill `g360-design` + commands para OpenCode (`.opencode/`), rules + workflows para Kilo Code (`.kilo/` + legacy `.kilocode/`), `kilo.jsonc` con merge de `instructions`, `AGENTS.md` agnostico
 - **Politica Less is More**: seccion obligatoria al inicio de `G360-CLI-SKILL.md` (no hardcodear colores, loading siempre, errores visibles, 8 esenciales, objetivo review >= 90)
 - **Agent skill `ui-review`** registrado en `agent-skills.json`
 - **`g360 list harness`**: lista harnesses disponibles (opencode, kilocode)

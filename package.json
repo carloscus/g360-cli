@@ -1,6 +1,6 @@
 {
     "name": "g360-cli",
-    "version": "1.20.5",
+    "version": "1.20.6",
     "description": "CLI tool for bootstrapping G360 projects with standardized structure, assets, identity, and ERP data processing",
     "type": "module",
     "main": "src/cli.js",
@@ -55,6 +55,9 @@
     ],
     "author": "Carlos Cusi",
     "license": "MIT",
+    "publishConfig": {
+        "provenance": true
+    },
     "dependencies": {
         "ajv": "^8.20.0",
         "chalk": "^5.6.2",
