@@ -7,6 +7,13 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.20.7] - 2026-11-06
+
+### Added
+- **Evals estáticos del reviewer**: 16 casos con bugs sembrados (credenciales, assert true, skip, regex invertido, SQL injection, lógica de negocio, catch silencioso, rutas absolutas, etc.). Tasa de detección: 93.8% críticos, 0 falsos positivos. Sirve como línea base métrica para medir la calidad del sistema de revisión.
+
+---
+
 ## [1.20.6] - 2026-11-06
 
 ### Added
