@@ -62,6 +62,8 @@ const SHARED_FILES = [
   { src: 'shared/HANDOFF.md', dst: 'HANDOFF.md' },
   { src: 'shared/MULTIAGENTE.md', dst: 'MULTIAGENTE.md' },
   { src: 'shared/AGENTS.md', dst: 'AGENTS.md' },
+  { src: 'shared/MIGRACIONES.md', dst: 'MIGRACIONES.md' },
+  { src: 'shared/GLOSARIO.md', dst: 'GLOSARIO.md' },
 ];
 
 /**
@@ -75,6 +77,8 @@ const DEFAULT_KILO_CONFIG = {
   instructions: [
     `${HOME_POSIX}/.agents/AGENTS.md`,
     `${HOME_POSIX}/.agents/HANDOFF.md`,
+    `${HOME_POSIX}/.agents/MIGRACIONES.md`,
+    `${HOME_POSIX}/.agents/GLOSARIO.md`,
   ],
   agent: {
     'g360-orchestrator': {
@@ -698,7 +702,7 @@ export async function setup(options) {
     console.log(`  ${icon} ${r.platform}: ${r.status}`);
   }
 
-  console.log(chalk.gray('\n  Docs: .agents/HANDOFF.md, MULTIAGENTE.md\n'));
+  console.log(chalk.gray('\n  Docs: .agents/HANDOFF.md, MULTIAGENTE.md, MIGRACIONES.md, GLOSARIO.md\n'));
 
   // Verification hint
   console.log(chalk.cyan('✅ Configuración lista.\n'));

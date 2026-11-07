@@ -7,6 +7,16 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.20.9] - 2026-11-07
+
+### Added
+- **`GLOSARIO.md`**: regla de nomenclatura (inglés para slug, español para displayName) + tabla de 24 repos del ecosistema. Instalado por `g360 setup --platform all`.
+
+### Changed
+- **`setup.js`**: incluye `MIGRACIONES.md` y `GLOSARIO.md` en docs canónicas instaladas; Kilo now lee ambos desde `~/.agents/`.
+
+---
+
 ## [1.20.8] - 2026-11-07
 
 ### Added
