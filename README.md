@@ -11,13 +11,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm downloads](https://img.shields.io/npm/dm/g360-cli?color=94a3b8)](https://www.npmjs.com/package/g360-cli)
 
-## ¿CÃ³mo estÃ¡ organizado el proyecto?
+## ¿Cómo está organizado el proyecto?
 
 ```mermaid
 flowchart TD
     CLI["g360 CLI<br/>cli.js"]
     CMD["Comandos<br/>init · bring · audit · lint · review · clean · convert · docs · pptx · ingest · scan · validate · setup"]
-    LIB["LibrerÃ­as<br/>manifest Â· auditor Â· validator Â· logger"]
+    LIB["Librerías<br/>manifest · auditor · validator · logger"]
     ASSETS["Assets<br/>templates · brand · signature · ingestion · harness"]
     PY["g360-core (PyPI)<br/>commercial_engine · pipeline · batch_processor"]
     ERP["Datos ERP<br/>.xls · .xlsx · .csv"]
@@ -33,41 +33,41 @@ flowchart TD
 
 ## Tabla de Contenidos
 
-- [DescripciÃ³n](#descripciÃ³n)
-- [CaracterÃ­sticas](#caracterÃ­sticas)
-- [TecnologÃ­as](#tecnologÃ­as)
-- [InstalaciÃ³n](#instalaciÃ³n)
-- [Inicio RÃ¡pido](#inicio-rÃ¡pido)
+- [Descripción](#descripción)
+- [Características](#características)
+- [Tecnologías](#tecnologías)
+- [Instalación](#instalación)
+- [Inicio Rápido](#inicio-rápido)
 - [Comandos](#comandos)
 - [Plantillas](#plantillas)
 - [Componentes](#componentes)
 - [Skills](#skills)
 - [Convenciones de Nombres](#convenciones-de-nombres)
-- [ConfiguraciÃ³n](#configuraciÃ³n)
+- [Configuración](#configuración)
 - [API](#api)
 - [Estructura](#estructura)
 - [Reglas de negocio](#reglas-de-negocio)
 - [Scripts](#scripts)
 - [Testing](#testing)
-- [ContribuciÃ³n](#contribuciÃ³n)
+- [Contribución](#contribución)
 - [Licencia](#licencia)
 - [Ecosistema G360](#ecosistema-g360)
-- [IntegraciÃ³n con OpenCode](#integraciÃ³n-con-opencode)
+- [Integración con OpenCode](#integración-con-opencode)
 - [Sistema Multiagente](#sistema-multiagente)
 
 ---
 
-## DescripciÃ³n
+## Descripción
 
-CLI tool para el ecosistema G360 que permite inicializar proyectos con estructura estÃ¡ndar, gestionar assets embebidos, y asegurar compliance mediante auditorÃ­a automÃ¡tica. Forma parte del nÃºcleo del ecosistema y estÃ¡ disponible como paquete global de npm.
+CLI tool para el ecosistema G360 que permite inicializar proyectos con estructura estándar, gestionar assets embebidos, y asegurar compliance mediante auditoría automática. Forma parte del núcleo del ecosistema y está disponible como paquete global de npm.
 
 **Tipo**: CLI Tool / Scaffolding / Generator  
 **Plataforma**: Node.js >= 18.0.0  
-**DistribuciÃ³n**: npm global (`npm install -g g360-cli`)
+**Distribución**: npm global (`npm install -g g360-cli`)
 
 ---
 
-## TecnologÃ­as
+## Tecnologías
 
 - **Runtime**: Node.js >= 18.0.0
 - **Lenguaje**: JavaScript (ESModules)
@@ -75,53 +75,53 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 - **UI**: Chalk 5.x (colores), Ora 9.x (spinners), Inquirer 13.x (prompts)
 - **Filesystem**: fs-extra 11.x
 - **Build**: pkg 5.8.1 (portable .exe)
-- **DistribuciÃ³n**: npm global
+- **Distribución**: npm global
 
 ---
 
-## CaracterÃ­sticas
+## Características
 
-- **InicializaciÃ³n rÃ¡pida** - Crea proyectos G360 con estructura estÃ¡ndar
-- **GestiÃ³n de assets** - Trae componentes, skills y plantillas embebidas
+- **Inicialización rápida** - Crea proyectos G360 con estructura estándar
+- **Gestión de assets** - Trae componentes, skills y plantillas embebidas
 - **Ingesta ERP** - Normaliza `.xls/.xlsx` de SAP, StarSoft, Spring con `g360 bring ingestion`
-- **Motor de clasificaciÃ³n comercial** - `commercial_engine` clasifica documentos en VENTA/DEVOLUCION/AJUSTE con subtipos (PRECIO_LINEA, CARGO_FIJO, SIN_BASE)
-- **Precio efectivo** - PRECIO_BASE, RECARGO_UNITARIO y PRECIO_EFECTIVO separan precio fÃ­sico de ajustes financieros FAE
+- **Motor de clasificación comercial** - `commercial_engine` clasifica documentos en VENTA/DEVOLUCION/AJUSTE con subtipos (PRECIO_LINEA, CARGO_FIJO, SIN_BASE)
+- **Precio efectivo** - PRECIO_BASE, RECARGO_UNITARIO y PRECIO_EFECTIVO separan precio físico de ajustes financieros FAE
 - **Paquete Python** - `g360-core` en PyPI para pipelines de datos independientes
-- **AuditorÃ­a** - Verifica compliance de proyectos G360
+- **Auditoría** - Verifica compliance de proyectos G360
 - **Lint** - Nomenclatura, duplicados y sintaxis con puntaje 0-100
-- **Review UI** - Tokens de diseÃ±o, jerarquÃ­a tipogrÃ¡fica y 8 componentes esenciales (`g360 review`, objetivo >= 90)
+- **Review UI** - Tokens de diseño, jerarquía tipográfica y 8 componentes esenciales (`g360 review`, objetivo >= 90)
 - **Harness IA** - Skill + commands para OpenCode y rules + workflows para Kilo Code (`g360 bring harness`)
 - **Color System v3** - Escala esmeralda con roles por tema (AA en light y dark), identidad CIPSA propia
 - **Limpieza** - Elimina assets embebidos antes de deployment
 - **Multi-plantilla** - Web (Lit, Solid, Svelte, PWA, React), Python (CLI, Flet â­, Flet Polished â­, CustomTkinter, Migration)
 - **Flet Polished** - Template estandar con dual theme, auto-refresh, hash cache, search debounce, KPI glow, G360 signature, portable launcher
 - **Brand System v2.0.0** - Sistema de marca unificado con favicons, PWA icons, logotypes para G360 y CIPSA
-- **Modo portable** - Proyectos Python con ejecuciÃ³n directa (sin PyInstaller)
-- **Modo offline** - Funciona sin conexiÃ³n usando assets cacheados
+- **Modo portable** - Proyectos Python con ejecución directa (sin PyInstaller)
+- **Modo offline** - Funciona sin conexión usando assets cacheados
 - **Preview** - Dry-run para previsualizar cambios
 
 ---
 
 ## Versión
 
-**Current: v1.20.8** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
+**Current: v1.21.2** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
 
 ---
 
-## InstalaciÃ³n
+## Instalación
 
 ### Requisitos
 
 - Node.js >= 18.0.0
 - npm >= 8.0.0
 
-### InstalaciÃ³n global
+### Instalación global
 
 ```bash
 npm install -g g360-cli
 ```
 
-### Verificar instalaciÃ³n
+### Verificar instalación
 
 ```bash
 g360 --version
@@ -144,7 +144,7 @@ con CI + provenance, ver ítem de deuda: *trusted publishing con OIDC*.
 
 ---
 
-## Inicio RÃ¡pido
+## Inicio Rápido
 
 ```bash
 # 1. Inicializar nuevo proyecto
@@ -180,19 +180,19 @@ g360 init <nombre> [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n | Valor por defecto |
+| Opción | Descripción | Valor por defecto |
 |--------|-------------|-------------------|
 | `-t, --template <tipo>` | Tipo de plantilla (default: auto segun skill) | `auto` |
 | `-s, --skill <skill>` | Skill a usar | `corporativo-movil` |
 | `-d, --dir <ruta>` | Directorio destino | `.` |
 | `--dry-run` | Previsualizar sin crear | `false` |
 | `--force` | Sobrescribir existente | `false` |
-| `--brand` | Aplicar marca G360 (logo, colores, firma) despuÃ©s de init | `false` |
+| `--brand` | Aplicar marca G360 (logo, colores, firma) después de init | `false` |
 
 **Ejemplos:**
 
 ```bash
-# Proyecto Lit para cliente mÃ³vil
+# Proyecto Lit para cliente móvil
 g360 init mi-proyecto --template lit-web --skill corporativo-movil
 
 # Proyecto Solid para herramienta propia
@@ -204,7 +204,7 @@ g360 init mi-script --template svelte-web --skill minimalista
 # Preview sin crear
 g360 init mi-proyecto --dry-run
 
-# Crear proyecto con marca G360 aplicada automÃ¡ticamente
+# Crear proyecto con marca G360 aplicada automáticamente
 g360 init mi-proyecto --brand
 ```
 
@@ -220,7 +220,7 @@ g360 set-skill <skill> [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n |
+| Opción | Descripción |
 |--------|-------------|
 | `--verbose` | Mostrar detalles |
 | `--force` | Sobrescribir skill existente |
@@ -231,7 +231,7 @@ g360 set-skill <skill> [opciones]
 # Cambiar a skill corporativo para PC
 g360 set-skill corporativo
 
-# Cambiar a skill moderno para mÃ³vil
+# Cambiar a skill moderno para móvil
 g360 set-skill moderno-movil
 
 # Ver detalles del skill
@@ -243,8 +243,8 @@ g360 set-skill corporativo-g360 --verbose
 ### `g360 tokens`
 
 Emite los **design tokens** del proyecto en el formato de cada stack. Es la
-puente entre la fuente de diseÃ±o y el cÃ³digo: las plantillas ya no llevan la
-paleta escrita a mano, la reciben de acÃ¡.
+puente entre la fuente de diseño y el código: las plantillas ya no llevan la
+paleta escrita a mano, la reciben de acá.
 
 ```bash
 g360 tokens [ruta] [opciones]
@@ -252,7 +252,7 @@ g360 tokens [ruta] [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n |
+| Opción | Descripción |
 |--------|-------------|
 | `--skill <name>` | Skill a aplicar (por defecto, el del `skill.json`) |
 | `--accent <familia>` | Familia de acento a aplicar |
@@ -269,23 +269,23 @@ g360 tokens [ruta] [opciones]
 | Go | `internal/theme/tokens.go` |
 | Rust / Tauri | `src-tauri/src/theme.rs` |
 
-**Roles emitidos** (idÃ©nticos en todos los stacks, para que los componentes
-sean simÃ©tricos):
+**Roles emitidos** (idénticos en todos los stacks, para que los componentes
+sean simétricos):
 
 ```text
-bg Â· surface Â· surfaceAlt Â· overlay Â· border Â· borderStrong
-text Â· textMuted Â· textInverse
-accent Â· accentStrong Â· accentBright Â· accentSoft Â· accentHover Â· onAccent
-success Â· warning Â· error Â· info
-glass Â· blur Â· radius Â· radiusSm
-font Â· fontMono Â· fontSize Â· spaceXs..spaceXl
+bg · surface · surfaceAlt · overlay · border · borderStrong
+text · textMuted · textInverse
+accent · accentStrong · accentBright · accentSoft · accentHover · onAccent
+success · warning · error · info
+glass · blur · radius · radiusSm
+font · fontMono · fontSize · spaceXs..spaceXl
 ```
 
-En CSS se emiten como `--g360-*` (mÃ¡s los alias `--g360-muted` y
+En CSS se emiten como `--g360-*` (más los alias `--g360-muted` y
 `--g360-rounded` que ya usaban las plantillas y proyectos existentes).
 
 **Temas con `light-dark()`**: cada rol se declara dos veces —el valor oscuro
-como fallback y `light-dark(oscuro, claro)`— asÃ­ funciona en navegadores sin
+como fallback y `light-dark(oscuro, claro)`— así funciona en navegadores sin
 `light-dark()` y el toggle real es `color-scheme`:
 
 ```css
@@ -293,14 +293,14 @@ como fallback y `light-dark(oscuro, claro)`— asÃ­ funciona en navegadores si
 html[data-theme="light"] { color-scheme: light; }   /* toggle de la app */
 ```
 
-**Tailwind**: con v4 (CSS-first) se emite ademÃ¡s el bloque `@theme`, que
+**Tailwind**: con v4 (CSS-first) se emite además el bloque `@theme`, que
 expone los tokens como utilidades (`bg-g360-accent`, `text-g360-muted`,
 `border-g360-border`). En v3 el tema sigue en `tailwind.config.js` y la CLI lo
 avisa.
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n |
+| Opción | Descripción |
 |--------|-------------|
 | `--skill <name>` | Skill a aplicar (por defecto, el del `skill.json`) |
 | `--accent <familia>` | Familia de acento a aplicar |
@@ -308,11 +308,11 @@ avisa.
 | `--dry-run` | Previsualizar sin escribir |
 | `--verbose` | Mostrar todos los tokens |
 
-`--wire-css` es quirÃºrgico: de cada bloque `:root` retira **solo** las
+`--wire-css` es quirúrgico: de cada bloque `:root` retira **solo** las
 variables de paleta (las propias de la app se conservan), agrega el `@import`
 al principio del archivo (CSS exige que los imports precedan a las reglas) y
-elimina el bloque de modo claro Ãºnicamente si define paleta. No toca
-artefactos de build ni la galerÃ­a `g360/`.
+elimina el bloque de modo claro únicamente si define paleta. No toca
+artefactos de build ni la galería `g360/`.
 
 **Ejemplos:**
 
@@ -322,7 +322,7 @@ g360 tokens ./mi-proyecto --skill react-web
 g360 tokens --accent cyan --dry-run
 ```
 
-`g360 set-skill` y `g360 set-accent` reemiten los tokens automÃ¡ticamente: la
+`g360 set-skill` y `g360 set-accent` reemiten los tokens automáticamente: la
 familia de acento llega a los estilos, no solo al `skill.json`.
 
 ---
@@ -337,7 +337,7 @@ g360 convert [ruta] [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n | Valor por defecto |
+| Opción | Descripción | Valor por defecto |
 |--------|-------------|-------------------|
 | `-s, --skill <skill>` | Skill a aplicar | `corporativo-movil` |
 | `--dry-run` | Previsualizar sin aplicar | `false` |
@@ -354,7 +354,7 @@ g360 convert . --dry-run
 # Convertir proyecto existente
 g360 convert ./mi-proyecto --skill corporativo
 
-# Con backup automÃ¡tico
+# Con backup automático
 g360 convert . --skill moderno --backup
 
 # Forzar cambios peligrosos
@@ -373,7 +373,7 @@ g360 signature install [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n | Valor por defecto |
+| Opción | Descripción | Valor por defecto |
 |--------|-------------|-------------------|
 | `-p, --path <ruta>` | Ruta al index.html | `.` |
 | `--force` | Reinstalar si ya existe | `false` |
@@ -384,7 +384,7 @@ g360 signature install [opciones]
 # Instalar en el directorio actual
 g360 signature install
 
-# Forzar reinstalaciÃ³n
+# Forzar reinstalación
 g360 signature install --force
 ```
 
@@ -400,7 +400,7 @@ g360 bring [asset] [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n |
+| Opción | Descripción |
 |--------|-------------|
 | `-p, --path <ruta>` | Ruta destino |
 | `--dry-run` | Previsualizar |
@@ -418,7 +418,7 @@ g360 bring components
 # Traer solo skills
 g360 bring skills
 
-# Traer engine especÃ­fico
+# Traer engine específico
 g360 bring engine/g360-skill-audit
 
 # Traer ingestion module ERP a proyecto Flet existente
@@ -455,7 +455,7 @@ g360 bring harness [opciones]
 
 ### `g360 bring ingestion`
 
-Instala el mÃ³dulo de normalizaciÃ³n de datos ERP en proyectos Flet.
+Instala el módulo de normalización de datos ERP en proyectos Flet.
 
 ```bash
 g360 bring ingestion [opciones]
@@ -463,45 +463,45 @@ g360 bring ingestion [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n |
+| Opción | Descripción |
 |--------|-------------|
 | `-p, --path <ruta>` | Ruta al proyecto |
 | `--dry-run` | Previsualizar |
 | `--force` | Sobrescribir archivos existentes |
 
 **Archivos instalados:**
-- `src/core/ingestion.py` — NormalizaciÃ³n de datos (estabilizar_excel_crudo)
+- `src/core/ingestion.py` — Normalización de datos (estabilizar_excel_crudo)
 - `src/ui/ingestion_panel.py` — Panel Flet para carga de archivos
 
-**ImportaciÃ³n (auto-detects pip â†’ local):**
+**Importación (auto-detects pip â†’ local):**
 ```python
-# Si g360-core estÃ¡ instalado via pip â†’ from g360_core.ingestion import ...
+# Si g360-core está instalado via pip â†’ from g360_core.ingestion import ...
 # Si no â†’ from core.ingestion import ...
 from ui.ingestion_panel import IngestionPanel
 ```
 
-El paquete pip acompaÃ±ante `g360-core` se publica en PyPI:
+El paquete pip acompañante `g360-core` se publica en PyPI:
 ```bash
 pip install g360-core
 ```
 
-### `g360-core` — MÃ³dulos principales
+### `g360-core` — Módulos principales
 
 #### `commercial_engine.py`
 
-Motor de lÃ³gica de negocio para clasificaciÃ³n documental. Ãšnica fuente de verdad para reglas comerciales.
+Motor de lógica de negocio para clasificación documental. Ãšnica fuente de verdad para reglas comerciales.
 
-| FunciÃ³n | PropÃ³sito |
+| Función | Propósito |
 |---------|-----------|
-| `classify_base()` | ClasificaciÃ³n primaria: VENTA, DEVOLUCION, AJUSTE |
-| `build_invoice_index()` | Ãndice de facturas para cruce de referencias |
+| `classify_base()` | Clasificación primaria: VENTA, DEVOLUCION, AJUSTE |
+| `build_invoice_index()` | Índice de facturas para cruce de referencias |
 | `resolve_document_relationships()` | Asigna SUBTIPO_AJUSTE (PRECIO_LINEA, CARGO_FIJO, SIN_BASE) |
 | `calculate_prices()` | PRECIO_BASE, RECARGO_UNITARIO, PRECIO_EFECTIVO |
-| `parse_referencia()` | Descompone REFERENCIA "F01/204-56287" en tipo/serie/nÃºmero |
+| `parse_referencia()` | Descompone REFERENCIA "F01/204-56287" en tipo/serie/número |
 
-**ClasificaciÃ³n de documentos** (`classify_base` â†’ primero, `resolve_document_relationships` â†’ despuÃ©s para AJUSTE):
+**Clasificación de documentos** (`classify_base` â†’ primero, `resolve_document_relationships` â†’ después para AJUSTE):
 ```
-TPO_DOC          CANTIDAD   â†’  CATEGORIA_OP   SUBTIPO_AJUSTE (cruce vs Ã­ndice)
+TPO_DOC          CANTIDAD   â†’  CATEGORIA_OP   SUBTIPO_AJUSTE (cruce vs índice)
 F01/BDI/F03/...  cualquiera â†’  VENTA          —
 NC*              â‰  0        â†’  DEVOLUCION     —
 NC*              = 0        â†’  AJUSTE         (ver reglas de cruce abajo)
@@ -521,9 +521,9 @@ Sin facturas en dataset  —                            â†’ SIN_BASE (todo 
 
 #### `batch_processor.py`
 
-| FunciÃ³n | PropÃ³sito |
+| Función | Propósito |
 |---------|-----------|
-| `read_erp_file()` | Punto Ãºnico de lectura: .xls (xlrd), .xlsx (openpyxl), .csv. `dtype=str` preserva ceros a la izquierda |
+| `read_erp_file()` | Punto único de lectura: .xls (xlrd), .xlsx (openpyxl), .csv. `dtype=str` preserva ceros a la izquierda |
 
 ---
 
@@ -537,12 +537,12 @@ g360 list [tipo] [opciones]
 
 **Tipos:**
 
-| Tipo | DescripciÃ³n |
+| Tipo | Descripción |
 |------|-------------|
 | `templates` | Lista de plantillas |
 | `components` | Lista de componentes |
 | `skills` | Lista de skills |
-| `ingestion` | MÃ³dulo de ingesta ERP |
+| `ingestion` | Módulo de ingesta ERP |
 | `all` | Todo (por defecto) |
 
 **Ejemplos:**
@@ -573,9 +573,9 @@ g360 present [ruta] [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n | Valor por defecto |
+| Opción | Descripción | Valor por defecto |
 |--------|-------------|-------------------|
-| `--depth <n>` | Profundidad mÃ¡xima | `3` |
+| `--depth <n>` | Profundidad máxima | `3` |
 
 **Ejemplo:**
 
@@ -597,7 +597,7 @@ g360 audit [ruta] [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n |
+| Opción | Descripción |
 |--------|-------------|
 | `--fix` | Auto-corregir problemas |
 | `--verbose` | Salida detallada |
@@ -623,14 +623,14 @@ intencional, regenerá el manifest con `g360 setup --platform all`.
 | Check | Falla | Aviso |
 |-------|-------|-------|
 | `AGENTS.md` | No existe | — |
-| Comando de verificaciÃ³n | No se declara en `AGENTS.md` | Solo estÃ¡ en el README |
+| Comando de verificación | No se declara en `AGENTS.md` | Solo está en el README |
 | `README.md` | No existe | — |
 | Lockfile | — | Declara dependencias sin lockfile |
-| `.env.example` | — | El cÃ³digo lee variables de entorno sin documentar |
+| `.env.example` | — | El código lee variables de entorno sin documentar |
 | Tests honestos | — | Hay `skip` / `xfail` / `todo` en archivos de test |
 
 Criterio: `git clone <repo>` + un comando â‡’ la app levanta y los tests pasan,
-sin red y sin intervenciÃ³n humana.
+sin red y sin intervención humana.
 
 **Ejemplo:**
 
@@ -653,7 +653,7 @@ g360-ventas-pulse            âœ—       !       âœ“       âœ“       �
 
 ### `g360 agents`
 
-Genera (o actualiza) el `AGENTS.md` de un repo con el comando de verificaciÃ³n
+Genera (o actualiza) el `AGENTS.md` de un repo con el comando de verificación
 real, derivado del stack: `package.json`, `pyproject.toml`, `uv.lock`,
 `go.mod` o `Cargo.toml`.
 
@@ -663,7 +663,7 @@ g360 agents [ruta] [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n |
+| Opción | Descripción |
 |--------|-------------|
 | `--dry-run` | Simular sin escribir |
 | `--force` | Sobrescribir el `AGENTS.md` entero (pierde lo manual) |
@@ -683,7 +683,7 @@ g360 agents --ecosystem C:\ruta\G360-ecosystem
 
 Comandos que detecta por stack:
 
-| Stack | VerificaciÃ³n |
+| Stack | Verificación |
 |-------|--------------|
 | Node + Vitest/Jest | `npm ci` + `npm test` |
 | Node sin script de test | `npm run build && npm run lint` (o los que existan) |
@@ -696,7 +696,7 @@ Comandos que detecta por stack:
 
 ### `g360 clean`
 
-Limpia cÃ³digo muerto, duplicados y archivos huÃ©rfanos del proyecto.
+Limpia código muerto, duplicados y archivos huérfanos del proyecto.
 
 ```bash
 g360 clean [ruta] [opciones]
@@ -704,13 +704,13 @@ g360 clean [ruta] [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n |
+| Opción | Descripción |
 |--------|-------------|
 | `--dry-run` | Previsualizar archivos |
-| `--force` | Omitir confirmaciÃ³n |
+| `--force` | Omitir confirmación |
 | `--dead` | Eliminar archivos muertos/descontinuados |
 | `--duplicates` | Eliminar archivos duplicados |
-| `--orphans` | Eliminar archivos huÃ©rfanos (sin referencias) |
+| `--orphans` | Eliminar archivos huérfanos (sin referencias) |
 | `--organize` | Mostrar archivos descolocados |
 | `--all` | Ejecutar todas las verificaciones |
 
@@ -726,7 +726,7 @@ g360 clean --dead --force
 # Solo duplicados
 g360 clean --duplicates --force
 
-# Verificar huÃ©rfanos (sin eliminar)
+# Verificar huérfanos (sin eliminar)
 g360 clean --orphans --dry-run
 ```
 
@@ -742,7 +742,7 @@ g360 health [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n |
+| Opción | Descripción |
 |--------|-------------|
 | `--verbose` | Info detallada |
 
@@ -757,7 +757,7 @@ g360 health --verbose
 
 ### `g360 update`
 
-Actualiza g360-cli a la Ãºltima versiÃ³n.
+Actualiza g360-cli a la última versión.
 
 ```bash
 g360 update [opciones]
@@ -765,14 +765,14 @@ g360 update [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n |
+| Opción | Descripción |
 |--------|-------------|
 | `--check` | Solo verificar sin actualizar |
 
 **Ejemplo:**
 
 ```bash
-# Verificar nueva versiÃ³n
+# Verificar nueva versión
 g360 update --check
 
 # Actualizar
@@ -783,7 +783,7 @@ g360 update
 
 ### `g360 config`
 
-Visualiza o modifica la configuraciÃ³n de g360-cli.
+Visualiza o modifica la configuración de g360-cli.
 
 ```bash
 g360 config [opciones]
@@ -791,16 +791,16 @@ g360 config [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n |
+| Opción | Descripción |
 |--------|-------------|
-| `--list` | Listar todas las opciones de configuraciÃ³n |
-| `--get <key>` | Obtener valor de una configuraciÃ³n |
-| `--set <key=value>` | Establecer un valor de configuraciÃ³n |
+| `--list` | Listar todas las opciones de configuración |
+| `--get <key>` | Obtener valor de una configuración |
+| `--set <key=value>` | Establecer un valor de configuración |
 
 **Ejemplos:**
 
 ```bash
-# Listar configuraciÃ³n disponible
+# Listar configuración disponible
 g360 config --list
 
 # Verificar skill actual
@@ -811,7 +811,7 @@ g360 config --get skill
 
 ### `g360 setup`
 
-Instala la configuraciÃ³n global del sistema multiagente G360 en tu mÃ¡quina.
+Instala la configuración global del sistema multiagente G360 en tu máquina.
 
 ```bash
 g360 setup [opciones]
@@ -819,10 +819,10 @@ g360 setup [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n | Valor por defecto |
+| Opción | Descripción | Valor por defecto |
 |--------|-------------|-------------------|
 | `--platform <platform>` | Plataforma: opencode, kilo, cline, all | `all` |
-| `--reset` | Sobrescribir configuraciÃ³n existente | `false` |
+| `--reset` | Sobrescribir configuración existente | `false` |
 | `--dry-run` | Previsualizar sin escribir | `false` |
 | `--model <model>` | Modelo default: free, paid | `free` |
 
@@ -845,28 +845,32 @@ g360 setup --dry-run
 g360 setup --model paid
 ```
 
-**QuÃ© instala:**
+**Qué instala:**
 
 | Plataforma | Archivos |
 |---|---|
 | OpenCode | `~/.config/opencode/opencode.json`, `agents/*.md`, `skills/orchestrate/SKILL.md` |
 | Kilo | `~/.config/kilo/kilo.jsonc` (shape V1) |
 | Cline | `~/.agents/goldfish.ps1` |
-| Docs | `~/.agents/HANDOFF.md`, `MULTIAGENTE.md`, `AGENTS.md` |
+| Docs | `~/.agents/HANDOFF.md`, `MULTIAGENTE.md`, `AGENTS.md`, `MIGRACIONES.md`, `GLOSARIO.md` |
 
-**VerificaciÃ³n:**
+**Además:** antes de escribir, `setup` crea un backup en `~/.backup/<fecha>/`,
+y al terminar genera `~/.agents/.manifest.json` (hashes SHA-256 de los archivos
+instalados) para verificar integridad con `g360 audit --agents`.
+
+**Verificación:**
 
 ```bash
 opencode api get /api/agent    # OpenCode
 kilo agent list                 # Kilo
-g360 health --agents            # Verificar instalaciÃ³n
+g360 audit --agents             # Integridad de prompts instalados
 ```
 
 ---
 
 ### `g360 scan`
 
-Escanea un directorio para detectar archivos ERP vÃ¡lidos (.xls, .xlsx, .csv).
+Escanea un directorio para detectar archivos ERP válidos (.xls, .xlsx, .csv).
 
 ```bash
 g360 scan <directorio> [opciones]
@@ -874,10 +878,10 @@ g360 scan <directorio> [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n | Valor por defecto |
+| Opción | Descripción | Valor por defecto |
 |--------|-------------|-------------------|
 | `-r, --recursive` | Buscar recursivamente | `true` |
-| `--min-score <n>` | PuntuaciÃ³n mÃ­nima de coincidencia | `10` |
+| `--min-score <n>` | Puntuación mínima de coincidencia | `10` |
 
 **Ejemplos:**
 
@@ -885,10 +889,10 @@ g360 scan <directorio> [opciones]
 # Escanear directorio actual
 g360 scan .
 
-# Escanear recursivamente con puntuaciÃ³n mÃ­nima
+# Escanear recursivamente con puntuación mínima
 g360 scan ./data --min-score 20
 
-# Solo directorio actual (sin recursiÃ³n)
+# Solo directorio actual (sin recursión)
 g360 scan ./exports --no-recursive
 ```
 
@@ -904,7 +908,7 @@ g360 validate <archivos...> [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n |
+| Opción | Descripción |
 |--------|-------------|
 | `-r, --recursive` | Buscar recursivamente en directorios |
 
@@ -914,7 +918,7 @@ g360 validate <archivos...> [opciones]
 # Validar un archivo
 g360 validate factura.xlsx
 
-# Validar mÃºltiples archivos
+# Validar múltiples archivos
 g360 validate *.xlsx *.xls
 
 # Validar todos los archivos ERP en un directorio
@@ -933,7 +937,7 @@ g360 ingest <input> [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n | Valor por defecto |
+| Opción | Descripción | Valor por defecto |
 |--------|-------------|-------------------|
 | `-o, --output <archivo>` | Ruta de salida CSV | `maestro_ventas_crm.csv` |
 
@@ -1102,19 +1106,19 @@ mi-app/
 â””â”€â”€ skill.json
 ```
 
-**NormalizaciÃ³n de datos:** La ingesta aplica transformaciones automÃ¡ticas:
-- Parseo de referencias (`F01/201-243065` â†’ tipo, serie, periodo, nÃºmero)
-- SeparaciÃ³n de sucursales (nombre + direcciÃ³n)
-- ClasificaciÃ³n de documentos (RUC 11 dÃ­gitos / DNI 8 dÃ­gitos)
-- NormalizaciÃ³n monetaria con auto-detecciÃ³n de formato SAP/Spring
+**Normalización de datos:** La ingesta aplica transformaciones automáticas:
+- Parseo de referencias (`F01/201-243065` â†’ tipo, serie, periodo, número)
+- Separación de sucursales (nombre + dirección)
+- Clasificación de documentos (RUC 11 dígitos / DNI 8 dígitos)
+- Normalización monetaria con auto-detección de formato SAP/Spring
 - Cantidad + Cantidad FAE â†’ cantidad_total + tipo_transaccion
-- **ClasificaciÃ³n comercial**: VENTA / DEVOLUCION / AJUSTE con subtipos PRECIO_LINEA, CARGO_FIJO, SIN_BASE
-- **Precio efectivo**: PRECIO_BASE (fÃ­sico) y RECARGO_UNITARIO (financiero) separados
-- Cruce de NC/NDB contra facturas referenciadas para determinar ajustes de precio por lÃ­nea
+- **Clasificación comercial**: VENTA / DEVOLUCION / AJUSTE con subtipos PRECIO_LINEA, CARGO_FIJO, SIN_BASE
+- **Precio efectivo**: PRECIO_BASE (físico) y RECARGO_UNITARIO (financiero) separados
+- Cruce de NC/NDB contra facturas referenciadas para determinar ajustes de precio por línea
 - Purga de filas total/general/acumulado
 - **Columnas derivadas para UI**: `cliente_label`, `vendedor_label`, `articulo_label`, `linea_label`, etc. (ID - NOMBRE)
 - **Cliente completo**: `cliente_full_label` = ID_CLIENTE - DOC_CLIENTE_CLEAN - NOM_CLIENTE
-- **CÃ³digo de factura**: `doc_completo` = TPO_DOC + SERIE_DOC + NRO_DOC (ej: "F204-56287")
+- **Código de factura**: `doc_completo` = TPO_DOC + SERIE_DOC + NRO_DOC (ej: "F204-56287")
 - **Precio unitario**: `precio_base` = SOLES / CANTIDAD
 
 ### python-flet-migrate
@@ -1160,15 +1164,15 @@ Firma G360 para proyectos web (Web Component).
 <!-- Modo propio -->
 <g360-signature mode="own"></g360-signature>
 
-<!-- Con versiÃ³n -->
+<!-- Con versión -->
 <g360-signature mode="powered" version="1.0.0"></g360-signature>
 ```
 
 **Atributos:**
 - `mode`: "own" (G360 by ccusi) o "powered" (powered by G360)
-- `version`: NÃºmero de versiÃ³n opcional
+- `version`: Número de versión opcional
 
-**CaracterÃ­sticas:**
+**Características:**
 - Isotipo: 3 puntos verticales + chevron >
 - Colores: #00d084 (verde), #94a3b8 (gris)
 - Opacidad: 0.4 por defecto, 1.0 en hover
@@ -1183,7 +1187,7 @@ import G360DragModal from './g360/components/G360DragModal.jsx';
 
 G360DragModal({
   isOpen: true,
-  title: 'ConfiguraciÃ³n',
+  title: 'Configuración',
   onClose: () => setOpen(false),
   children: '<p>Contenido del modal</p>'
 });
@@ -1201,7 +1205,7 @@ Proyectos para clientes - estilo corporativo conservador (PC).
 
 ### corporativo-movil
 
-Proyectos para clientes - estilo corporativo - enfoque mÃ³vil.
+Proyectos para clientes - estilo corporativo - enfoque móvil.
 
 ### corporativo-g360
 
@@ -1209,7 +1213,7 @@ Proyectos para clientes con colores G360 vibrantes (PC).
 
 ### corporativo-g360-movil
 
-Proyectos para clientes con colores G360 - enfoque mÃ³vil.
+Proyectos para clientes con colores G360 - enfoque móvil.
 
 ### moderno
 
@@ -1217,7 +1221,7 @@ Herramientas propias G360 - estilo innovador (PC).
 
 ### moderno-movil
 
-Herramientas propias G360 - estilo innovador (mÃ³vil).
+Herramientas propias G360 - estilo innovador (móvil).
 
 ### minimalista
 
@@ -1225,7 +1229,7 @@ Proyectos minimalistas - scripts, CLI, Python.
 
 ### custom
 
-ConfiguraciÃ³n personalizada - colores ajustables.
+Configuración personalizada - colores ajustables.
 
 ### flet-desktop
 
@@ -1241,7 +1245,7 @@ Proyectos con marca CIPSA - favicon CIPSA rojo, logo corporativo, signature "pow
 
 ### cipsa-movil
 
-Apps mÃ³viles con marca CIPSA - favicon CIPSA rojo, logo corporativo, enfoque mÃ³vil.
+Apps móviles con marca CIPSA - favicon CIPSA rojo, logo corporativo, enfoque móvil.
 
 ### flet-desktop-polished
 
@@ -1273,7 +1277,7 @@ Aplicaciones desktop con CustomTkinter - estilo G360 moderno.
 # Al crear proyecto
 g360 init mi-proyecto --skill corporativo-movil
 
-# Cambiar skill despuÃ©s
+# Cambiar skill después
 g360 set-skill moderno
 
 # Ver skills disponibles
@@ -1334,7 +1338,7 @@ Las aplicaciones G360 siguen un sistema de nomenclatura estandarizado para ser i
 
 ---
 
-## ConfiguraciÃ³n
+## Configuración
 
 ### g360-manifest.json
 
@@ -1355,10 +1359,10 @@ Archivo de manifiesto del proyecto.
 }
 ```
 
-### ConfiguraciÃ³n Global
+### Configuración Global
 
 ```bash
-# Directorio de configuraciÃ³n
+# Directorio de configuración
 ~/.g360/
 
 # Assets cacheados
@@ -1369,7 +1373,7 @@ Archivo de manifiesto del proyecto.
 
 ## API
 
-### MÃ³dulo Principal
+### Módulo Principal
 
 ```javascript
 import { g360 } from 'g360-cli';
@@ -1390,14 +1394,14 @@ g360-cli/
 â”‚   â”œâ”€â”€ cli.js           # Entrada principal CLI
 â”‚   â”œâ”€â”€ commands/         # Comandos (init, bring, audit, scan, validate, ingest, etc.)
 â”‚   â”œâ”€â”€ lib/             # Utilidades (assets, auditor, config, logger, validator, etc.)
-â”‚   â”œâ”€â”€ schemas/         # Schemas de validaciÃ³n
+â”‚   â”œâ”€â”€ schemas/         # Schemas de validación
 â”‚   â””â”€â”€ assets/          # Assets embebidos
 â”‚       â”œâ”€â”€ templates/    # Plantillas de proyecto
 â”‚       â”œâ”€â”€ components/   # Componentes G360
 â”‚       â”œâ”€â”€ brand/        # Sistema de marca v2.0.0 (G360 + CIPSA)
-â”‚       â”œâ”€â”€ ingestion/    # MÃ³dulo de ingesta ERP (bring)
+â”‚       â”œâ”€â”€ ingestion/    # Módulo de ingesta ERP (bring)
 â”‚       â”œâ”€â”€ engine/      # G360 Engine
-â”‚       â”œâ”€â”€ snippets/    # Snippets de cÃ³digo reutilizables
+â”‚       â”œâ”€â”€ snippets/    # Snippets de código reutilizables
 â”‚       â””â”€â”€ config/      # Configuraciones (g360-skills.json, agent-skills.json, project-types.json)
 â”œâ”€â”€ py/                  # Paquete Python publicable en PyPI
 â”‚   â”œâ”€â”€ pyproject.toml   # g360-core
@@ -1412,12 +1416,12 @@ g360-cli/
 
 ## Scripts
 
-| Comando | DescripciÃ³n |
+| Comando | Descripción |
 |---------|-------------|
 | `npm run build` | Build portable con pkg (g360.exe) |
 | `npm run build:portable` | Especificar target node18-win-x64 |
 | `npm test` | Ejecutar tests con Vitest (193 tests, 18 suites) |
-| `npm run prepublishOnly` | ValidaciÃ³n antes de publicar en npm (tests + schemas + files + versiÃ³n) |
+| `npm run prepublishOnly` | Validación antes de publicar en npm (tests + schemas + files + versión) |
 
 ---
 
@@ -1437,11 +1441,11 @@ npm run test:coverage
 
 ---
 
-## ContribuciÃ³n
+## Contribución
 
 1. Fork el repositorio
 2. Crea una rama (`git checkout -b feature/nueva-funcion`)
-3. Commit tus cambios (`git commit -m 'Agregar nueva funciÃ³n'`)
+3. Commit tus cambios (`git commit -m 'Agregar nueva función'`)
 4. Push a la rama (`git push origin feature/nueva-funcion`)
 5. Abre un Pull Request
 
@@ -1449,33 +1453,33 @@ npm run test:coverage
 
 ## Licencia
 
-MIT License - ver [LICENSE](LICENSE) para mÃ¡s detalles.
+MIT License - ver [LICENSE](LICENSE) para más detalles.
 
 ---
 
 ## Ecosistema G360
 
-Este proyecto forma parte de la familia de microherramientas **G360** para apoyo CRM y gestiÃ³n de datos en escritorio, enfocadas en Ã¡reas como ventas, finanzas y logÃ­stica.
+Este proyecto forma parte de la familia de microherramientas **G360** para apoyo CRM y gestión de datos en escritorio, enfocadas en áreas como ventas, finanzas y logística.
 
 ### Identidad Visual G360
 
 - **Isotipo**: 3 puntos verticales paralelos (gris-verde-gris) + chevron `>`
 - **Colores**: #00d084 (verde), #94a3b8 (gris)
 - **Marca**: G360 - Microherramientas para apoyo CRM y datos en escritorio
-- **ImplementaciÃ³n**: Usar `g360-signature` para branding consistente
+- **Implementación**: Usar `g360-signature` para branding consistente
 
 ### Herramientas Relacionadas
 
 - **[g360-signature](https://github.com/carloscus/g360-signature)**: Web component de branding G360
 - **[g360-order-xlsx](https://github.com/carloscus/g360-order-xlsx)**: Procesador de cotizaciones Excel
-- **[g360-day-calculator](https://github.com/carloscus/g360-day-calculator)**: Calculadora de dÃ­as laborables
-- **[g360-master-data](https://github.com/carloscus/g360-master-data)**: GestiÃ³n de datos maestros
+- **[g360-day-calculator](https://github.com/carloscus/g360-day-calculator)**: Calculadora de días laborables
+- **[g360-master-data](https://github.com/carloscus/g360-master-data)**: Gestión de datos maestros
 
 ---
 
 ### `g360 addon`
 
-GestiÃ³n de addons y paquetes de desarrollo.
+Gestión de addons y paquetes de desarrollo.
 
 ```bash
 g360 addon <comando> [paquete] [opciones]
@@ -1487,15 +1491,15 @@ g360 addon <comando> [paquete] [opciones]
 - `remove <package>` - Desinstala un addon
 
 **Opciones:**
-| OpciÃ³n | DescripciÃ³n |
+| Opción | Descripción |
 |--------|-------------|
 | `-p, --path <ruta>` | Ruta destino (default: `.`) |
 | `--dry-run` | Previsualizar cambios |
-| `--force` | Forzar reinstalaciÃ³n/remociÃ³n |
+| `--force` | Forzar reinstalación/remoción |
 
 **Ejemplos:**
 ```bash
-# Instalar paquete de diseÃ±o (core)
+# Instalar paquete de diseño (core)
 g360 addon install @google/design.md
 
 # Instalar kit de testing (dev)
@@ -1509,14 +1513,14 @@ g360 addon remove @google/design.md
 ```
 
 **Registro de addons:**
-- 🧪��›ï¸ Core Dev: Van a `dependencies` (producciÃ³n)
-- 🧪��› ï¸ Dev Tools: Van a `devDependencies` (desarrollo)
+- 🧪��›ï¸ Core Dev: Van a `dependencies` (producción)
+- 🧪��› ï¸ Dev Tools: Van a `devDependencies` (desarrollo)
 
 ---
 
 ### `g360 docs`
 
-Genera o actualiza la documentaciÃ³n del proyecto.
+Genera o actualiza la documentación del proyecto.
 
 ```bash
 g360 docs [level] [opciones]
@@ -1524,21 +1528,21 @@ g360 docs [level] [opciones]
 
 **Niveles:**
 
-| Nivel | Archivo generado | DescripciÃ³n |
+| Nivel | Archivo generado | Descripción |
 |---|---|---|
 | `readme` (default) | `README.md` | Logo, diagrama Mermaid, quick start, identidad, firma |
 | `architecture` | `ARCHITECTURE.md` | Diagrama de arquitectura general + flujo de datos |
 | `business-rules` | `BUSINESS_RULES.md` | Reglas de negocio (solo Python con commercial_engine) |
-| `dependencies` | `docs/generated/dependencies.mmd` | Dependencias entre mÃ³dulos |
+| `dependencies` | `docs/generated/dependencies.mmd` | Dependencias entre módulos |
 | `classes` | `docs/generated/classes.mmd` | Relaciones entre clases e interfaces |
-| `code-graph` | `docs/generated/code_graph.mmd` | Grafo de cÃ³digo (proyectos grandes) |
+| `code-graph` | `docs/generated/code_graph.mmd` | Grafo de código (proyectos grandes) |
 | `all` | Todos los anteriores | Todos los niveles aplicables |
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n | Valor por defecto |
+| Opción | Descripción | Valor por defecto |
 |--------|-------------|-------------------|
-| `--level <nivel>` | Nivel de documentaciÃ³n | `readme` |
+| `--level <nivel>` | Nivel de documentación | `readme` |
 | `--project <ruta>` | Ruta del proyecto | `.` |
 | `--dry-run` | Previsualizar sin escribir | `false` |
 
@@ -1548,7 +1552,7 @@ g360 docs [level] [opciones]
 # Generar README con diagrama
 g360 docs
 
-# Generar toda la documentaciÃ³n
+# Generar toda la documentación
 g360 docs --level all
 
 # Generar BUSINESS_RULES para un proyecto Python
@@ -1570,7 +1574,7 @@ g360 lint [level] [opciones]
 
 **Niveles:**
 
-| Nivel | QuÃ© revisa |
+| Nivel | Qué revisa |
 |---|---|
 | `naming` | Nomenclatura de funciones, clases, variables y archivos |
 | `duplicates` | Funciones duplicadas con nombres iguales o diferentes |
@@ -1580,7 +1584,7 @@ g360 lint [level] [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n | Valor por defecto |
+| Opción | Descripción | Valor por defecto |
 |--------|-------------|-------------------|
 | `--level <nivel>` | Nivel de lint | `all` |
 | `--project <ruta>` | Ruta del proyecto | `.` |
@@ -1594,7 +1598,7 @@ g360 lint
 # Solo revisar nomenclatura
 g360 lint --level naming
 
-# Revisar un proyecto especÃ­fico
+# Revisar un proyecto específico
 g360 lint --project ./mi-proyecto
 ```
 
@@ -1604,7 +1608,7 @@ g360 lint --project ./mi-proyecto
 
 ### `g360 review`
 
-Revisa la UI del proyecto: tokens de diseÃ±o, jerarquÃ­a tipogrÃ¡fica y componentes esenciales. Detecta el framework (Flet, React, Solid, Svelte, Lit, Vue, CustomTkinter) y la paleta desde `skill.json`.
+Revisa la UI del proyecto: tokens de diseño, jerarquía tipográfica y componentes esenciales. Detecta el framework (Flet, React, Solid, Svelte, Lit, Vue, CustomTkinter) y la paleta desde `skill.json`.
 
 ```bash
 g360 review [level] [opciones]
@@ -1612,16 +1616,16 @@ g360 review [level] [opciones]
 
 **Niveles:**
 
-| Nivel | QuÃ© revisa |
+| Nivel | Qué revisa |
 |---|---|
 | `tokens` | Colores hardcodeados vs paleta de `skill.json`, `rgb()` literales, colores fuera de paleta |
-| `hierarchy` | MÃºltiples `<h1>`, saltos de nivel (H1â†’H3), tamaÃ±os fuera de escala 10-64, mÃ¡s de 6 pasos tipogrÃ¡ficos |
-| `components` | 8 esenciales (header, KPI, tabla, drop-zone, loading, firma, export, bÃºsqueda) + antipatrones (sin loading, errores silenciosos, `print`/`console.log` en UI, archivos >400 lÃ­neas) |
+| `hierarchy` | Múltiples `<h1>`, saltos de nivel (H1â†’H3), tamaños fuera de escala 10-64, más de 6 pasos tipográficos |
+| `components` | 8 esenciales (header, KPI, tabla, drop-zone, loading, firma, export, búsqueda) + antipatrones (sin loading, errores silenciosos, `print`/`console.log` en UI, archivos >400 líneas) |
 | `all` (default) | Todas las anteriores |
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n | Valor por defecto |
+| Opción | Descripción | Valor por defecto |
 |--------|-------------|-------------------|
 | `--project <ruta>` | Ruta del proyecto | `.` |
 | `--json` | Salida JSON (para agentes) | `false` |
@@ -1645,7 +1649,7 @@ g360 review --json --project ./mi-app
 
 ### `g360 pptx`
 
-Genera manuales y presentaciones en PowerPoint (.pptx) desde una app G360. Detecta automÃ¡ticamente el framework (Flet, SvelteKit, Lit, React, Vue), los mÃ³dulos UI, las capacidades (PWA, Supabase, Excel, bÃºsqueda) y el tema de marca. El archivo se genera **dentro del propio repo de la app**, independiente para cada proyecto.
+Genera manuales y presentaciones en PowerPoint (.pptx) desde una app G360. Detecta automáticamente el framework (Flet, SvelteKit, Lit, React, Vue), los módulos UI, las capacidades (PWA, Supabase, Excel, búsqueda) y el tema de marca. El archivo se genera **dentro del propio repo de la app**, independiente para cada proyecto.
 
 ```bash
 g360 pptx [ruta] [opciones]
@@ -1653,7 +1657,7 @@ g360 pptx [ruta] [opciones]
 
 **Opciones:**
 
-| OpciÃ³n | DescripciÃ³n | Valor por defecto |
+| Opción | Descripción | Valor por defecto |
 |--------|-------------|-------------------|
 | `--mode <tipo>` | Modo de generacion (`manual`, `demo`, `onboarding`) | `manual` |
 | `--theme <nombre>` | Tema de marca (`g360`, `cipsa`, `corporate`) | auto-detectado desde `skill.json` |
@@ -1668,12 +1672,12 @@ g360 pptx [ruta] [opciones]
 | `demo` | Presentaciones comerciales | 16:9 (proyector/screens) |
 | `onboarding` | Guia de inicio rapido | 16:9 |
 
-**DetecciÃ³n automÃ¡tica por framework:**
+**Detección automática por framework:**
 
-| Framework | MÃ³dulos UI | Capacidad |
+| Framework | Módulos UI | Capacidad |
 |-----------|-----------|-----------|
 | Flet | `src/ui/*.py` + `src/ui/modals/` | desde `src/app.py` (auto-refresh, search, export) |
-| SvelteKit | `src/routes/**/+page.svelte` (incluye subrutas dinÃ¡micas) | desde `package.json` |
+| SvelteKit | `src/routes/**/+page.svelte` (incluye subrutas dinámicas) | desde `package.json` |
 | Lit / React / Vue | `src/components/*.js\|ts` | desde `package.json` (supabase, PWA, exceljs, charts, tailwind) |
 
 **Ejemplos:**
@@ -1725,32 +1729,32 @@ Si no hay screenshots, se generan placeholders-guia ("CAPTURA PENDIENTE") que in
 
 ## Integracion con OpenCode
 
-g360-cli incluye integraciÃ³n con **OpenCode** para desarrollo asistido por IA. Esta integraciÃ³n permite que los agentes de IA tengan acceso a los recursos de g360-cli durante el desarrollo.
+g360-cli incluye integración con **OpenCode** para desarrollo asistido por IA. Esta integración permite que los agentes de IA tengan acceso a los recursos de g360-cli durante el desarrollo.
 
 ### Archivo de Skill
 
-El archivo `G360-CLI-SKILL.md` contiene toda la informaciÃ³n necesaria para que OpenCode:
+El archivo `G360-CLI-SKILL.md` contiene toda la información necesaria para que OpenCode:
 
-- **Recomiende skills apropiados** basÃ¡ndose en el tipo de proyecto
+- **Recomiende skills apropiados** basándose en el tipo de proyecto
 - **Sugiera snippets** relevantes para el contexto de desarrollo
-- **Aplique convenciones** del ecosistema G360 automÃ¡ticamente
-- **Genere cÃ³digo** siguiendo los patrones G360
-- **Valide compliance** con los estÃ¡ndares G360
+- **Aplique convenciones** del ecosistema G360 automáticamente
+- **Genere código** siguiendo los patrones G360
+- **Valide compliance** con los estándares G360
 
-### ConfiguraciÃ³n de OpenCode
+### Configuración de OpenCode
 
-El archivo `opencode-config.json` contiene la configuraciÃ³n de integraciÃ³n con OpenCode, incluyendo:
+El archivo `opencode-config.json` contiene la configuración de integración con OpenCode, incluyendo:
 
 - Rutas a los recursos de g360-cli
-- Comandos disponibles para ejecuciÃ³n
+- Comandos disponibles para ejecución
 - Convenciones de desarrollo del ecosistema
-- ConfiguraciÃ³n de colores y formato
+- Configuración de colores y formato
 
 ### Uso con OpenCode
 
 Para usar g360-cli con OpenCode:
 
-1. **AsegÃºrate de tener el repo local**:
+1. **Asegúrate de tener el repo local**:
    ```bash
    cd "C:\Users\ccusi\Documents\Proyect_Coder\G360-ecosystem\projects\g360-cli"
    ```
@@ -1763,12 +1767,12 @@ Para usar g360-cli con OpenCode:
 
 3. **OpenCode puede acceder a los recursos**:
    - Skills de identidad visual
-   - Snippets de cÃ³digo reutilizables
+   - Snippets de código reutilizables
    - Plantillas de proyecto estandarizadas
    - Componentes G360 predefinidos
    - Convenciones de desarrollo
 
-### Ejemplos de InteracciÃ³n
+### Ejemplos de Interacción
 
 #### Crear Nuevo Proyecto
 
@@ -1781,16 +1785,16 @@ OpenCode: "Te recomiendo usar el skill 'corporativo-movil' con la plantilla 'web
 #### Agregar Componente
 
 ```
-Usuario: "Necesito un botÃ³n con estilo G360"
-OpenCode: "Puedo usar el snippet 'g360-button' que incluye los estilos G360 estÃ¡ndar. 
-AquÃ­ estÃ¡ el cÃ³digo: <button class='g360-btn'>Click</button>"
+Usuario: "Necesito un botón con estilo G360"
+OpenCode: "Puedo usar el snippet 'g360-button' que incluye los estilos G360 estándar. 
+Aquí está el código: <button class='g360-btn'>Click</button>"
 ```
 
 #### Validar Compliance
 
 ```
-Usuario: "Verifica si este proyecto cumple con los estÃ¡ndares G360"
-OpenCode: "EjecutarÃ© g360 audit para verificar compliance y te reportarÃ© cualquier problema encontrado."
+Usuario: "Verifica si este proyecto cumple con los estándares G360"
+OpenCode: "Ejecutaré g360 audit para verificar compliance y te reportaré cualquier problema encontrado."
 ```
 
 ### Recursos Disponibles
@@ -1798,19 +1802,19 @@ OpenCode: "EjecutarÃ© g360 audit para verificar compliance y te reportarÃ© c
 #### Skills de Identidad Visual
 
 - `corporativo` - Proyectos para clientes - estilo corporativo conservador (PC)
-- `corporativo-movil` - Proyectos para clientes - estilo corporativo - enfoque mÃ³vil
+- `corporativo-movil` - Proyectos para clientes - estilo corporativo - enfoque móvil
 - `corporativo-g360` - Proyectos para clientes con colores G360 vibrantes (PC)
-- `corporativo-g360-movil` - Proyectos para clientes con colores G360 - enfoque mÃ³vil
+- `corporativo-g360-movil` - Proyectos para clientes con colores G360 - enfoque móvil
 - `moderno` - Herramientas propias G360 - estilo innovador (PC)
-- `moderno-movil` - Herramientas propias G360 - estilo innovador (mÃ³vil)
+- `moderno-movil` - Herramientas propias G360 - estilo innovador (móvil)
 - `minimalista` - Proyectos minimalistas - scripts, CLI, Python
-- `custom` - ConfiguraciÃ³n personalizada - colores ajustables
+- `custom` - Configuración personalizada - colores ajustables
 - `flet-desktop` - Aplicaciones de escritorio Flet - estilo moderno G360 (PC)
 - `flet-desktop-corporativo` - Aplicaciones Flet para clientes - estilo corporativo conservador
 - `cipsa` - Proyectos con marca CIPSA - favicon CIPSA rojo, logo corporativo
-- `cipsa-movil` - Apps mÃ³viles con marca CIPSA - enfoque mÃ³vil
+- `cipsa-movil` - Apps móviles con marca CIPSA - enfoque móvil
 
-#### Snippets de CÃ³digo
+#### Snippets de Código
 
 **Python CLI**: `cli-argparse-basic`, `cli-subcommands`, `cli-logging`, `cli-config-json`, `cli-progress-bar`, `cli-env-config`, `cli-exit-codes`
 
@@ -1829,20 +1833,20 @@ OpenCode: "EjecutarÃ© g360 audit para verificar compliance y te reportarÃ© c
 - `python-flet-migrate` - Migrate tkinter/ctkinter app to Flet
 - `python-customtkinter` - Python desktop app with CustomTkinter
 
-### ActualizaciÃ³n del Skill
+### Actualización del Skill
 
-Para mantener la integraciÃ³n con OpenCode actualizada:
+Para mantener la integración con OpenCode actualizada:
 
 1. **Sincronizar con g360-cli**: Actualizar `G360-CLI-SKILL.md` cuando se agreguen nuevos skills o snippets
 2. **Validar comandos**: Verificar que los comandos de g360-cli funcionen correctamente
-3. **Documentar cambios**: Agregar nuevas funcionalidades a la documentaciÃ³n
+3. **Documentar cambios**: Agregar nuevas funcionalidades a la documentación
 4. **Testing**: Probar las integraciones con OpenCode regularmente
 
 ### Referencias
 
-- **G360-CLI-SKILL.md**: DocumentaciÃ³n completa del skill para OpenCode
-- **opencode-config.json**: ConfiguraciÃ³n de integraciÃ³n con OpenCode
-- **AGENTS.md**: GuÃ­as de desarrollo para agentes en el ecosistema G360
+- **G360-CLI-SKILL.md**: Documentación completa del skill para OpenCode
+- **opencode-config.json**: Configuración de integración con OpenCode
+- **AGENTS.md**: Guías de desarrollo para agentes en el ecosistema G360
 
 ---
 
@@ -1925,11 +1929,11 @@ g360 setup --dry-run           # Preview sin escribir
 
 - [npm](https://www.npmjs.com/package/g360-cli)
 - [GitHub](https://github.com/carloscus/g360-cli)
-- [DocumentaciÃ³n](#)
+- [Documentación](#)
 - [Reportar Issue](https://github.com/carloscus/g360-cli/issues)
 ---
 
-**Marca**: G360 Â· Microherramientas para apoyo CRM y datos en escritorio
+**Marca**: G360 · Microherramientas para apoyo CRM y datos en escritorio
 **Isotipo**: 3 puntos verticales paralelos (gris-verde-gris) + chevron `>`
 **Signature**: G360 by ccusi (`mode: own`, definido en `brand/g360/signature`)
 **Powered by**: [g360-signature](https://github.com/carloscus/g360-signature)

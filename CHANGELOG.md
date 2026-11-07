@@ -7,13 +7,31 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
-## [1.20.9] - 2026-11-07
+## [1.21.2] - 2026-11-07
 
-### Added
-- **`GLOSARIO.md`**: regla de nomenclatura (inglés para slug, español para displayName) + tabla de 24 repos del ecosistema. Instalado por `g360 setup --platform all`.
+### Fixed
+- **Mojibake real en README (305 pares, 207 líneas)**: el fix de v1.20.8 usaba
+  letras acentuadas Unicode en el regex (`Ã` + `ó`) pero el doble-codificado
+  contiene bytes Latin-1 (`Ã` + `³` = U+00B3) — nunca matcheaba (falso verde).
+  Fix por par de bytes: `Ã[X]`/`Â[X]` → bytes originales UTF-8.
+- **`g360 lint encoding`**: mismo bug en `MOJIBAKE_RE` — regex corregido a
+  rangos de byte `[\u0080-\u00FF]`.
+- **README**: comando inexistente `g360 health --agents` → `g360 audit --agents`.
 
 ### Changed
-- **`setup.js`**: incluye `MIGRACIONES.md` y `GLOSARIO.md` en docs canónicas instaladas; Kilo now lee ambos desde `~/.agents/`.
+- **README**: tabla de `setup` incluye `MIGRACIONES.md` y `GLOSARIO.md`;
+  documenta backup + manifest de integridad; versión v1.21.2.
+
+---
+
+## [1.21.1] - 2026-11-07
+
+### Added
+- **Catálogo canónico de datos** (`src/lib/data-catalog.js`): 14 campos ERP con
+  tipos semánticos (money PEN, date iso8601, string, number), aliases
+  normalizados sin tildes para mapeo de encabezados, generador de validadores
+  Python (`validate_precio_base`, etc.) y `buildAliasMap()` para ingestion.
+- **`data-catalog.test.js`**: 12 tests de catálogo, generación y mapeo.
 
 ---
 
@@ -34,6 +52,16 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 ## [1.20.9] - 2026-11-07
 
 ### Added
+- **`GLOSARIO.md`**: regla de nomenclatura (inglés para slug, español para displayName) + tabla de 24 repos del ecosistema. Instalado por `g360 setup --platform all`.
+
+### Changed
+- **`setup.js`**: incluye `MIGRACIONES.md` y `GLOSARIO.md` en docs canónicas instaladas; Kilo lee ambos desde `~/.agents/`.
+
+---
+
+## [1.20.8] - 2026-11-07
+
+### Added
 - **`.editorconfig`**: charset utf-8 por defecto para prevenir BOM en futuros archivos.
 - **`.gitattributes`**: reglas de EOL (LF para texto, CRLF para scripts .bat/.ps1).
 - **`src/lib/json-io.js`**: helpers `readJsonSafe` / `writeJsonSafe` que strippean BOM
@@ -43,7 +71,7 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ### Changed
 - **`npm test`** ahora ejecuta `vitest run` (termina en vez de dejar watch activo).
-- **`cli.js`, `auditor.js`, `docs.js`, `present.js`**: lectores JSON改用 `readJsonSafe`
+- **`cli.js`, `auditor.js`, `docs.js`, `present.js`**: lectores JSON ahora usan `readJsonSafe`
   para ser resistentes a BOM.
 - **`.github/workflows/release.yml`** desactivado → `.github/workflows/release.yml.disabled`
   (usaba Node 20 EOL y documentaba un flujo de CI que nunca se usó; el publish es manual).

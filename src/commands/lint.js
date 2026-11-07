@@ -545,7 +545,7 @@ function hashString(str) {
  * Patterns: Â, Ã followed by accent letters, â€ (UTF-8 em-dash misread).
  */
 function checkMojibake(targetDir, findings) {
-  const MOJIBAKE_RE = /Â[¿ÓÁÉÍÚñ]|Ã[óáéíúñ]|â€|ðŸ/g;
+  const MOJIBAKE_RE = /Ã[\u0080-\u00FF]|Â[\u0080-\u00FF]|â€|ðŸ/;
   walkProject(targetDir, {
     onFile: (filePath) => {
       if (!filePath.endsWith('.md')) return;
