@@ -17,7 +17,21 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
-## [1.20.8] - 2026-11-07
+## [1.21.0] - 2026-11-07
+
+### Added
+- **Catálogo de stacks** (`src/assets/config/stacks.json` + `STACKS.md`): fuente única de verdad para stacks del ecosistema con status (recommended/maintained/experimental/deprecated), versiones objetivo, cuándo usar/no usar, y verificación visual.
+- **`g360 audit --ecosystem --stacks`**: cruza cada repo contra el catálogo; flags deprecated (rojo) e experimental (~ amarillo).
+- **`src/lib/stacks-generator.js`**: generador de STACKS.md desde JSON + test anti-drift.
+- **`GLOSARIO.md`**: regla de nomenclatura (slug=en, displayName=es) + tabla de 24 repos. Instalado por `g360 setup --platform all`.
+
+### Changed
+- **`audit.js`**: nueva columna STACK en tabla de ecosistema.
+- **`setup.js`**: instala GLOSARIO.md y MIGRACIONES.md como docs canónicas; Kilo lee ambos.
+
+---
+
+## [1.20.9] - 2026-11-07
 
 ### Added
 - **`.editorconfig`**: charset utf-8 por defecto para prevenir BOM en futuros archivos.

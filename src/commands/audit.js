@@ -4,6 +4,7 @@ import path from 'path';
 import { auditor } from '../lib/auditor.js';
 import { autonomyAuditor } from '../lib/autonomy-auditor.js';
 import { verifyManifest } from '../lib/setup-manifest.js';
+import { readJsonSafe } from '../lib/json-io.js';
 
 const REPO_MARKERS = [
   '.git', 'package.json', 'pyproject.toml', 'go.mod', 'Cargo.toml', 'requirements.txt'
@@ -15,7 +16,8 @@ const COLUMNS = [
   { id: 'readme', label: 'README' },
   { id: 'lockfile', label: 'LOCK' },
   { id: 'env-example', label: 'ENV' },
-  { id: 'skipped-tests', label: 'TESTS' }
+  { id: 'skipped-tests', label: 'TESTS' },
+  { id: 'stack', label: 'STACK' },
 ];
 
 /**
@@ -72,11 +74,44 @@ export async function auditEcosystem(rootDir, options = {}) {
 
   const tally = { pass: 0, warn: 0, fail: 0 };
 
+  // Cargar catálogo de stacks (fuente de verdad)
+  const STACKS_PATH = path.join(__dirname, '..', 'assets', 'config', 'stacks.json');
+  let stacksCatalog = {};
+  try {
+    const stacksData = readJsonSafe(STACKS_PATH);
+    stacksCatalog = stacksData.stacks || {};
+  } catch { /* catálogo no disponible, skip check */ }
+
   for (const repo of repos) {
     const { status, findings } = autonomyAuditor.check(repo);
     const byId = Object.fromEntries(findings.map((finding) => [finding.id, finding]));
 
+    // Cross-check: stack vs catálogo
+    let stackStatus = 'n/a';
+    const pkgPath = path.join(repo, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      try {
+        const pkg = readJsonSafe(pkgPath);
+        const stackId = pkg?.g360?.stack;
+        if (stackId && stacksCatalog[stackId]) {
+          const stack = stacksCatalog[stackId];
+          if (stack.status === 'deprecated') stackStatus = 'deprecated';
+          else if (stack.status === 'experimental') stackStatus = 'experimental';
+          else stackStatus = 'ok';
+        } else if (stackId && !stacksCatalog[stackId]) {
+          stackStatus = 'unknown';
+        }
+      } catch { /* ignore */ }
+    }
+
     const cells = COLUMNS.map((column) => {
+      if (column.id === 'stack') {
+        if (stackStatus === 'ok') return chalk.green(pad('✓', 6));
+        if (stackStatus === 'deprecated') return chalk.red(pad('⚠', 6));
+        if (stackStatus === 'experimental') return chalk.yellow(pad('~', 6));
+        if (stackStatus === 'unknown') return chalk.red(pad('?', 6));
+        return chalk.gray(pad('–', 6));
+      }
       const findingStatus = byId[column.id]?.status;
       if (findingStatus === 'pass') return chalk.green(pad('✓', 6));
       if (findingStatus === 'warn') return chalk.yellow(pad('!', 6));
