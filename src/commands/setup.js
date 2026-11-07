@@ -489,7 +489,18 @@ async function backupExisting(baseDir, targets, dryRun = false) {
 
   await fs.ensureDir(dir);
   for (const target of existing) {
-    await fs.copy(path.join(baseDir, target), path.join(dir, target), { overwrite: true });
+    try {
+      await fs.copy(path.join(baseDir, target), path.join(dir, target), {
+        overwrite: true,
+        // El backup preserva prompts y config, no dependencias: excluir
+        // node_modules evita symlinks rotos (p. ej. msgpackr-extract) que
+        // rompen la copia y abortaban setup entero sin generar el manifest.
+        filter: (src) => !src.split(path.sep).includes('node_modules'),
+      });
+    } catch (err) {
+      // Backup parcial > setup caído: sigue, pero deja rastro visible
+      console.log(chalk.yellow(`  ⚠ backup parcial de ${target}: ${err.message}`));
+    }
   }
   return { dir, reused };
 }

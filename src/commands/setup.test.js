@@ -97,6 +97,25 @@ describe('setup backup + manifest', () => {
     expect(logs.some(l => l.includes('backup creado en'))).toBe(true);
   });
 
+  it('el backup excluye node_modules (symlinks rotos rompían setup)', async () => {
+    const ocDir = path.join(home, '.config', 'opencode');
+    await fs.ensureDir(path.join(ocDir, 'node_modules', 'pkg'));
+    await fs.writeFile(path.join(ocDir, 'node_modules', 'pkg', 'index.js'), 'x');
+    await fs.writeFile(path.join(ocDir, 'opencode.json'), '{"viejo":true}');
+
+    await setup({ platform: 'all', reset: true });
+
+    const dirs = backupDirs(home);
+    expect(dirs.length).toBe(1);
+    const backupRoot = path.join(home, '.backup', dirs[0], '.config', 'opencode');
+    // el config sí se respalda
+    expect(fs.existsSync(path.join(backupRoot, 'opencode.json'))).toBe(true);
+    // node_modules no
+    expect(fs.existsSync(path.join(backupRoot, 'node_modules'))).toBe(false);
+    // setup no crasheó: manifest existe
+    expect(fs.existsSync(path.join(home, '.agents', '.manifest.json'))).toBe(true);
+  });
+
   it('reutiliza el backup del mismo día en vez de duplicar', async () => {
     const agentsDir = path.join(home, '.agents');
     await fs.ensureDir(agentsDir);
