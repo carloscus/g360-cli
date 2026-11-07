@@ -44,7 +44,7 @@ Slug ≠ nombre visible. El nombre visible es metadato, nunca se deriva del slug
 | `g360-erp-pedido-vigencias` | Pedidos y Vigencias | ERP |
 | `g360-erp-preorder-allocator` | Allocador de Preventa | ERP |
 | `g360-erp-stock-consolidator` | Consolidador de Stock | ERP |
-| `g360-Horas_Extras` | Horas Extras | rrhh ⚠️ *renombrar* |
+| `g360-overtime-hours` | Horas Extras | rrhh |
 | `g360-outlook-extractor` | Extractor de Outlook | productividad |
 | `g360-signature` | Firma G360 | branding |
 | `g360-signature-creator` | Creador de Firmas | branding |
@@ -52,7 +52,7 @@ Slug ≠ nombre visible. El nombre visible es metadato, nunca se deriva del slug
 | `g360-ventas-api` | API de Ventas | infraestructura |
 | `g360-ventas-db` | Base de Datos de Ventas | datos |
 
-⚠️ `g360-Horas_Extras` viola la regla de kebab-case minúscula. Ver Fase 3.
+~~`g360-Horas_Extras`~~ renombrado a `g360-overtime-hours` (Fase 3, 2026-11-07).
 
 ---
 
