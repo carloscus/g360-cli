@@ -1,7 +1,7 @@
 ---
 description: Orquestador principal del sistema multiagente G360. Coordina el flujo de trabajo, decide qué subagentes invocar según la complejidad de la tarea, y presenta al usuario el plan antes de cambios estructurales.
 mode: primary
-model: nvidia/z-ai/glm-5.3-flash
+model: nvidia/deepseek-ai/deepseek-v4.1-flash#high
 steps: 40
 ---
 

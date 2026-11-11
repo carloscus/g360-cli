@@ -1,7 +1,7 @@
 ---
 description: Arquitecto implementador. Recibe una especificación del orquestador y escribe el código, tests y configuración necesarios. No publica, no despliega, no migra datos.
 mode: subagent
-model: nvidia/z-ai/glm-5.3-flash
+model: nvidia/deepseek-ai/deepseek-v4.1-flash#none
 steps: 40
 ---
 

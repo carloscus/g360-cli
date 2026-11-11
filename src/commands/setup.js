@@ -253,7 +253,7 @@ const DEFAULT_KILO_CONFIG = {
  */
 const DEFAULT_OPENCODE_CONFIG = {
   $schema: 'https://opencode.ai/config.json',
-  username: 'ccusi',
+  username: process.env.USERNAME || 'user',
   instructions: [`${HOME_POSIX}/.agents/AGENTS.md`],
   model: 'nvidia/z-ai/glm-5.3-flash',
   small_model: 'nvidia/deepseek-ai/deepseek-v4.1-flash',
@@ -268,7 +268,7 @@ const DEFAULT_OPENCODE_CONFIG = {
       description:
         'Orquestador principal: clasifica complejidad, invoca subagentes, consolida entregables. No escribe código.',
       mode: 'primary',
-      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash',
+      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash#high',
       steps: 40,
       permissions: [
         { action: 'subagent', resource: '*', effect: 'deny' },
@@ -288,7 +288,7 @@ const DEFAULT_OPENCODE_CONFIG = {
       description:
         'Arquitecto implementador. Recibe especificación y escribe código, tests y configuración. No publica ni migra.',
       mode: 'subagent',
-      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash',
+      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash#none',
       steps: 40,
       permissions: [
         { action: 'edit', resource: '*', effect: 'allow' },
@@ -303,7 +303,7 @@ const DEFAULT_OPENCODE_CONFIG = {
       description:
         'Revisor crítico independiente (Goldfish). Revisa diffs desde perspectiva totalmente independiente. Solo lectura.',
       mode: 'subagent',
-      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash',
+      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash#max',
       steps: 15,
       permissions: [
         { action: 'edit', resource: '*', effect: 'deny' },
@@ -323,7 +323,7 @@ const DEFAULT_OPENCODE_CONFIG = {
       description:
         'Auditor de seguridad y compatibilidad cross-stack. Revisa cambios en busca de vulnerabilidades y ruptura de contratos.',
       mode: 'subagent',
-      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash',
+      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash#low',
       steps: 12,
       permissions: [
         { action: 'edit', resource: '*', effect: 'deny' },
@@ -345,7 +345,7 @@ const DEFAULT_OPENCODE_CONFIG = {
       description:
         'Especialista en datos y migraciones. Audita esquemas, procesadores ERP y contratos de intercambio.',
       mode: 'subagent',
-      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash',
+      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash#low',
       steps: 15,
       permissions: [
         { action: 'edit', resource: '*', effect: 'deny' },
@@ -364,7 +364,7 @@ const DEFAULT_OPENCODE_CONFIG = {
       description:
         'QA y pruebas de regresión. Ejecuta suites de tests, detecta regresiones, propone tests adicionales.',
       mode: 'subagent',
-      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash',
+      model: 'nvidia/deepseek-ai/deepseek-v4.1-flash#none',
       steps: 10,
       permissions: [
         { action: 'edit', resource: '*', effect: 'deny' },

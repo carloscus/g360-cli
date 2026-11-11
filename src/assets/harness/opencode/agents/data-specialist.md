@@ -1,7 +1,7 @@
 ---
 description: Especialista en datos y migraciones. Audita cambios en esquemas de base de datos, procesadores de datos ERP, contratos de intercambio (Excel/CSV/JSON), y estrategias de migración incremental.
 mode: subagent
-model: nvidia/deepseek-ai/deepseek-v4.1-flash
+model: nvidia/deepseek-ai/deepseek-v4.1-flash#low
 steps: 15
 ---
 

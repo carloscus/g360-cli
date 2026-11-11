@@ -1,7 +1,7 @@
 ---
 description: QA Specialist. Ejecuta suites de pruebas del repositorio, detecta regresiones, propone nuevos tests si el cambio requiere cobertura adicional. Incluye validación visual cuando aplica al stack. No modifica código.
 mode: subagent
-model: nvidia/deepseek-ai/deepseek-v4.1-flash
+model: nvidia/deepseek-ai/deepseek-v4.1-flash#none
 steps: 15
 ---
 

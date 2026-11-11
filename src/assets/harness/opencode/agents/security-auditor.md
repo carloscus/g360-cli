@@ -1,7 +1,7 @@
 ---
 description: Auditor de seguridad y compatibilidad cross-stack. Revisa cambios en busca de vulnerabilidades, exposición de credenciales, CVEs en dependencias nuevas, y romper compatibilidad entre repositorios del ecosistema G360. Solo lectura.
 mode: subagent
-model: nvidia/deepseek-ai/deepseek-v4.1-flash
+model: nvidia/deepseek-ai/deepseek-v4.1-flash#low
 steps: 12
 ---
 

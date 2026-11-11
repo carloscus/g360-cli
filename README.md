@@ -104,7 +104,7 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 ## Versión
 
-**Current: v1.21.2** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
+**Current: v1.21.3** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
 
 ---
 
@@ -1866,14 +1866,16 @@ g360 setup --platform all
 
 ### Agentes desplegados
 
-| Agente | Rol | OpenCode | Kilo | Cline |
-|---|---|---|---|---|
-| `orchestrator` | Clasifica nivel A/B/C, invoca agentes, consolida reporte | ✓ primary | ✓ primary | — |
-| `architect` | Implementa código según especificación | ✓ subagent | ✓ g360-architect | — |
-| `reviewer` | Revisa diff aislado vs criterio de aceptación (Goldfish) | ✓ subagent | ✓ g360-reviewer | goldfish.ps1 |
-| `security-auditor` | Busca credenciales, CVEs, rupturas de contrato | ✓ subagent | ✓ g360-security-auditor | — |
-| `data-specialist` | Audita schemas, migraciones, contratos de datos | ✓ subagent | ✓ g360-data-specialist | — |
-| `qa-specialist` | Ejecuta tests, valida equivalencia y visual | ✓ subagent | ✓ g360-qa-specialist | — |
+| Agente | Rol | Modelo base | Variante | OpenCode | Kilo | Cline |
+|---|---|---|---|---|---|---|
+| `orchestrator` | Clasifica nivel A/B/C, invoca agentes, consolida reporte | deepseek-v4.1-flash | `#high` | ✓ primary | ✓ primary | — |
+| `architect` | Implementa código según especificación | deepseek-v4.1-flash | `#none` | ✓ subagent | ✓ g360-architect | — |
+| `reviewer` | Revisa diff aislado vs criterio de aceptación (Goldfish) | deepseek-v4.1-flash | `#max` | ✓ subagent | ✓ g360-reviewer | goldfish.ps1 |
+| `security-auditor` | Busca credenciales, CVEs, rupturas de contrato | deepseek-v4.1-flash | `#low` | ✓ subagent | ✓ g360-security-auditor | — |
+| `data-specialist` | Audita schemas, migraciones, contratos de datos | deepseek-v4.1-flash | `#low` | ✓ subagent | ✓ g360-data-specialist | — |
+| `qa-specialist` | Ejecuta tests, valida equivalencia y visual | deepseek-v4.1-flash | `#none` | ✓ subagent | ✓ g360-qa-specialist | — |
+
+> Las variantes (`#none`, `#low`, `#high`, `#max`) controlan el nivel de razonamiento ampliado por modelo. Se asignan según coste del error: reviewer → `#max` (gate crítico), orchestrator → `#high`, auditores → `#low`, implementación/QA → `#none`. Ver `docs/decisions.md`.
 
 ### Niveles de complejidad
 
@@ -1914,14 +1916,16 @@ g360 setup --dry-run           # Preview sin escribir
 
 | Destino | Contenido |
 |---|---|
-| `~/.config/opencode/opencode.json` | 6 agentes + permisos (shape V2) |
-| `~/.config/opencode/agents/*.md` | Prompts de cada agente |
+| `~/.config/opencode/opencode.json` | 6 agentes + permisos (shape V2) + variantes de modelo |
+| `~/.config/opencode/agents/*.md` | Prompts de cada agente con modelo+variante |
 | `~/.config/opencode/skills/orchestrate/SKILL.md` | Flujo A/B/C + handoff |
 | `~/.config/kilo/kilo.jsonc` | Agentes g360-* (shape V1) |
 | `~/.agents/HANDOFF.md` | Metodología elefante-goldfish |
-| `~/.agents/MULTIAGENTE.md` | Documentación del sistema |
+| `~/.agents/MULTIAGENTE.md` | Documentación del sistema + reglas de autonomía |
 | `~/.agents/MIGRACIONES.md` | Protocolo de migraciones |
+| `~/.agents/GLOSARIO.md` | Glosario de términos G360 |
 | `~/.agents/goldfish.ps1` | Revisor emulado para Cline |
+| `~/.agents/.manifest.json` | Hashes SHA-256 de integridad (ver `g360 audit --agents`) |
 
 ---
 

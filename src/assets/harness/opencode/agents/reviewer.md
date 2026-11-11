@@ -1,7 +1,7 @@
 ---
 description: Revisor crítico independiente (Goldfish). Revisa diffs propuestos desde una perspectiva totalmente independiente, sin ver el historial de conversación del agente diseñador. Solo lectura — nunca modifica archivos.
 mode: subagent
-model: nvidia/deepseek-ai/deepseek-v4.1-flash
+model: nvidia/deepseek-ai/deepseek-v4.1-flash#max
 steps: 15
 ---
 
