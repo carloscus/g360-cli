@@ -1,4 +1,6 @@
-# Decisiones técnicas — g360-cli
+| 2026-11-10 | Reglas de autonomía
+| 2026-11-11 | Hardening permisos + reglas fail-closed | dopted | Tras prueba de autonomia fallida (architect timeout×2, orquestador intervino manualmente), se aplico: (1) revert commit 8ac0950 (diffDays prueba), (2) permisos orchestrator: deny edit/write/patch/git push/git commit, allow solo lectura git+tests npm, (3) reglas fail-closed en orchestrator.md: timeouts→retry×1→stop+report, nunca realizar trabajo de subagente, executed_by∈{subagent,human}, gate FALLIDO si orquestador ejecuta trabajo ajeno, (4) esfuerzo y proveedor como ejes separados, never bajar nivel reviewer/orchestrator. Prueba de autonomia fue invalida como validacion pero detecto problemas reales. Leccion: prompts son peticiones, no controles; lo que debe ser imposible debe estar en permisos. | Observaciones detalladas de usuario sobre 8 hallazgos en prueba; analisis de raiz + plan de hardening aprobado | Requiere prueba de bloqueo en sandbox antes de desplegar globalmente; telemetria pendiente para validar umbrales | 2027-02-11 | ccusi |
+| 2026-11-10 | Reglas de autonomia# Decisiones técnicas — g360-cli
 
 Registro de investigación y decisiones sobre tecnología. Una fila por tema.
 Estado en inglés (capa máquina), texto en español (capa persona).
