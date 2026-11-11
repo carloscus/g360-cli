@@ -5,6 +5,10 @@ import { auditor } from '../lib/auditor.js';
 import { autonomyAuditor } from '../lib/autonomy-auditor.js';
 import { verifyManifest } from '../lib/setup-manifest.js';
 import { readJsonSafe } from '../lib/json-io.js';
+import { fileURLToPath } from 'url';
+
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const REPO_MARKERS = [
   '.git', 'package.json', 'pyproject.toml', 'go.mod', 'Cargo.toml', 'requirements.txt'

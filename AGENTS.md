@@ -35,8 +35,10 @@ npm ci
 
 El código lee estas variables: documentá cada una con su default en `.env.example`.
 
+- `DB_URL`
 - `LOG_LEVEL`
 - `PYTHON`
+- `USERNAME`
 
 ## Convenciones
 

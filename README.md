@@ -125,7 +125,7 @@ npm install -g g360-cli
 
 ```bash
 g360 --version
-# â†’ 1.18.0
+# â†’ 1.22.0
 
 g360 health
 ```
@@ -1420,7 +1420,7 @@ g360-cli/
 |---------|-------------|
 | `npm run build` | Build portable con pkg (g360.exe) |
 | `npm run build:portable` | Especificar target node18-win-x64 |
-| `npm test` | Ejecutar tests con Vitest (193 tests, 18 suites) |
+| `npm test` | Ejecutar tests con Vitest (258 tests) |
 | `npm run prepublishOnly` | Validación antes de publicar en npm (tests + schemas + files + versión) |
 
 ---
@@ -1428,16 +1428,16 @@ g360-cli/
 ## Testing
 
 ```bash
-npm test            # Vitest — 193 tests, 18 suites
+npm test            # Vitest — 258 tests
 npm run test:watch  # Modo watch
 npm run test:ui     # UI interactiva
 npm run test:coverage
 ```
 
-**Cobertura actual (v1.20.4):**
+**Cobertura actual (v1.22.0):**
 - `commands/`: init, bring, list, audit, set-skill, addon
 - `lib/`: manifest, validator, asset-validator, python_runner, ui-review, version-sync
-- **193 passing**
+- ****258 passing****
 
 ---
 
