@@ -599,7 +599,6 @@ g360 audit [ruta] [opciones]
 
 | Opción | Descripción |
 |--------|-------------|
-| `--fix` | Auto-corregir problemas |
 | `--verbose` | Salida detallada |
 | `--no-autonomy` | Omitir los checks de autosuficiencia |
 | `--ecosystem` | Auditar todos los repos bajo `<ruta>/projects` y mostrar un resumen |
@@ -629,6 +628,13 @@ intencional, regenerá el manifest con `g360 setup --platform all`.
 | `.env.example` | — | El código lee variables de entorno sin documentar |
 | Tests honestos | — | Hay `skip` / `xfail` / `todo` en archivos de test |
 
+**Check de stack (`g360 audit`):**
+
+El check `stack` verifica que el proyecto use el toolkit correcto para su stack declarado, citando `stacks.json` y `project-types.json`:
+
+- `desktop-flet`: detecta imports de `customtkinter`/`ctkinter` (mezcla de toolkits) y la versión de Flet declarada en `pyproject.toml`/`requirements.txt` contra el target del catálogo (Flet 1.0.5).
+- Los hallazgos se emiten como `warning` y **no cambian el código de salida** (exit code); son informativos por defecto.
+
 Criterio: `git clone <repo>` + un comando â‡’ la app levanta y los tests pasan,
 sin red y sin intervención humana.
 
@@ -643,10 +649,10 @@ g360 audit --ecosystem C:\ruta\G360-ecosystem
 **Salida en modo ecosistema:**
 
 ```text
-Proyecto                     AGENTS  VERIF   README  LOCK    ENV     TESTS   Estado
--------------------------------------------------------------------------------------
-g360-price-audit             âœ“       âœ“       âœ“       âœ“       âœ“       âœ“       ok
-g360-ventas-pulse            âœ—       !       âœ“       âœ“       âœ“       âœ“       fail
+Proyecto                     STACK   AGENTS  VERIF   README  LOCK    ENV     TESTS   Estado
+-------------------------------------------------------------------------------------------
+g360-price-audit             node    âœ“       âœ“       âœ“       âœ“       âœ“       âœ“       ok
+g360-ventas-pulse            python  âœ—       !       âœ“       âœ“       âœ“       âœ“       fail
 ```
 
 ---

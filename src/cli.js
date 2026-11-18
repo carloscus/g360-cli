@@ -127,7 +127,6 @@ program
 program
   .command('audit')
   .argument('[path]', 'Path to audit', '.')
-  .option('--fix', 'Auto-fix issues when possible')
   .option('--verbose', 'Show detailed output')
   .option('--no-autonomy', 'Omitir los checks de autosuficiencia')
   .option('--ecosystem', 'Auditar todos los repos bajo <path>/projects y mostrar un resumen')

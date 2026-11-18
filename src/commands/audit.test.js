@@ -19,11 +19,6 @@ describe('audit command', () => {
   });
 
   describe('options', () => {
-    it('should support fix option', async () => {
-      const { audit } = await import('../commands/audit.js');
-      expect(audit).toBeDefined();
-    });
-
     it('should support verbose option', async () => {
       const { audit } = await import('../commands/audit.js');
       expect(audit).toBeDefined();

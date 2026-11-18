@@ -478,8 +478,13 @@ g360 list [tipo] [opciones]
 g360 audit [ruta] [opciones]
 
 # Opciones:
-# --fix        Auto-corregir problemas
 # --verbose    Salida detallada
+# --no-autonomy    Omitir los checks de autosuficiencia
+
+# Check de stack:
+# - desktop-flet: detecta imports de customtkinter/ctkinter (mezcla de toolkits)
+#   y la versión de Flet vs el target de stacks.json (1.0.5). Los hallazgos son
+#   warning y no cambian el exit code.
 
 # Limpiar código muerto, duplicados y archivos huérfanos
 g360 clean [ruta] [opciones]

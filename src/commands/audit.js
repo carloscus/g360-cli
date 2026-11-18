@@ -189,7 +189,6 @@ export async function auditAgents(baseDir) {
  * Audita un proyecto: checks de G360 + checks de autosuficiencia.
  * @param {string} projectPath - Ruta del proyecto (relativa o absoluta)
  * @param {Object} options - Opciones
- * @param {boolean} [options.fix=false] - Auto-corregir cuando sea posible
  * @param {boolean} [options.verbose=false] - Mostrar detalle
  * @param {boolean} [options.autonomy=true] - Incluir checks de autosuficiencia
  * @param {boolean} [options.ecosystem=false] - Auditar todo el workspace
@@ -197,7 +196,7 @@ export async function auditAgents(baseDir) {
  * @returns {Promise<void>}
  */
 export async function audit(projectPath, options) {
-  const { fix = false, verbose = false, autonomy = true, ecosystem = false, agents = false } = options;
+  const { verbose = false, autonomy = true, ecosystem = false, agents = false } = options;
   const targetDir = path.resolve(process.cwd(), projectPath);
 
   if (agents) {
@@ -250,9 +249,5 @@ export async function audit(projectPath, options) {
       const warned = findings.filter((finding) => finding.status === 'warn').map((finding) => finding.label);
       console.log(chalk.yellow(`⚠️  Autosuficiencia con pendientes: ${warned.join(', ')}\n`));
     }
-  }
-
-  if (fix) {
-    console.log(chalk.cyan('Auto-fix not yet implemented.\n'));
   }
 }

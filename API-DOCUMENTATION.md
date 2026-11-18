@@ -96,7 +96,6 @@ Audita el proyecto para compliance G360.
 **Parameters:**
 - `projectPath` (string): Ruta del proyecto a auditar
 - `options` (Object): Opciones de auditoría
-  - `fix` (boolean): Auto-corregir problemas (default: false)
   - `verbose` (boolean): Salida detallada (default: false)
 
 **Returns:** Promise<void>
@@ -254,6 +253,10 @@ Ejecuta auditoría completa del proyecto.
   - `verbose` (boolean): Mostrar información detallada
 
 **Returns:** Promise<AuditResult>
+
+**Check de stack:** `checkStack(projectDir)` verifica que el proyecto use el toolkit correcto para su stack declarado, citando `stacks.json` y `project-types.json`:
+- `desktop-flet`: detecta imports de `customtkinter`/`ctkinter` (mezcla de toolkits) y la versión de Flet declarada vs el target del catálogo (Flet 1.0.5).
+- Los hallazgos se emiten como `warning` y **no cambian el código de salida**.
 
 **Example:**
 ```javascript
