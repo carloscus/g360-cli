@@ -1,0 +1,217 @@
+{
+  "version": "1.1.0",
+  "lastUpdated": "2026-11-18",
+  "description": "Catálogo de repositorios G360 con jerarquía de roles y dependencias declarativas.",
+  "roles": {
+    "infra": {
+      "descripcion": "Herramientas de desarrollo, CLI, branding, infraestructura compartida.",
+      "permisos": [
+        "init",
+        "bring",
+        "audit",
+        "agents",
+        "tokens",
+        "setup"
+      ],
+      "dependencias": []
+    },
+    "provider": {
+      "descripcion": "Publica datos maestros, schemas o APIs que otros repos consumen.",
+      "permisos": [
+        "publish",
+        "schema-change"
+      ],
+      "dependencias": []
+    },
+    "api": {
+      "descripcion": "Capa de acceso a datos expone endpoints REST/GraphQL sobre un provider.",
+      "permisos": [
+        "read-provider"
+      ],
+      "dependencias": [
+        "provider"
+      ]
+    },
+    "consumer": {
+      "descripcion": "App que usa datos de providers y/o APIs. No escribe en la fuente.",
+      "permisos": [
+        "read-api",
+        "read-provider-published"
+      ],
+      "dependencias": [
+        "api",
+        "provider"
+      ]
+    },
+    "app": {
+      "descripcion": "Aplicación frontend/desktop completa, puede ser consumer o standalone.",
+      "permisos": [
+        "read-api",
+        "read-provider-published",
+        "build"
+      ],
+      "dependencias": [
+        "api",
+        "consumer"
+      ]
+    }
+  },
+  "repos": {
+    "g360-cli": {
+      "role": "infra",
+      "status": "recommended",
+      "descripcion": "CLI principal del ecosistema"
+    },
+    "g360-signature": {
+      "role": "infra",
+      "status": "recommended",
+      "descripcion": "Web component de firma G360/CIPSA"
+    },
+    "g360-signature-creator": {
+      "role": "infra",
+      "status": "recommended",
+      "descripcion": "Generador de firmas personalizadas"
+    },
+    "g360-master-data": {
+      "role": "provider",
+      "status": "recommended",
+      "descripcion": "Catálogo JSON maestro de skills, stacks, tokens"
+    },
+    "g360-ventas-db": {
+      "role": "provider",
+      "status": "experimental",
+      "descripcion": "Base de datos derivada de ventas (Rust/SQLite)"
+    },
+    "g360-ventas-api": {
+      "role": "api",
+      "status": "recommended",
+      "depends_on": [
+        "g360-ventas-db"
+      ]
+    },
+    "g360-stock-api": {
+      "role": "api",
+      "status": "recommended",
+      "depends_on": [
+        "g360-erp-stock-consolidator"
+      ]
+    },
+    "g360-erp-price-manager": {
+      "role": "consumer",
+      "depends_on": [
+        "g360-master-data"
+      ]
+    },
+    "g360-erp-nc-sustentor": {
+      "role": "consumer",
+      "depends_on": [
+        "g360-master-data"
+      ]
+    },
+    "g360-erp-stock-consolidator": {
+      "role": "provider",
+      "status": "experimental",
+      "depends_on": [
+        "g360-master-data"
+      ]
+    },
+    "g360-erp-preorder-allocator": {
+      "role": "consumer",
+      "depends_on": [
+        "g360-master-data"
+      ]
+    },
+    "g360-erp-pedido-vigencias": {
+      "role": "consumer",
+      "depends_on": [
+        "g360-master-data"
+      ]
+    },
+    "g360-erp-stock-monitor": {
+      "role": "consumer",
+      "depends_on": [
+        "g360-stock-api",
+        "g360-erp-stock-consolidator"
+      ]
+    },
+    "g360-order-xlsx": {
+      "role": "app",
+      "status": "recommended",
+      "depends_on": [
+        "g360-ventas-api"
+      ]
+    },
+    "g360-outlook-extractor": {
+      "role": "consumer",
+      "depends_on": [
+        "g360-master-data"
+      ]
+    },
+    "g360-return-form": {
+      "role": "app",
+      "status": "recommended",
+      "depends_on": [
+        "g360-ventas-api"
+      ]
+    },
+    "g360-order-form": {
+      "role": "app",
+      "status": "recommended",
+      "depends_on": [
+        "g360-ventas-api"
+      ]
+    },
+    "g360-ventas-pulse": {
+      "role": "app",
+      "status": "recommended",
+      "depends_on": [
+        "g360-ventas-api",
+        "g360-stock-api"
+      ]
+    },
+    "g360-stock-reporter": {
+      "role": "app",
+      "status": "recommended",
+      "depends_on": [
+        "g360-stock-api"
+      ]
+    },
+    "g360-price-audit": {
+      "role": "app",
+      "status": "recommended",
+      "depends_on": [
+        "g360-ventas-api"
+      ]
+    },
+    "g360-textofix": {
+      "role": "app",
+      "status": "recommended"
+    },
+    "g360-day-calculator": {
+      "role": "app",
+      "status": "recommended"
+    },
+    "g360-discount-calculator": {
+      "role": "app",
+      "status": "recommended"
+    },
+    "g360-overtime-hours": {
+      "role": "app",
+      "status": "recommended"
+    },
+    "g360-portfolio": {
+      "role": "app",
+      "status": "recommended",
+      "depends_on": [
+        "g360-ventas-api"
+      ]
+    }
+  },
+  "reglas": {
+    "no_ciclos": true,
+    "api_debe_depender_de_provider": true,
+    "consumer_no_puede_depender_directamente_de_api_externa": false,
+    "solo_infra_y_provider_pueden_publish": true
+  },
+  "externals": {}
+}

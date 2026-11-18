@@ -86,7 +86,7 @@ from pathlib import Path
 
 scanner = ERPScanner(min_valid_score=10)
 try:
-    df = scanner._read_headers(Path('${filepath.replace(/'/g, "\\'")}'), nrows=50)
+    df = scanner._read_headers(Path(sys.argv[1]), nrows=50)
     missing = scanner._validate_columns(df)
     is_valid = len(missing) == 0
     print(f"VALID={is_valid}")
@@ -97,7 +97,7 @@ except Exception as e:
 `;
 
   try {
-    const { stdout } = await runPython(pyCode);
+    const { stdout } = await runPython(pyCode, [filepath]);
     const lines = stdout.split('\n').filter(l => l.trim());
 
     let valid = false;

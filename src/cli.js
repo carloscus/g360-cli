@@ -35,6 +35,7 @@ const capture = lazy('./commands/capture.js', 'capture');
 const planUi = lazy('./commands/plan-ui.js', 'planUi');
 const setAccent = lazy('./commands/set-accent.js', 'setAccent');
 const setup = lazy('./commands/setup.js', 'setup');
+const registry = lazy('./commands/registry.js', 'registry');
 
 // Comando config (no requiere archivo separado)
 function configAction(options) {
@@ -304,5 +305,13 @@ program
   .option('--dry-run', 'Preview without writing')
   .option('--model <model>', 'Default model: free, paid (default: free)')
   .action(setup);
+
+program
+  .command('registry')
+  .description('Muestra el catalogo de repositorios, consumers y cross-API del ecosistema')
+  .option('--schema <repo>', 'Show schema info for a repo')
+  .option('--external [--all]', 'List external consumers registered in catalog')
+  .option('--cross <apis...>', 'Show which consumers use given APIs')
+  .action(registry);
 
 program.parse();

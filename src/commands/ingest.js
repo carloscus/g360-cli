@@ -94,14 +94,14 @@ ${g360CorePath(__dirname)}
 from g360_core.scanner import find_erp_files_in_dir
 from pathlib import Path
 
-valid, invalid = find_erp_files_in_dir(Path('${dir}'), recursive=True)
+valid, invalid = find_erp_files_in_dir(Path(sys.argv[1]), recursive=True)
 for v in valid:
-    print(f"VALID::{v.path.name}::{v.erp_type}::${v.size_bytes}")
+    print(f"VALID::{v.path.name}::{v.erp_type}::{v.size_bytes}")
 for i in invalid[:10]:
     print(f"INVALID::{i.path.name}::${i.error_msg}")
 `;
 
-  const { stdout } = await runPython(pyCode);
+  const { stdout } = await runPython(pyCode, [dir]);
   const lines = stdout.split('\n').filter(l => l.trim());
   const valid = [];
   const invalid = [];
