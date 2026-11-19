@@ -205,7 +205,7 @@ export async function auditAgents(baseDir) {
  * @returns {Promise<void>}
  */
 export async function audit(projectPath, options) {
-  const { verbose = false, autonomy = true, ecosystem = false, agents = false } = options;
+  const { verbose = false, autonomy = true, ecosystem = false, agents = false, json = false } = options;
   const targetDir = path.resolve(process.cwd(), projectPath);
 
   if (agents) {
@@ -218,15 +218,27 @@ export async function audit(projectPath, options) {
     return;
   }
 
-  console.log(chalk.bold.cyan('\n🔍 G360 Project Audit\n'));
-  console.log(chalk.gray(`Path: ${targetDir}\n`));
-
   if (!fs.existsSync(targetDir)) {
     console.error(chalk.red(`❌ Path not found: ${targetDir}`));
     return;
   }
 
   const results = await auditor.audit(targetDir, { verbose, autonomy });
+
+  if (json) {
+    const result = {
+      passed: results.passed,
+      failed: results.failed,
+      warnings: results.warnings,
+      total: results.total,
+      issues: results.issues,
+    };
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  console.log(chalk.bold.cyan('\n🔍 G360 Project Audit\n'));
+  console.log(chalk.gray(`Path: ${targetDir}\n`));
 
   console.log(chalk.yellow('📊 Audit Results:'));
   console.log(chalk.green(`  Passed: ${results.passed}`));
