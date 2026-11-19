@@ -29,6 +29,7 @@
   "scripts": {
     "prepublishOnly": "vitest run && node scripts/validate-assets.js",
     "test": "vitest run",
+    "test:property": "vitest run src/lib/properties.test.js",
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
@@ -67,6 +68,7 @@
   },
   "devDependencies": {
     "@vitest/ui": "^4.1.6",
+    "fast-check": "^4.10.3",
     "pkg": "^5.8.1",
     "vitest": "^4.1.6"
   },
