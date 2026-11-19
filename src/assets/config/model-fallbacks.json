@@ -1,0 +1,29 @@
+{
+  "orchestrator": [
+    "opencode/glm-5.3-flash#high",
+    "opencode/minimax-m3.1-flash-free#high",
+    "agnes/agnes-3.0-flash#high"
+  ],
+  "architect": [
+    "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b#none",
+    "nvidia/minimaxai/minimax-m3.1-flash#none",
+    "opencode/glm-5.3-flash#none"
+  ],
+  "reviewer": [
+    "opencode/glm-5.3-flash#max",
+    "opencode/minimax-m3.1-flash-free#max",
+    "agnes/agnes-3.0-flash#max"
+  ],
+  "security_auditor": [
+    "opencode/glm-5.3-flash#low",
+    "opencode/glm-5.3-flash-free#low"
+  ],
+  "data_specialist": [
+    "opencode/glm-5.3-flash#low",
+    "opencode/glm-5.3-flash-free#low"
+  ],
+  "qa_specialist": [
+    "nvidia/minimaxai/minimax-m3.1-flash#none",
+    "opencode/glm-5.3-flash#none"
+  ]
+}
