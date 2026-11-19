@@ -55,6 +55,23 @@ export async function health(options) {
     message: hasManifest ? 'Found' : 'Not in a G360 project'
   });
 
+  const pythonResult = spawnSync('python3', ['--version'], { stdio: 'ignore', shell: true });
+  const pythonOk = pythonResult.status === 0;
+  if (!pythonOk) {
+    const pyResult = spawnSync('python', ['--version'], { stdio: 'ignore', shell: true });
+    checks.push({
+      name: 'Python',
+      status: pyResult.status === 0 ? 'ok' : 'warn',
+      message: pyResult.status === 0 ? 'Available (python)' : 'Not found (required by g360 ingest)'
+    });
+  } else {
+    checks.push({
+      name: 'Python',
+      status: 'ok',
+      message: 'Available (python3)'
+    });
+  }
+
   console.log(chalk.yellow('System Status:'));
   checks.forEach(check => {
     const icon = check.status === 'ok' ? chalk.green('✓') : 
