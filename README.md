@@ -1,4 +1,4 @@
-﻿# g360-cli
+# g360-cli
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="src/assets/brand/g360/logotypes/logo-g360-light.svg">
@@ -1983,3 +1983,62 @@ g360 setup --dry-run           # Preview sin escribir
 > Identidad generada desde `src/assets/brand/brand.json` (Brand System v2.0.0).
 > El logo arriba usa `<picture>` con `prefers-color-scheme` para light/dark.
 
+
+---
+
+## Advanced Testing (v2.1.0)
+
+Esta versión introduce metodologías avanzadas de testing para mayor robustez:
+
+### Property-Based Testing (fast-check)
+
+Verifica invariantes del sistema generando cientos de casos automáticamente:
+
+`ash
+npm run test:property  # 6 propiedades verificadas
+`
+
+**Propiedades actuales:**
+- ersion-sync: package.json y opencode-config.json siempre sincronizados
+- platform-enum: --platform solo acepta valores válidos
+- uditor-status: Siempre retorna pass/warn/fail
+- color-hex-format: Todos los colores en palette son #RRGGBB
+- gent-model-format: Modelos siguen formato provider/model
+- manifest-integrity: Archivos listados existen en filesystem
+
+### Fuzzing de Seguridad
+
+Tests adversariales que buscan vulnerabilidades:
+
+`ash
+npm test  # Incluye 14 casos de fuzzing
+`
+
+**Cobertura:**
+- **Path traversal**: Detecta intentos de escape con ../, %2f, null bytes
+- **Command injection**: Verifica que spawnSync/execSync no interpolen input usuario
+- **Encoding attacks**: Prueba double-encoding y Unicode normalization
+
+### End-to-End (E2E) Tests
+
+Flujo completo validado contra repos reales:
+
+`ash
+npm test  # 4 tests E2E
+`
+
+**Flujos probados:**
+1. setup → ring harness → udit en repo temporal
+2. Creación estructura G360 sin config global previa
+3. Cross-platform path resolution (Windows/Unix)
+4. Repo-only mode funciona sin HOME configurado
+
+### Validación Cross-Repo
+
+Los 3 repos downstream validados contra g360 audit:
+
+| Repo | Passed | Failed | Estado |
+|------|--------|--------|--------|
+| g360-price-audit | 10 | 0 | ✅ Compliant |
+| g360-ventas-pulse | 10 | 0 | ✅ Compliant |
+| g360-order-xlsx | 10 | 0 | ✅ Compliant |
