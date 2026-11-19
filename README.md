@@ -860,7 +860,7 @@ g360 setup [opciones]
 | `--platform <platform>` | Plataforma: opencode, kilo, cline, all | `all` |
 | `--reset` | Sobrescribir configuración existente | `false` |
 | `--dry-run` | Previsualizar sin escribir | `false` |
-| `--model <model>` | Modelo default: free, paid | `free` |
+| `--model <model>` | Modelo default (reconocido por CLI, sin efecto hasta implementación futura) | `free` |
 
 **Ejemplos:**
 
@@ -888,7 +888,7 @@ g360 setup --model paid
 | OpenCode | `~/.config/opencode/opencode.json`, `agents/*.md`, `skills/orchestrate/SKILL.md` |
 | Kilo | `~/.config/kilo/kilo.jsonc` (shape V1) |
 | Cline | `~/.agents/goldfish.ps1` |
-| Docs | `~/.agents/HANDOFF.md`, `MULTIAGENTE.md`, `AGENTS.md`, `MIGRACIONES.md`, `GLOSARIO.md` |
+| Docs | `~/.agents/HANDOFF.md`, `~/.agents/MULTIAGENTE.md` |
 
 **Además:** antes de escribir, `setup` crea un backup en `~/.backup/<fecha>/`,
 y al terminar genera `~/.agents/.manifest.json` (hashes SHA-256 de los archivos
@@ -901,6 +901,10 @@ opencode api get /api/agent    # OpenCode
 kilo agent list                 # Kilo
 g360 audit --agents             # Integridad de prompts instalados
 ```
+
+> Nota: `--model` es un flag reconocido por la CLI pero actualmente no tiene efecto (dummy). Se acepta con valor `free`/`paid` pero no influye en la instalación. Pendiente de implementar en una versión futura.
+
+---
 
 ---
 
@@ -1938,7 +1942,7 @@ El orquestador clasifica el nivel, invoca los agentes correspondientes y present
 
 ### Protocolo de migraciones
 
-Para actualizaciones de frameworks (Flet, React, Svelte, etc.) con breaking changes, consultar `~/.agents/MIGRACIONES.md`. El protocolo cubre: diagnóstico de breaking changes, estrategia de compatibilidad (sin shims automáticos), migración incremental por componentes, y rollback plan.
+Para actualizaciones de frameworks (Flet, React, Svelte, etc.) con breaking changes, consultar `~/.agents/MIGRACIONES.md`. Este archivo existe en `src/assets/shared/` pero **no es copiado automáticamente por `g360 setup`** (solo se instalan `HANDOFF.md` y `MULTIAGENTE.md`). El protocolo cubre: diagnóstico de breaking changes, estrategia de compatibilidad (sin shims automáticos), migración incremental por componentes, y rollback plan.
 
 ### Verificación
 
@@ -1958,8 +1962,6 @@ g360 setup --dry-run           # Preview sin escribir
 | `~/.config/kilo/kilo.jsonc` | Agentes g360-* (shape V1) |
 | `~/.agents/HANDOFF.md` | Metodología elefante-goldfish |
 | `~/.agents/MULTIAGENTE.md` | Documentación del sistema + reglas de autonomía |
-| `~/.agents/MIGRACIONES.md` | Protocolo de migraciones |
-| `~/.agents/GLOSARIO.md` | Glosario de términos G360 |
 | `~/.agents/goldfish.ps1` | Revisor emulado para Cline |
 | `~/.agents/.manifest.json` | Hashes SHA-256 de integridad (ver `g360 audit --agents`) |
 
