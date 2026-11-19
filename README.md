@@ -1904,12 +1904,12 @@ g360 setup --platform all
 
 | Agente | Rol | Modelo base | Variante | OpenCode | Kilo | Cline |
 |---|---|---|---|---|---|---|
-| `orchestrator` | Clasifica nivel A/B/C, invoca agentes, consolida reporte | deepseek-v4.1-flash | `#high` | ✓ primary | ✓ primary | — |
-| `architect` | Implementa código según especificación | deepseek-v4.1-flash | `#none` | ✓ subagent | ✓ g360-architect | — |
-| `reviewer` | Revisa diff aislado vs criterio de aceptación (Goldfish) | deepseek-v4.1-flash | `#max` | ✓ subagent | ✓ g360-reviewer | goldfish.ps1 |
-| `security-auditor` | Busca credenciales, CVEs, rupturas de contrato | deepseek-v4.1-flash | `#low` | ✓ subagent | ✓ g360-security-auditor | — |
-| `data-specialist` | Audita schemas, migraciones, contratos de datos | deepseek-v4.1-flash | `#low` | ✓ subagent | ✓ g360-data-specialist | — |
-| `qa-specialist` | Ejecuta tests, valida equivalencia y visual | deepseek-v4.1-flash | `#none` | ✓ subagent | ✓ g360-qa-specialist | — |
+| `orchestrator` | Clasifica nivel A/B/C, invoca agentes, consolida reporte | opencode/glm-5.3-flash | `#high` | ✓ primary | ✓ primary | — |
+| `architect` | Implementa código según especificación | nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b | `#none` | ✓ subagent | ✓ g360-architect | — |
+| `reviewer` | Revisa diff aislado vs criterio de aceptación (Goldfish) | opencode/glm-5.3-flash | `#max` | ✓ subagent | ✓ g360-reviewer | goldfish.ps1 |
+| `security-auditor` | Busca credenciales, CVEs, rupturas de contrato | opencode/glm-5.3-flash | `#low` | ✓ subagent | ✓ g360-security-auditor | — |
+| `data-specialist` | Audita schemas, migraciones, contratos de datos | opencode/glm-5.3-flash | `#low` | ✓ subagent | ✓ g360-data-specialist | — |
+| `qa-specialist` | Ejecuta tests, valida equivalencia y visual | nvidia/minimaxai/minimax-m3.1-flash | `#none` | ✓ subagent | ✓ g360-qa-specialist | — |
 
 > Las variantes (`#none`, `#low`, `#high`, `#max`) controlan el nivel de razonamiento ampliado por modelo. Se asignan según coste del error: reviewer → `#max` (gate crítico), orchestrator → `#high`, auditores → `#low`, implementación/QA → `#none`. Ver `docs/decisions.md`.
 
