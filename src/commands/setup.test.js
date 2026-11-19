@@ -151,3 +151,71 @@ describe('setup backup + manifest', () => {
     expect(logs.some(l => l.includes('--reset eliminará la configuración existente'))).toBe(true);
   });
 });
+
+describe('setup funciones críticas sin cobertura directa', () => {
+  let home;
+  let originalHome;
+  let logs;
+  let originalLog;
+
+  beforeEach(async () => {
+    const os = await import('os');
+    home = await fs.mkdtemp(path.join(os.tmpdir(), 'g360-setup-test-'));
+    originalHome = process.env.HOME;
+    process.env.HOME = home;
+    process.env.USERPROFILE = home;
+    logs = [];
+    originalLog = console.log;
+    console.log = (...args) => logs.push(args.join(' '));
+  });
+
+  afterEach(async () => {
+    console.log = originalLog;
+    process.env.HOME = originalHome;
+    process.env.USERPROFILE = originalHome;
+    await fs.remove(home);
+  });
+
+  const logText = () => logs.join('\n');
+
+  it('installSharedDocs copies HANDOFF.md and MULTIAGENTE.md to .agents', async () => {
+    await setup({ platform: 'all', dryRun: false, reset: false });
+
+    const agentsDir = path.join(home, '.agents');
+    expect(fs.existsSync(path.join(agentsDir, 'HANDOFF.md'))).toBe(true);
+    expect(fs.existsSync(path.join(agentsDir, 'MULTIAGENTE.md'))).toBe(true);
+    expect(fs.readFileSync(path.join(agentsDir, 'HANDOFF.md'), 'utf8').length).toBeGreaterThan(0);
+    expect(fs.readFileSync(path.join(agentsDir, 'MULTIAGENTE.md'), 'utf8').length).toBeGreaterThan(0);
+  });
+
+  it('installPlatform installs kilo config (kilo.jsonc)', async () => {
+    await setup({ platform: 'kilo', dryRun: false, reset: false });
+
+    const kiloConfig = path.join(home, '.config', 'kilo', 'kilo.jsonc');
+    expect(fs.existsSync(kiloConfig)).toBe(true);
+    expect(fs.readFileSync(kiloConfig, 'utf8').length).toBeGreaterThan(0);
+  });
+
+  it('installPlatform installs cline goldfish.ps1', async () => {
+    await setup({ platform: 'cline', dryRun: false, reset: false });
+
+    const goldfish = path.join(home, '.agents', 'goldfish.ps1');
+    expect(fs.existsSync(goldfish)).toBe(true);
+    expect(fs.readFileSync(goldfish, 'utf8').length).toBeGreaterThan(0);
+  });
+
+  it('isPlatformInstalled returns true when config exists (opencode skipped)', async () => {
+    const opencodeDir = path.join(home, '.config', 'opencode');
+    await fs.ensureDir(opencodeDir);
+    await fs.writeFile(path.join(opencodeDir, 'opencode.json'), '{"existe":true}');
+
+    await setup({ platform: 'opencode', dryRun: false, reset: false });
+    expect(logText()).toContain('opencode: skipped');
+    expect(logText()).toContain('ya instalado');
+  });
+
+  it('isPlatformInstalled returns false when config missing (opencode installed)', async () => {
+    await setup({ platform: 'opencode', dryRun: false, reset: false });
+    expect(logText()).toContain('opencode: installed');
+  });
+});
