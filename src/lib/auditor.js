@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 import { autonomyAuditor } from './autonomy-auditor.js';
-import { readJsonSafe } from './json-io.js';
+import { readJsonCached, clearCache } from './file-cache.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -159,6 +159,9 @@ export const auditor = {
    */
   async audit(projectDir, options = {}) {
     const { verbose = false, autonomy = true } = options;
+    // Limpia la caché de lecturas de archivos para evitar contaminación entre
+    // runs/comandos que operen sobre directorios distintos.
+    clearCache();
     const results = {
       passed: 0,
       failed: 0,
@@ -227,7 +230,7 @@ export const auditor = {
     const pkgPath = path.join(projectDir, 'package.json');
     if (fs.existsSync(pkgPath)) {
       try {
-        const pkg = readJsonSafe(pkgPath);
+        const pkg = readJsonCached(pkgPath);
         const isG360Tool = 
           pkg.name?.startsWith('g360-') || 
           (pkg.keywords && pkg.keywords.some(k => k.includes('g360'))) ||
@@ -260,7 +263,7 @@ export const auditor = {
     const pkgPath = path.join(projectDir, 'package.json');
     if (fs.existsSync(pkgPath)) {
       try {
-        const pkg = readJsonSafe(pkgPath);
+        const pkg = readJsonCached(pkgPath);
         const isG360Tool = 
           pkg.name?.startsWith('g360-') || 
           (pkg.keywords && pkg.keywords.some(k => k.includes('g360'))) ||
@@ -320,12 +323,12 @@ export const auditor = {
     const manifestPath = path.join(projectDir, 'g360-manifest.json');
     if (fs.existsSync(manifestPath)) {
       try {
-        const manifest = readJsonSafe(manifestPath);
+        const manifest = readJsonCached(manifestPath);
         if (manifest?.template === 'python-flet') {
           const typesPath = path.join(__dirname, '..', 'assets', 'config', 'project-types.json');
           let types;
           try {
-            types = readJsonSafe(typesPath);
+            types = readJsonCached(typesPath);
           } catch {
             types = null;
           }
@@ -350,7 +353,7 @@ export const auditor = {
 
     let pkg;
     try {
-      pkg = readJsonSafe(pkgPath);
+      pkg = readJsonCached(pkgPath);
     } catch {
       if (findings.length > 0) {
         return { status: 'warn', findings };
@@ -370,7 +373,7 @@ export const auditor = {
     const stacksPath = path.join(__dirname, '..', 'assets', 'config', 'stacks.json');
     let stacksCatalog;
     try {
-      stacksCatalog = readJsonSafe(stacksPath).stacks || {};
+      stacksCatalog = readJsonCached(stacksPath).stacks || {};
     } catch {
       stacksCatalog = {};
     }
