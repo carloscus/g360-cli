@@ -13,3 +13,6 @@ build/
 .cache/
 .antigravitycli/
 AUDITOR-RESUMEN.md
+
+# Test artifacts
+src/commands/__tmp_out.csv
