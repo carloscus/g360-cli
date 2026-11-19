@@ -132,10 +132,40 @@ g360 health
 
 ### Publicar nueva versión
 
+La versión que se publica es la de `package.json` (fuente canónica), no la del
+tag de git. Antes de publicar, sincronizar `opencode-config.json` con la misma
+versión de `package.json`; de lo contrario `validate-assets.js` y el test de
+version-sync fallan y bloquean el release.
+
 ```bash
-npm version patch   # o minor / major
-git push origin main
-npm publish --access public  # requiere 2FA en npm
+# 1. Sincronizar opencode-config.json con package.json (misma versión)
+#    Ambos deben declarar exactamente la misma versión (ej. 2.0.0).
+
+# 2. Lanzar gate de publication (sin red, local)
+npm test           # vitest run
+node scripts/validate-assets.js
+
+# 3. Publicar. --tag usa dist-tags (latest / legacy / next / beta),
+#    NO valores semver.
+npm publish --access public --tag latest   # versión actual (ej. 2.0.0)
+npm publish --access public --tag legacy   # versión antigua (ej. 1.22.3)
+
+# 4. Verificar dist-tags publicados
+npm view g360-cli dist-tags
+```
+
+#### Publicar una versión antigua como legacy (ej. 1.22.3)
+
+Desde el tag correspondiente, en un worktree separado:
+
+```bash
+# worktree del tag (ruta fuera del checkout, ver AGENTS.md del workspace)
+git worktree add ../g360-cli-legacy v1.22.3
+cd ../g360-cli-legacy
+npm ci
+npm test
+node scripts/validate-assets.js
+npm publish --access public --tag legacy
 ```
 
 La publicación es **manual** (sin CI). El workflow anterior se desactivó porque
