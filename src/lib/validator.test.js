@@ -3,20 +3,21 @@
  * @description Tests para el módulo validator
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs-extra';
+import path from 'path';
+import os from 'os';
 import { validator } from '../lib/validator.js';
 
-// Mock de fs-extra
-vi.mock('fs-extra', () => ({
-  default: {
-    existsSync: vi.fn()
-  }
-}));
-
 describe('validator module', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+  let tmpDir;
+
+  beforeEach(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'g360-validator-test-'));
+  });
+
+  afterEach(async () => {
+    if (tmpDir) await fs.remove(tmpDir);
   });
 
   describe('isValidProjectName', () => {
@@ -38,34 +39,24 @@ describe('validator module', () => {
 
   describe('isValidPath', () => {
     it('should return true for existing paths', () => {
-      fs.existsSync.mockReturnValue(true);
-      expect(validator.isValidPath('/existing/path')).toBe(true);
+      expect(validator.isValidPath(tmpDir)).toBe(true);
     });
 
     it('should return false for non-existing paths', () => {
-      fs.existsSync.mockReturnValue(false);
-      expect(validator.isValidPath('/non/existing/path')).toBe(false);
+      expect(validator.isValidPath(path.join(tmpDir, 'no-existe'))).toBe(false);
     });
 
     it('should handle errors gracefully', () => {
-      fs.existsSync.mockImplementation(() => {
-        throw new Error('Permission denied');
-      });
-      expect(validator.isValidPath('/error/path')).toBe(false);
+      expect(validator.isValidPath(null)).toBe(false);
     });
   });
 
   describe('validateProject', () => {
-    it('should validate a valid G360 project', () => {
-      fs.existsSync.mockImplementation((path) => {
-        // El directorio del proyecto existe
-        if (path === '/valid/project') return true;
-        // El manifest y el directorio g360 existen
-        if (path.includes('g360-manifest.json') || path.includes('g360')) return true;
-        return false;
-      });
+    it('should validate a valid G360 project', async () => {
+      await fs.writeJson(path.join(tmpDir, 'g360-manifest.json'), {}, { spaces: 2 });
+      await fs.mkdirp(path.join(tmpDir, 'g360'));
 
-      const result = validator.validateProject('/valid/project');
+      const result = validator.validateProject(tmpDir);
 
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
@@ -73,40 +64,26 @@ describe('validator module', () => {
     });
 
     it('should return errors for non-existing project', () => {
-      fs.existsSync.mockReturnValue(false);
-
-      const result = validator.validateProject('/non/existing');
+      const result = validator.validateProject(path.join(tmpDir, 'non-existing'));
 
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('Project directory does not exist');
     });
 
-    it('should return warnings for missing G360 files', () => {
-      fs.existsSync.mockImplementation((path) => {
-        // El directorio del proyecto existe
-        if (path === '/project/without/g360') return true;
-        // El manifest y el directorio g360 no existen
-        return false;
-      });
+    it('should return warnings for missing G360 files', async () => {
+      await fs.mkdirp(tmpDir);
 
-      const result = validator.validateProject('/project/without/g360');
+      const result = validator.validateProject(tmpDir);
 
       expect(result.valid).toBe(true);
       expect(result.warnings).toContain('No g360-manifest.json found');
       expect(result.warnings).toContain('No g360 directory found');
     });
 
-    it('should handle partial G360 setup', () => {
-      fs.existsSync.mockImplementation((path) => {
-        // El directorio del proyecto existe
-        if (path === '/project/partial') return true;
-        // Solo el manifest existe
-        if (path.includes('g360-manifest.json')) return true;
-        // El directorio g360 no existe
-        return false;
-      });
+    it('should handle partial G360 setup', async () => {
+      await fs.writeJson(path.join(tmpDir, 'g360-manifest.json'), {}, { spaces: 2 });
 
-      const result = validator.validateProject('/project/partial');
+      const result = validator.validateProject(tmpDir);
 
       expect(result.valid).toBe(true);
       expect(result.warnings).toContain('No g360 directory found');

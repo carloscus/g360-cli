@@ -45,6 +45,7 @@ El código lee estas variables: documentá cada una con su default en `.env.exam
 - Los scripts de `package.json` son la interfaz del repo: agregar un comando nuevo es agregar un script.
 - Tests con Vitest/Jest junto al módulo (`*.test.js`).
 - Comentarios que expliquen el *por qué*, no el *qué*.
+- Tests de filesystem: usar `fs.mkdtemp` para crear un directorio temporal real en `beforeEach` y `fs.remove` en `afterEach`. No usar `vi.mock('fs-extra')` ni `vi.mock('fs')`, ya que generan falsos positivos/negativos y contaminación entre tests.
 
 ## Reglas de este repo
 

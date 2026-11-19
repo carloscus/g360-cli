@@ -3,24 +3,21 @@
  * @description Tests para el módulo manifest
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
+import os from 'os';
 import { manifest } from '../lib/manifest.js';
 
-// Mock de fs-extra
-vi.mock('fs-extra', () => ({
-  default: {
-    writeJson: vi.fn(),
-    readJson: vi.fn(),
-    existsSync: vi.fn(),
-    remove: vi.fn()
-  }
-}));
-
 describe('manifest module', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+  let tmpDir;
+
+  beforeEach(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'g360-manifest-test-'));
+  });
+
+  afterEach(async () => {
+    if (tmpDir) await fs.remove(tmpDir);
   });
 
   describe('init', () => {
@@ -31,21 +28,18 @@ describe('manifest module', () => {
         version: '1.0.0'
       };
 
-      fs.writeJson.mockResolvedValue();
+      const result = await manifest.init(tmpDir, projectData);
 
-      const result = await manifest.init('/test/project', projectData);
+      const manifestPath = path.join(tmpDir, 'g360-manifest.json');
+      const data = await fs.readJson(manifestPath);
 
-      expect(fs.writeJson).toHaveBeenCalledWith(
-        path.join('/test/project', 'g360-manifest.json'),
-        expect.objectContaining({
-          name: 'test-project',
-          template: 'web-pwa',
-          version: '1.0.0',
-          createdAt: expect.any(String),
-          assets: []
-        }),
-        { spaces: 2 }
-      );
+      expect(data).toMatchObject({
+        name: 'test-project',
+        template: 'web-pwa',
+        version: '1.0.0',
+        createdAt: expect.any(String),
+        assets: []
+      });
 
       expect(result).toMatchObject({
         name: 'test-project',
@@ -61,9 +55,7 @@ describe('manifest module', () => {
         version: '1.0.0'
       };
 
-      fs.writeJson.mockResolvedValue();
-
-      const result = await manifest.init('/test/project', projectData);
+      const result = await manifest.init(tmpDir, projectData);
 
       expect(result.assets).toEqual([]);
     });
@@ -79,95 +71,84 @@ describe('manifest module', () => {
         assets: []
       };
 
-      fs.existsSync.mockReturnValue(true);
-      fs.readJson.mockResolvedValue(mockManifest);
+      const manifestPath = path.join(tmpDir, 'g360-manifest.json');
+      await fs.writeJson(manifestPath, mockManifest, { spaces: 2 });
 
-      const result = await manifest.load('/test/project');
+      const result = await manifest.load(tmpDir);
 
       expect(result).toEqual(mockManifest);
     });
 
     it('should return null for non-existing manifest', async () => {
-      fs.existsSync.mockReturnValue(false);
-
-      const result = await manifest.load('/test/project');
+      const result = await manifest.load(tmpDir);
 
       expect(result).toBeNull();
     });
 
-    it('should return null when manifest file does not exist', async () => {
-      fs.existsSync.mockReturnValue(true);
-      fs.readJson.mockRejectedValue(new Error('File not found'));
+    it('should return null when manifest file is invalid', async () => {
+      const manifestPath = path.join(tmpDir, 'g360-manifest.json');
+      await fs.writeFile(manifestPath, 'not json');
 
-      const result = await manifest.load('/test/project');
+      const result = await manifest.load(tmpDir);
 
-      // El código actual no maneja errores de readJson, así que debería lanzar el error
-      // Para este test, vamos a verificar que el error se maneja correctamente
       expect(result).toBeNull();
     });
   });
 
   describe('addAsset', () => {
     it('should add asset to existing manifest', async () => {
-      const existingManifest = {
+      const manifestPath = path.join(tmpDir, 'g360-manifest.json');
+      await fs.writeJson(manifestPath, {
         name: 'test-project',
         template: 'web-pwa',
         version: '1.0.0',
         assets: []
-      };
+      }, { spaces: 2 });
 
       const newAsset = {
         name: 'components',
         type: 'directory'
       };
 
-      fs.readJson.mockResolvedValue(existingManifest);
-      fs.writeJson.mockResolvedValue();
+      await manifest.addAsset(tmpDir, newAsset);
 
-      await manifest.addAsset('/test/project', newAsset);
+      const data = await fs.readJson(manifestPath);
 
-      expect(fs.writeJson).toHaveBeenCalledWith(
-        path.join('/test/project', 'g360-manifest.json'),
+      expect(data.assets).toEqual([
         expect.objectContaining({
-          assets: expect.arrayContaining([
-            expect.objectContaining({
-              name: 'components',
-              type: 'directory',
-              addedAt: expect.any(String)
-            })
-          ])
-        }),
-        { spaces: 2 }
-      );
+          name: 'components',
+          type: 'directory',
+          addedAt: expect.any(String)
+        })
+      ]);
     });
 
     it('should not add asset when manifest does not exist', async () => {
-      fs.readJson.mockResolvedValue(null);
+      await manifest.addAsset(tmpDir, { name: 'test' });
 
-      await manifest.addAsset('/test/project', { name: 'test' });
-
-      expect(fs.writeJson).not.toHaveBeenCalled();
+      const manifestPath = path.join(tmpDir, 'g360-manifest.json');
+      const exists = await fs.pathExists(manifestPath);
+      expect(exists).toBe(false);
     });
   });
 
   describe('remove', () => {
     it('should remove manifest file', async () => {
-      fs.existsSync.mockReturnValue(true);
-      fs.remove.mockResolvedValue();
+      const manifestPath = path.join(tmpDir, 'g360-manifest.json');
+      await fs.writeJson(manifestPath, { name: 'test' }, { spaces: 2 });
 
-      await manifest.remove('/test/project');
+      await manifest.remove(tmpDir);
 
-      expect(fs.remove).toHaveBeenCalledWith(
-        path.join('/test/project', 'g360-manifest.json')
-      );
+      const exists = await fs.pathExists(manifestPath);
+      expect(exists).toBe(false);
     });
 
     it('should handle non-existing manifest gracefully', async () => {
-      fs.existsSync.mockReturnValue(false);
+      await manifest.remove(tmpDir);
 
-      await manifest.remove('/test/project');
-
-      expect(fs.remove).not.toHaveBeenCalled();
+      const manifestPath = path.join(tmpDir, 'g360-manifest.json');
+      const exists = await fs.pathExists(manifestPath);
+      expect(exists).toBe(false);
     });
   });
 });
