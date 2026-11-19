@@ -399,6 +399,8 @@ async function installHarness(targetDir, asset, dryRun, force) {
   if (skipped > 0) console.log(chalk.yellow(`   ${skipped} skipped (exists — use --force to overwrite)`));
   console.log(chalk.gray('   OpenCode: .opencode/skills/g360-design + .opencode/commands/'));
   console.log(chalk.gray('   Kilo Code: .kilo/rules/ + .kilo/commands/ (+ legacy .kilocode/rules/)'));
+  console.log(chalk.gray('   ✓ Repo-local mode: assets installed in project directory'));
+  console.log(chalk.gray('   ✓ No global ~/.config/ modification required'));
   console.log();
 }
 

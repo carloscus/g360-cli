@@ -14,6 +14,8 @@ const REPO_MARKERS = [
   '.git', 'package.json', 'pyproject.toml', 'go.mod', 'Cargo.toml', 'requirements.txt'
 ];
 
+const G360_MARKERS = ['g360-manifest.json', 'g360/', '.opencode/', '.kilo/'];
+
 const COLUMNS = [
   { id: 'instructions', label: 'AGENTS' },
   { id: 'verification', label: 'VERIF' },
@@ -44,6 +46,10 @@ function isRepo(dir) {
   return REPO_MARKERS.some((marker) => fs.existsSync(path.join(dir, marker)));
 }
 
+function isG360Repo(dir) {
+  return G360_MARKERS.some((marker) => fs.existsSync(path.join(dir, marker))) || isRepo(dir);
+}
+
 /**
  * Audita todos los repos de un workspace y muestra un resumen por repo.
  * @param {string} rootDir - Raíz del workspace (o de la carpeta projects)
@@ -61,7 +67,7 @@ export async function auditEcosystem(rootDir, options = {}) {
     .readdirSync(projectsDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
     .map((entry) => path.join(projectsDir, entry.name))
-    .filter((dir) => isRepo(dir))
+    .filter((dir) => isG360Repo(dir))
     .sort();
 
   console.log(chalk.bold.cyan('\n🔍 Auditoría de autosuficiencia — ecosistema\n'));
@@ -159,6 +165,9 @@ export async function auditEcosystem(rootDir, options = {}) {
  */
 export async function auditAgents(baseDir) {
   const home = baseDir ?? process.env.HOME ?? process.env.USERPROFILE;
+  if (!home) {
+    return { status: 'warn', mismatches: [], message: 'HOME not defined, skipping agents integrity check' };
+  }
   const result = await verifyManifest(home);
 
   console.log(chalk.bold.cyan('\n🔐 G360 Agents Integrity Audit\n'));
