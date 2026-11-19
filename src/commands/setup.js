@@ -30,43 +30,6 @@ const ASSETS_DIR = path.resolve(__dirname, '../assets/harness');
 const HOME_POSIX = (process.env.HOME || process.env.USERPROFILE).replace(/\\/g, '/');
 
 /**
- * Rutas de instalación por plataforma
- */
-const INSTALL_PATHS = {
-  opencode: {
-    base: path.join(process.env.HOME || process.env.USERPROFILE, '.config', 'opencode'),
-    files: [
-      { src: 'opencode/opencode.json.template', dst: 'opencode.json' },
-      { src: 'opencode/agents/*.md', dst: 'agents/' },
-      { src: 'opencode/skills/orchestrate/SKILL.md', dst: 'skills/orchestrate/SKILL.md' },
-    ],
-  },
-  kilo: {
-    base: path.join(process.env.HOME || process.env.USERPROFILE, '.config', 'kilo'),
-    files: [
-      { src: 'opencode/opencode.json.template', dst: 'kilo.jsonc' }, // shape V1 adaptado
-    ],
-  },
-  cline: {
-    base: path.join(process.env.HOME || process.env.USERPROFILE, '.agents'),
-    files: [
-      { src: 'shared/goldfish.ps1', dst: 'goldfish.ps1' },
-    ],
-  },
-};
-
-/**
- * Docs canónicas siempre instaladas
- */
-const SHARED_FILES = [
-  { src: 'shared/HANDOFF.md', dst: 'HANDOFF.md' },
-  { src: 'shared/MULTIAGENTE.md', dst: 'MULTIAGENTE.md' },
-  { src: 'shared/AGENTS.md', dst: 'AGENTS.md' },
-  { src: 'shared/MIGRACIONES.md', dst: 'MIGRACIONES.md' },
-  { src: 'shared/GLOSARIO.md', dst: 'GLOSARIO.md' },
-];
-
-/**
  * Configuración default para Kilo (shape V1).
  * Sincronizada con el canon instalado (~/.config/kilo/kilo.jsonc):
  * modelos con prefijo `kilo/`, prompts que referencian el esquema de
@@ -419,37 +382,6 @@ function isPlatformInstalled(platform) {
     cline: path.join(process.env.HOME || process.env.USERPROFILE, '.agents', 'goldfish.ps1'),
   };
   return fs.existsSync(paths[platform]);
-}
-
-/**
- * Copia archivos desde assets hasta destino
- */
-async function copyAssets(srcPattern, destPath, dryRun = false) {
-  const srcDir = path.join(ASSETS_DIR, path.dirname(srcPattern));
-  const fileName = path.basename(srcPattern);
-  const glob = path.join(srcDir, fileName);
-
-  try {
-    const files = await fs.readdir(srcDir);
-    const matches = files.filter((f) => f === fileName || fileName.includes('*'));
-
-    for (const file of matches) {
-      const src = path.join(srcDir, file);
-      const relPath = path.relative(srcDir, src);
-      const dest = path.join(destPath, relPath);
-
-      if (dryRun) {
-        console.log(chalk.gray(`  [dry-run] would copy: ${relPath}`));
-        continue;
-      }
-
-      await fs.ensureDir(path.dirname(dest));
-      await fs.copy(src, dest, { overwrite: true });
-      console.log(chalk.green(`  ✓ ${relPath}`));
-    }
-  } catch (err) {
-    console.error(chalk.red(`  ✗ Failed to copy ${srcPattern}: ${err.message}`));
-  }
 }
 
 /**
