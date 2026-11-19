@@ -49,19 +49,28 @@ const ADDON_REGISTRY = {
 
 export async function addon(command, options) {
   const { package: pkg, path: targetPath = '.', dryRun = false, force = false } = options;
-  
+
+  // Security: prevent path traversal — target must stay within cwd
+  const cwdResolved = path.resolve(process.cwd());
+  const resolvedTarget = path.resolve(process.cwd(), targetPath);
+  if (!resolvedTarget.startsWith(cwdResolved + path.sep) && resolvedTarget !== cwdResolved) {
+    console.error(chalk.red('Error: target path must be within the current directory'));
+    return;
+  }
+  const targetDir = resolvedTarget;
+
   console.log(chalk.bold.cyan('\n📦 G360 Addon Manager\n'));
-  
+
   if (command === 'install' || command === 'add') {
-    return installAddon(pkg, targetPath, dryRun, force);
+    return installAddon(pkg, targetDir, dryRun, force);
   }
-  
+
   if (command === 'list') {
-    return listAddons(targetPath);
+    return listAddons(targetDir);
   }
-  
+
   if (command === 'remove' || command === 'uninstall') {
-    return removeAddon(pkg, targetPath, force);
+    return removeAddon(pkg, targetDir, force);
   }
   
   console.log(chalk.yellow('Usage:'));
@@ -70,7 +79,7 @@ export async function addon(command, options) {
   console.log(chalk.gray('  g360 addon remove <package>'));
 }
 
-async function installAddon(pkg, targetPath, dryRun, force) {
+async function installAddon(pkg, targetDir, dryRun, force) {
   if (!pkg) {
     console.error(chalk.red('❌ Package name required'));
     console.log(chalk.gray('\nAvailable addons:'));
@@ -80,7 +89,6 @@ async function installAddon(pkg, targetPath, dryRun, force) {
     return;
   }
   
-  const targetDir = path.resolve(process.cwd(), targetPath);
   const addonDir = path.join(targetDir, 'g360', 'addons', pkg.replace('@', '').replace('/', '-'));
   
   if (fs.existsSync(addonDir) && !force) {
@@ -127,8 +135,7 @@ async function installAddon(pkg, targetPath, dryRun, force) {
   }
 }
 
-async function listAddons(targetPath) {
-  const targetDir = path.resolve(process.cwd(), targetPath);
+async function listAddons(targetDir) {
   const addonsDir = path.join(targetDir, 'g360', 'addons');
   
   if (!fs.existsSync(addonsDir)) {
@@ -155,13 +162,12 @@ async function listAddons(targetPath) {
   }
 }
 
-async function removeAddon(pkg, targetPath, force) {
+async function removeAddon(pkg, targetDir, force) {
   if (!pkg) {
     console.error(chalk.red('❌ Package name required'));
     return;
   }
   
-  const targetDir = path.resolve(process.cwd(), targetPath);
   const addonDir = path.join(targetDir, 'g360', 'addons', pkg.replace('@', '').replace('/', '-'));
   
   if (!fs.existsSync(addonDir)) {
