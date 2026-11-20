@@ -49,4 +49,11 @@ describe('permisos instalados (kilo.jsonc generado por setup)', () => {
     const bash = config.agent['g360-qa-specialist'].permission.bash;
     expect(bash['npm run *']).toBeUndefined();
   });
+
+  it('todas las rutas de instructions existen tras setup', () => {
+    for (const p of config.instructions) {
+      const real = p.replace(/^.*[\\/]\.agents/, path.join(process.env.HOME, '.agents'));
+      expect(fs.existsSync(real), p).toBe(true);
+    }
+  });
 });

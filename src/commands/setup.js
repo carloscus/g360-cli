@@ -713,7 +713,9 @@ async function installSharedDocs(options) {
   for (const doc of docs) {
     const src = path.join(ASSETS_DIR, 'shared', doc.src);
     const dst = path.join(destDir, doc.dst);
-    await fs.copy(src, dst);
+    // Preservar AGENTS.md del usuario: no sobrescribir si ya existe
+    const shouldOverwrite = doc.dst !== 'AGENTS.md' || !fs.existsSync(dst);
+    await fs.copy(src, dst, { overwrite: shouldOverwrite });
     console.log(chalk.green(`  ✓ .agents/${doc.dst}`));
   }
 }
