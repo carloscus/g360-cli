@@ -18,3 +18,4 @@ AUDITOR-RESUMEN.md
 src/commands/__tmp_out.csv
 
 .tmp-test-home/
+.tmp-test-home-oc/

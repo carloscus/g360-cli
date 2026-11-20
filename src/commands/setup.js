@@ -322,6 +322,8 @@ const DEFAULT_OPENCODE_CONFIG = {
         { action: 'shell', resource: 'git push *', effect: 'deny' },
         { action: 'shell', resource: 'docker *', effect: 'deny' },
         { action: 'shell', resource: 'rm -rf *', effect: 'deny' },
+        { action: 'edit', resource: '*', effect: 'deny' },
+        { action: 'write', resource: '*', effect: 'deny' },
       ],
     },
     architect: {
