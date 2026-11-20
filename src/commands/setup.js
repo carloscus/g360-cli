@@ -198,7 +198,9 @@ const DEFAULT_KILO_CONFIG = {
         bash: {
           '*': 'deny',
           'npm test *': 'allow',
-          'npm run *': 'allow',
+          'npm test *': 'allow', 'npm run test': 'allow',
+'npm run test:property': 'allow',
+'npm run test:coverage': 'allow',
           'npx vitest *': 'allow',
           'pytest *': 'allow',
           'uv run pytest *': 'allow',
