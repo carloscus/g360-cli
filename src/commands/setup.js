@@ -695,6 +695,8 @@ async function installSharedDocs(options) {
     console.log(chalk.gray('    .agents/HANDOFF.md'));
     console.log(chalk.gray('    .agents/MULTIAGENTE.md'));
     console.log(chalk.gray('    .agents/AGENTS.md (copy from canónico)'));
+    console.log(chalk.gray('    .agents/MIGRACIONES.md'));
+    console.log(chalk.gray('    .agents/GLOSARIO.md'));
     return;
   }
 
@@ -703,6 +705,9 @@ async function installSharedDocs(options) {
   const docs = [
     { src: 'HANDOFF.md', dst: 'HANDOFF.md' },
     { src: 'MULTIAGENTE.md', dst: 'MULTIAGENTE.md' },
+    { src: 'AGENTS.md', dst: 'AGENTS.md' },
+    { src: 'MIGRACIONES.md', dst: 'MIGRACIONES.md' },
+    { src: 'GLOSARIO.md', dst: 'GLOSARIO.md' },
   ];
 
   for (const doc of docs) {
