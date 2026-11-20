@@ -219,3 +219,108 @@ describe('setup funciones críticas sin cobertura directa', () => {
     expect(logText()).toContain('opencode: installed');
   });
 });
+
+describe('coherencia de 9 roles (proposer, evaluator, adversary)', () => {
+  const AGENTS_DIR = path.join(
+    __dirname,
+    '..',
+    'assets',
+    'harness',
+    'opencode',
+    'agents',
+  );
+  const FALLBACKS_PATH = path.join(
+    __dirname,
+    '..',
+    'assets',
+    'config',
+    'model-fallbacks.json',
+  );
+  const SETUP_SRC = path.join(__dirname, 'setup.js');
+
+  const rolesEsperados = [
+    'orchestrator',
+    'architect',
+    'reviewer',
+    'security-auditor',
+    'data-specialist',
+    'qa-specialist',
+    'proposer',
+    'evaluator',
+    'adversary',
+  ];
+
+  it('assets tiene exactamente 9 agentes .md (sin hardcodear en dry-run)', () => {
+    const files = fs.readdirSync(AGENTS_DIR).filter((f) => f.endsWith('.md'));
+    expect(files.length).toBe(9);
+    for (const rol of rolesEsperados) {
+      expect(files).toContain(`${rol}.md`);
+    }
+  });
+
+  it('dry-run de opencode deriva la lista de readdir, no hardcodeada', async () => {
+    const logs = [];
+    const originalLog = console.log;
+    console.log = (...args) => logs.push(args.join(' '));
+    try {
+      await setup({ platform: 'opencode', dryRun: true, reset: true });
+    } finally {
+      console.log = originalLog;
+    }
+    const salida = logs.join('\n');
+    for (const rol of rolesEsperados) {
+      expect(salida).toContain(rol);
+    }
+  });
+
+  it('DEFAULT_OPENCODE_CONFIG declara los 9 agentes', () => {
+    const src = fs.readFileSync(SETUP_SRC, 'utf8');
+    for (const rol of rolesEsperados) {
+      // Cada rol tiene una entrada `rol: {` en el objeto agents (4 espacios)
+      expect(src).toMatch(new RegExp(`    '?${rol.replace(/[.*+?^${}()|[\]\\]/g, '\\\\$&')}'?\\s*: \\{`));
+    }
+  });
+
+  it('orchestrator.permissions permite invocar a proposer, evaluator y adversary', () => {
+    const src = fs.readFileSync(SETUP_SRC, 'utf8');
+    for (const rol of ['proposer', 'evaluator', 'adversary']) {
+      expect(src).toContain(`resource: '${rol}', effect: 'allow'`);
+    }
+  });
+
+  it('DEFAULT_KILO_CONFIG declara g360-proposer, g360-evaluator, g360-adversary con task allow', () => {
+    const src = fs.readFileSync(SETUP_SRC, 'utf8');
+    for (const rol of ['g360-proposer', 'g360-evaluator', 'g360-adversary']) {
+      expect(src).toContain(`'${rol}': {`);
+    }
+    expect(src).toContain("'g360-proposer': 'allow'");
+    expect(src).toContain("'g360-evaluator': 'allow'");
+    expect(src).toContain("'g360-adversary': 'allow'");
+  });
+
+  it('model-fallbacks.json tiene entrada para cada rol y resolveModel !== null', async () => {
+    const fallbacks = JSON.parse(fs.readFileSync(FALLBACKS_PATH, 'utf8'));
+    const { resolveModel } = await import('../lib/model-resolver.js');
+    for (const rol of rolesEsperados) {
+      expect(fallbacks).toHaveProperty(rol);
+      expect(Array.isArray(fallbacks[rol])).toBe(true);
+      expect(fallbacks[rol].length).toBeGreaterThan(0);
+      expect(resolveModel(rol)).not.toBeNull();
+    }
+  });
+
+  it('proposer, evaluator y adversary son read-only: sin edit/write/patch, shell solo git read-only, sin subagentes', () => {
+    const src = fs.readFileSync(SETUP_SRC, 'utf8');
+    for (const rol of ['proposer', 'evaluator', 'adversary']) {
+      // En OpenCode config: denegar edit, write, patch; shell deny total salvo git read-only
+      expect(src).toContain(`{ action: 'edit', resource: '*', effect: 'deny' },`);
+      expect(src).toContain(`{ action: 'write', resource: '*', effect: 'deny' },`);
+      expect(src).toContain(`{ action: 'patch', resource: '*', effect: 'deny' },`);
+      expect(src).toContain(`{ action: 'shell', resource: '*', effect: 'deny' },`);
+      expect(src).toContain(`{ action: 'shell', resource: 'git diff*', effect: 'allow' },`);
+      expect(src).toContain(`{ action: 'shell', resource: 'git log*', effect: 'allow' },`);
+      expect(src).toContain(`{ action: 'shell', resource: 'git show*', effect: 'allow' },`);
+      expect(src).toContain(`{ action: 'shell', resource: 'git status*', effect: 'allow' },`);
+    }
+  });
+});

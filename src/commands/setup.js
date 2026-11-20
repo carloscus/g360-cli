@@ -77,6 +77,9 @@ const DEFAULT_KILO_CONFIG = {
           'g360-security-auditor': 'allow',
           'g360-data-specialist': 'allow',
           'g360-qa-specialist': 'allow',
+          'g360-proposer': 'allow',
+          'g360-evaluator': 'allow',
+          'g360-adversary': 'allow',
         },
       },
     },
@@ -107,7 +110,7 @@ const DEFAULT_KILO_CONFIG = {
       description:
         'Revisor crítico independiente (Goldfish). Ve solo la spec y el diff, nunca el historial. Solo lectura.',
       mode: 'subagent',
-      model: 'kilo/kilo-auto/free',
+      model: 'kilo/opencode-go/beam-free:free',
       prompt:
         'Sos un revisor independiente. No participaste de la decisión que revisás y no tenés el historial de la conversación: eso es intencional. Tu trabajo es encontrar defectos reales, no validar al autor. Respondé con el esquema fijo de HANDOFF.md: VEREDICTO, CRÍTICOS (con archivo:línea y evidencia), ADVERTENCIAS y NO VERIFICADO. Un hallazgo sin evidencia ejecutable es advertencia, no crítico. No modificás archivos.',
       maxSteps: 15,
@@ -209,6 +212,74 @@ const DEFAULT_KILO_CONFIG = {
         },
       },
     },
+    'g360-proposer': {
+      description:
+        'Proposer — produce la especificación técnica. No implementa código. Read-only.',
+      mode: 'subagent',
+      model: 'kilo/nvidia/stepfun-ai/step-5-preview:free',
+      prompt:
+        'Sos el proposer. Producís SOLO la especificación técnica: objetivo, contexto mínimo (rutas), restricciones, supuestos (≤3), criterio de aceptación verificable, riesgos y alternativas descartadas. No implementás, no escribís archivos, no ejecutás comandos, no invocás subagentes. Respondé con un documento de especificación en markdown.',
+      maxSteps: 40,
+      permission: {
+        edit: 'deny',
+        webfetch: 'deny',
+        websearch: 'deny',
+        bash: {
+          '*': 'deny',
+        },
+        task: {
+          '*': 'deny',
+        },
+      },
+    },
+    'g360-evaluator': {
+      description:
+        'Evaluator — consolida reportes del nivel y emite veredicto + recomendación. No implementa. Read-only.',
+      mode: 'subagent',
+      model: 'kilo/opencode/qwen3.8-flash:free',
+      prompt:
+        'Sos el evaluator. Recibís TODOS los reportes del nivel (adversary, reviewer, qa-specialist, security-auditor, data-specialist según corresponda). Si un agente no se invocó, declará explícitamente NO INVOCADO para ese reporte. Compará hallazgos, marcá conflictos/duplicados, distinguí evidencia ejecutable de especulación. Emití salida con el esquema canónico de HANDOFF.md: VEREDICTO (APROBADO|CONDICIONAL|RECHAZADO), CRÍTICOS, ADVERTENCIAS, RECOMENDACIÓN (ADOPTAR|MODIFICAR|RECHAZAR mapeado 1:1), NO VERIFICADO. No implementás, no decidís solo (el orquestador decide), no escribís archivos.',
+      maxSteps: 40,
+      permission: {
+        edit: 'deny',
+        webfetch: 'deny',
+        websearch: 'deny',
+        bash: {
+          '*': 'deny',
+          'git diff': 'allow',
+          'git diff *': 'allow',
+          'git log': 'allow',
+          'git log *': 'allow',
+          'git show': 'allow',
+          'git show *': 'allow',
+          'git status': 'allow',
+          'git status *': 'allow',
+        },
+        task: {
+          '*': 'deny',
+        },
+      },
+    },
+    'g360-adversary': {
+      description:
+        'Adversary — ataca suposiciones de specs/plans ANTES de implementar. Read-only.',
+      mode: 'subagent',
+      model: 'kilo/nvidia/minimaxai/minimax-m3.1-flash:free',
+      prompt:
+        'Sos el adversary. Atacás suposiciones, riesgos y fallacias en especificaciones y planes ANTES de que se implementen. No implementás, no escribís archivos, no ejecutás comandos, no invocás subagentes. Emití hallazgos con ID (ADV-001, ADV-002, ...), severidad, ubicación, afirmación cuestionada, problema, consecuencia y sugerencia.',
+      maxSteps: 12,
+      permission: {
+        edit: 'deny',
+        webfetch: 'deny',
+        websearch: 'deny',
+        bash: {
+          '*': 'deny',
+        },
+        task: {
+          '*': 'deny',
+        },
+      },
+    },
   },
 };
 
@@ -242,6 +313,9 @@ const DEFAULT_OPENCODE_CONFIG = {
         { action: 'subagent', resource: 'security-auditor', effect: 'allow' },
         { action: 'subagent', resource: 'data-specialist', effect: 'allow' },
         { action: 'subagent', resource: 'qa-specialist', effect: 'allow' },
+        { action: 'subagent', resource: 'proposer', effect: 'allow' },
+        { action: 'subagent', resource: 'evaluator', effect: 'allow' },
+        { action: 'subagent', resource: 'adversary', effect: 'allow' },
         { action: 'shell', resource: 'npm publish *', effect: 'deny' },
         { action: 'shell', resource: 'git push *', effect: 'deny' },
         { action: 'shell', resource: 'docker *', effect: 'deny' },
@@ -267,7 +341,7 @@ const DEFAULT_OPENCODE_CONFIG = {
       description:
         'Revisor crítico independiente (Goldfish). Revisa diffs desde perspectiva totalmente independiente. Solo lectura.',
       mode: 'subagent',
-      model: resolveModel('reviewer') || 'opencode/glm-5.3-flash#max',
+      model: resolveModel('reviewer') || 'opencode-go/beam-free#max',
       steps: 15,
       permissions: [
         { action: 'edit', resource: '*', effect: 'deny' },
@@ -283,11 +357,11 @@ const DEFAULT_OPENCODE_CONFIG = {
         { action: 'grep', resource: '*', effect: 'allow' },
       ],
     },
-    security_auditor: {
+    'security-auditor': {
       description:
         'Auditor de seguridad y compatibilidad cross-stack. Revisa cambios en busca de vulnerabilidades y ruptura de contratos.',
       mode: 'subagent',
-      model: resolveModel('security_auditor') || 'opencode/glm-5.3-flash#low',
+      model: resolveModel('security-auditor') || 'opencode/glm-5.3-flash#low',
       steps: 12,
       permissions: [
         { action: 'edit', resource: '*', effect: 'deny' },
@@ -305,11 +379,11 @@ const DEFAULT_OPENCODE_CONFIG = {
         { action: 'grep', resource: '*', effect: 'allow' },
       ],
     },
-    data_specialist: {
+    'data-specialist': {
       description:
         'Especialista en datos y migraciones. Audita esquemas, procesadores ERP y contratos de intercambio.',
       mode: 'subagent',
-      model: resolveModel('data_specialist') || 'opencode/glm-5.3-flash#low',
+      model: resolveModel('data-specialist') || 'opencode/glm-5.3-flash#low',
       steps: 15,
       permissions: [
         { action: 'edit', resource: '*', effect: 'deny' },
@@ -324,11 +398,11 @@ const DEFAULT_OPENCODE_CONFIG = {
         { action: 'grep', resource: '*', effect: 'allow' },
       ],
     },
-    qa_specialist: {
+    'qa-specialist': {
       description:
         'QA y pruebas de regresión. Ejecuta suites de tests, detecta regresiones, propone tests adicionales.',
       mode: 'subagent',
-      model: resolveModel('qa_specialist') || 'nvidia/minimaxai/minimax-m3.1-flash#none',
+      model: resolveModel('qa-specialist') || 'nvidia/minimaxai/minimax-m3.1-flash#none',
       steps: 10,
       permissions: [
         { action: 'edit', resource: '*', effect: 'deny' },
@@ -344,6 +418,58 @@ const DEFAULT_OPENCODE_CONFIG = {
         { action: 'shell', resource: 'g360 audit*', effect: 'allow' },
         { action: 'shell', resource: 'git diff*', effect: 'allow' },
         { action: 'shell', resource: 'git status*', effect: 'allow' },
+        { action: 'read', resource: '*', effect: 'allow' },
+        { action: 'glob', resource: '*', effect: 'allow' },
+        { action: 'grep', resource: '*', effect: 'allow' },
+      ],
+    },
+    proposer: {
+      description:
+        'Proposer — produce la especificación técnica. No implementa código. Read-only.',
+      mode: 'subagent',
+      model: resolveModel('proposer') || 'nvidia/stepfun-ai/step-5-preview#medium',
+      steps: 40,
+      permissions: [
+        { action: 'edit', resource: '*', effect: 'deny' },
+        { action: 'write', resource: '*', effect: 'deny' },
+        { action: 'patch', resource: '*', effect: 'deny' },
+        { action: 'shell', resource: '*', effect: 'deny' },
+        { action: 'read', resource: '*', effect: 'allow' },
+        { action: 'glob', resource: '*', effect: 'allow' },
+        { action: 'grep', resource: '*', effect: 'allow' },
+      ],
+    },
+    evaluator: {
+      description:
+        'Evaluator — consolida reportes del nivel y emite veredicto + recomendación. Read-only.',
+      mode: 'subagent',
+      model: resolveModel('evaluator') || 'opencode/qwen3.8-flash#xhigh',
+      steps: 40,
+      permissions: [
+        { action: 'edit', resource: '*', effect: 'deny' },
+        { action: 'write', resource: '*', effect: 'deny' },
+        { action: 'patch', resource: '*', effect: 'deny' },
+        { action: 'shell', resource: '*', effect: 'deny' },
+        { action: 'shell', resource: 'git diff*', effect: 'allow' },
+        { action: 'shell', resource: 'git log*', effect: 'allow' },
+        { action: 'shell', resource: 'git show*', effect: 'allow' },
+        { action: 'shell', resource: 'git status*', effect: 'allow' },
+        { action: 'read', resource: '*', effect: 'allow' },
+        { action: 'glob', resource: '*', effect: 'allow' },
+        { action: 'grep', resource: '*', effect: 'allow' },
+      ],
+    },
+    adversary: {
+      description:
+        'Adversary — ataca suposiciones de specs/plans ANTES de implementar. Read-only.',
+      mode: 'subagent',
+      model: resolveModel('adversary') || 'nvidia/minimaxai/minimax-m3.1-flash#none',
+      steps: 12,
+      permissions: [
+        { action: 'edit', resource: '*', effect: 'deny' },
+        { action: 'write', resource: '*', effect: 'deny' },
+        { action: 'patch', resource: '*', effect: 'deny' },
+        { action: 'shell', resource: '*', effect: 'deny' },
         { action: 'read', resource: '*', effect: 'allow' },
         { action: 'glob', resource: '*', effect: 'allow' },
         { action: 'grep', resource: '*', effect: 'allow' },
@@ -464,9 +590,19 @@ async function installPlatform(platform, options) {
     );
 
     if (dryRun) {
+      const agentsSrc = path.join(ASSETS_DIR, 'opencode', 'agents');
+      const agentFiles = await fs.readdir(agentsSrc);
+      const agentNames = agentFiles
+        .filter((f) => f.endsWith('.md'))
+        .map((f) => f.replace(/\.md$/, ''))
+        .sort();
       console.log(chalk.gray('  [dry-run] would create:'));
       console.log(chalk.gray('    opencode/opencode.json'));
-      console.log(chalk.gray('    opencode/agents/{orchestrator,architect,reviewer,security-auditor,data-specialist,qa-specialist}.md'));
+      console.log(
+        chalk.gray(
+          `    opencode/agents/{${agentNames.join(',')}}.md`,
+        ),
+      );
       console.log(chalk.gray('    opencode/skills/orchestrate/SKILL.md'));
       return { platform, status: 'dry-run' };
     }

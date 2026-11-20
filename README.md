@@ -21,7 +21,7 @@ flowchart TD
     ASSETS["Assets<br/>templates · brand · signature · ingestion · harness"]
     PY["g360-core (PyPI)<br/>commercial_engine · pipeline · batch_processor"]
     ERP["Datos ERP<br/>.xls · .xlsx · .csv"]
-    IA["Sistema Multiagente<br/>orchestrator · architect · reviewer · security-auditor · data-specialist · qa-specialist"]
+    IA["Sistema Multiagente<br/>orchestrator · architect · proposer · adversary · evaluator · reviewer · security-auditor · data-specialist · qa-specialist"]
 
     CLI --> CMD
     CMD --> LIB
@@ -104,7 +104,7 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 ## Versión
 
-**Current: v1.22.0** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
+**Current: 2.1.1** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
 
 ---
 
@@ -1910,7 +1910,10 @@ g360 setup --platform all
 |---|---|---|---|---|---|---|
 | `orchestrator` | Clasifica nivel A/B/C, invoca agentes, consolida reporte | opencode/glm-5.3-flash | `#high` | ✓ primary | ✓ primary | — |
 | `architect` | Implementa código según especificación | nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b | `#none` | ✓ subagent | ✓ g360-architect | — |
+| `proposer` | Produce la especificación técnica (no implementa) | nvidia/stepfun-ai/step-5-preview | `#medium` | ✓ subagent | ✓ g360-proposer | — |
+| `adversary` | Ataca suposiciones de specs/plans antes de implementar | nvidia/minimaxai/minimax-m3.1-flash | `#none` | ✓ subagent | ✓ g360-adversary | — |
 | `reviewer` | Revisa diff aislado vs criterio de aceptación (Goldfish) | opencode/glm-5.3-flash | `#max` | ✓ subagent | ✓ g360-reviewer | goldfish.ps1 |
+| `evaluator` | Consolida reportes del nivel, emite veredicto + recomendación | opencode/qwen3.8-flash | `#xhigh` | ✓ subagent | ✓ g360-evaluator | — |
 | `security-auditor` | Busca credenciales, CVEs, rupturas de contrato | opencode/glm-5.3-flash | `#low` | ✓ subagent | ✓ g360-security-auditor | — |
 | `data-specialist` | Audita schemas, migraciones, contratos de datos | opencode/glm-5.3-flash | `#low` | ✓ subagent | ✓ g360-data-specialist | — |
 | `qa-specialist` | Ejecuta tests, valida equivalencia y visual | nvidia/minimaxai/minimax-m3.1-flash | `#none` | ✓ subagent | ✓ g360-qa-specialist | — |
@@ -1922,8 +1925,8 @@ g360 setup --platform all
 | Nivel | Qué es | Flujo | Gate |
 |---|---|---|---|
 | **A** | Mantenimiento ligero (typo, estilo, dep menor) | implementa → (qa opcional) | Ninguno |
-| **B** | Módulo o funcionalidad nueva | architect → reviewer → qa | Reviewer puede bloquear |
-| **C** | Estructural (schema, migración, contratos de datos) | data-specialist → architect (spec) → reviewer ×2 → security-auditor → data-specialist (plan+rollback) → **aprobación humana** → architect (implementa) → qa (funcional+visual) → **aprobación humana final** | Aprobación obligatoria antes y después |
+| **B** | Módulo o funcionalidad nueva | proposer → adversary → architect → reviewer → qa → evaluator → orquestador decide | Reviewer puede bloquear |
+| **C** | Estructural (schema, migración, contratos de datos) | data-specialist → proposer → adversary → reviewer ×2 → security-auditor → data-specialist → aprobar humano → architect → qa → evaluator → aprobar humano final | Aprobación obligatoria antes y después |
 
 > Un cambio que toca contratos de datos es **C por definición**, aunque sean 3 líneas.
 
@@ -1956,8 +1959,8 @@ g360 setup --dry-run           # Preview sin escribir
 
 | Destino | Contenido |
 |---|---|
-| `~/.config/opencode/opencode.json` | 6 agentes + permisos (shape V2) + variantes de modelo |
-| `~/.config/opencode/agents/*.md` | Prompts de cada agente con modelo+variante |
+| `~/.config/opencode/opencode.json` | 9 agentes + permisos (shape V2) + variantes de modelo |
+| `~/.config/opencode/agents/*.md` | Prompts de cada agente con modelo+variante (incluye proposer, evaluator, adversary) |
 | `~/.config/opencode/skills/orchestrate/SKILL.md` | Flujo A/B/C + handoff |
 | `~/.config/kilo/kilo.jsonc` | Agentes g360-* (shape V1) |
 | `~/.agents/HANDOFF.md` | Metodología elefante-goldfish |

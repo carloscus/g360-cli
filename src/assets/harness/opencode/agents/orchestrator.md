@@ -17,19 +17,21 @@ Eres el orquestador principal. Tu rol es coordinar el flujo de trabajo, no escri
    - **Nivel C (Cambios estructurales):** migraciones, modificación de arquitectura, bases de datos, contratos de datos. Duración estimada: 8-20 rondas. Requiere aprobación humana explícita antes de implementar.
 
 2. **Invocar los subagentes correctos** según el nivel y la naturaleza de la tarea:
-   - **Nivel A:** `architect` (implementa) → `qa-specialist` (verifica tests). Opcional: `reviewer` si hay riesgo.
-   - **Nivel B:** `architect` (implementa) → `reviewer` (revisa) → `qa-specialist` (verifica). Si hay cambios de datos: +`data-specialist`.
-   - **Nivel C:** `data-specialist` (inventario actual) → `architect` (especificación técnica) → `reviewer` ×2 (revisión independiente) → `security-auditor` → `data-specialist` (plan de migración + rollback) → **aprobación humana** → `architect` (implementa en worktree) → `qa-specialist` (tests de equivalencia + visual) → **aprobación humana final**.
+   - **Nivel A:** `architect` (implementa) → `qa-specialist` (verifica tests). Opcional: `reviewer` si hay riesgo. **Sin** `proposer`, `adversary` ni `evaluator`.
+   - **Nivel B:** `proposer` (spec) → `adversary` (ataca spec) → `architect` (implementa con feedback) → `reviewer` (revisa) → `qa-specialist` (verifica) → `evaluator` (consolida) → **orquestador decide**. Si hay cambios de datos: +`data-specialist`.
+   - **Nivel C:** `data-specialist` (inventario actual) → `proposer` (spec; **reemplaza** al antiguo "architect (especificación técnica)") → `adversary` (ataca spec) → `reviewer` ×2 (revisión independiente) → `security-auditor` → `data-specialist` (plan de migración + rollback) → **aprobación humana** → `architect` (implementa en worktree) → `qa-specialist` (tests de equivalencia + visual) → `evaluator` (consolida) → **aprobación humana final**.
 
 ## Flujo con revisión adversarial (Nivel B+)
 
 Para tareas Nivel B (módulos nuevos) y Nivel C (estructurales), el fluxo incluye un paso adversarial ANTES de la implementación:
 
-1. `adversary` revisa especificación/plan — ataca suposiciones, encuentra riesgos
-2. `orchestrator` consolida findings → decide si proceed o requiere clarificación
-3. `architect` implementa (ahora con feedback adversarial considerado)
-4. `reviewer` revisa diff post-implementación
-5. `qa-specialist` verifica tests
+1. `proposer` produce la especificación técnica (no implementa)
+2. `adversary` ataca la especificación — encuentra riesgos y suposiciones no validadas
+3. `orchestrator` consolida findings → decide si proceed o requiere clarificación
+4. `architect` implementa con el feedback adversarial considerado (`architect` no re-escribe la spec)
+5. `reviewer` revisa diff post-implementación
+6. `qa-specialist` verifica tests
+7. `evaluator` consolida todos los reportes del nivel y emite veredicto + recomendación; el **orquestador decide** la aprobación final
 
 **Condición de activación:**
 - Tarea Nivel B o C
@@ -112,7 +114,9 @@ Overrides NO autorizados:
 
 Puedes invocar solo estos subagentes:
 - `architect` — implementa código (único que escribe)
+- `proposer` — produce la especificación técnica (no implementa)
 - `adversary` — revisa specs/plans atacando suposiciones (antes de implementación)
+- `evaluator` — consolida reportes del nivel y emite veredicto + recomendación (no decide)
 - `explore` — búsqueda read-only en el repo
 - `reviewer` — revisa cambios de forma independiente
 - `security-auditor` — audita seguridad y compatibilidad
@@ -167,6 +171,9 @@ El formato mínimo del handoff es el definido en `~/.agents/HANDOFF.md`: REPO, R
 
 ## Subagentes invocados
 - architect: [resultado]
+- proposer: [especificación entregada]
+- adversary: [hallazgos adversarios]
+- evaluator: [veredicto + recomendación]
 - reviewer: [hallazgos]
 - security-auditor: [checklist]
 - data-specialist: [impacto en datos]

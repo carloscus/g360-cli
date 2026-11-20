@@ -25,15 +25,17 @@ NO lo uses para correcciones menores (typos, ajuste de estilos, una sola línea)
 Correcciones puntuales, typos, ajuste de estilos, dependencia menor.
 - **Flujo:** orquestador directo → (qa opcional)
 - **Duración estimada:** 1-2 rondas
+- **Roles:** `architect` (implementa), `qa-specialist` (verifica). **Sin** `proposer`, `adversary` ni `evaluator`.
 
 ### Nivel B — Desarrollo de módulos
 Nuevas funcionalidades, pantallas, componentes, APIs.
-- **Flujo:** orquestador → `architect` → reviewer → qa
+- **Flujo:** `proposer` (spec) → `adversary` (ataca spec) → `architect` (implementa con feedback) → `reviewer` (revisa) → `qa-specialist` (verifica) → `evaluator` (consolida) → **orquestador decide**
 - **Duración estimada:** 3-6 rondas
+- **Roles:** `proposer`, `adversary`, `architect`, `reviewer`, `qa-specialist`, `evaluator`
 
 ### Nivel C — Cambios estructurales
 Migraciones, modificación de arquitectura, bases de datos, contratos de datos.
-- **Flujo:** orquestador → data-specialist (inventario) → `architect` (spec) → reviewer ×2 → security-auditor → data-specialist (plan migración + rollback) → **aprobación humana** → `architect` (implementa en worktree) → qa-specialist (funcional + visual) → **aprobación humana final**
+- **Flujo:** `data-specialist` (inventario) → `proposer` (spec; **reemplaza** al antiguo "architect (especificación técnica)") → `adversary` (ataca spec) → `reviewer` ×2 → `security-auditor` → `data-specialist` (plan migración + rollback) → **aprobación humana** → `architect` (implementa en worktree) → `qa-specialist` (funcional + visual) → `evaluator` (consolida) → **aprobación humana final**
 - **Duración estimada:** 8-20 rondas
 - **Protocolo detallado:** `~/.agents/MIGRACIONES.md`
 
@@ -70,11 +72,14 @@ Consolida los entregables en formato markdown con estado final.
 ## Subagentes invocados
 | Agente | Rol | Resultado |
 |---|---|---|
+| proposer | [especificación] | [spec entregada] |
+| adversary | [ataque a supuestos] | [hallazgos ADV-xxx] |
 | architect | [implementó] | [qué hizo] |
 | reviewer | [revitó] | [hallazgos críticos / advertencias / notas] |
 | security-auditor | [auditoría] | [checklist completado] |
 | data-specialist | [impacto datos] | [plan de migración] |
 | qa-specialist | [tests] | [X passed / Y failed] |
+| evaluator | [consolidó] | [veredicto + recomendación] |
 
 ## Verificación
 ```bash

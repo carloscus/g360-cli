@@ -19,13 +19,29 @@ describe('model-resolver', () => {
     });
 
     it('retorna el primer modelo para reviewer', () => {
-      expect(resolveModel('reviewer')).toBe('opencode/glm-5.3-flash#max');
+      expect(resolveModel('reviewer')).toBe('opencode-go/beam-free#max');
     });
 
-    it('retorna el primer modelo para qa_specialist', () => {
-      expect(resolveModel('qa_specialist')).toBe(
+    it('retorna el primer modelo para qa-specialist', () => {
+      expect(resolveModel('qa-specialist')).toBe(
         'nvidia/minimaxai/minimax-m3.1-flash#none'
       );
+    });
+
+    it('retorna el primer modelo para adversary', () => {
+      expect(resolveModel('adversary')).toBe(
+        'nvidia/minimaxai/minimax-m3.1-flash#none'
+      );
+    });
+
+    it('retorna el primer modelo para proposer', () => {
+      expect(resolveModel('proposer')).toBe(
+        'nvidia/stepfun-ai/step-5-preview#medium'
+      );
+    });
+
+    it('retorna el primer modelo para evaluator', () => {
+      expect(resolveModel('evaluator')).toBe('opencode/qwen3.8-flash#xhigh');
     });
   });
 
@@ -35,9 +51,12 @@ describe('model-resolver', () => {
       expect(all).toHaveProperty('orchestrator');
       expect(all).toHaveProperty('architect');
       expect(all).toHaveProperty('reviewer');
-      expect(all).toHaveProperty('security_auditor');
-      expect(all).toHaveProperty('data_specialist');
-      expect(all).toHaveProperty('qa_specialist');
+      expect(all).toHaveProperty('security-auditor');
+      expect(all).toHaveProperty('data-specialist');
+      expect(all).toHaveProperty('qa-specialist');
+      expect(all).toHaveProperty('adversary');
+      expect(all).toHaveProperty('proposer');
+      expect(all).toHaveProperty('evaluator');
     });
 
     it('cada rol tiene al menos un modelo', () => {

@@ -1,7 +1,7 @@
 ---
 description: Revisor crítico independiente (Goldfish). Revisa diffs propuestos desde una perspectiva totalmente independiente, sin ver el historial de conversación del agente diseñador. Solo lectura — nunca modifica archivos.
 mode: subagent
-model: opencode/glm-5.3-flash#max
+model: opencode-go/beam-free#max
 steps: 15
 ---
 

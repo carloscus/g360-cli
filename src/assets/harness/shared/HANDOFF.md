@@ -22,8 +22,8 @@ revisor comparte el razonamiento del autor, hereda sus puntos ciegos.
 | Nivel | Qué es | Flujo | Gate |
 | --- | --- | --- | --- |
 | **A** | Mantenimiento ligero (typo, estilo, dep menor) | implementa → (qa opcional) | ninguno |
-| **B** | Módulo o funcionalidad nueva | implementa → reviewer → qa | reviewer puede bloquear |
-| **C** | Estructural (schema, migración, contratos de datos) | inventario → spec → reviewer ×2 → security → plan de migración → implementa en worktree → qa de equivalencia | **aprobación humana antes de implementar** |
+| **B** | Módulo o funcionalidad nueva | proposer → adversary → architect → reviewer → qa → evaluator → orquestador decide | reviewer puede bloquear |
+| **C** | Estructural (schema, migración, contratos de datos) | data-specialist → proposer → adversary → reviewer ×2 → security → data-specialist → aprobar humano → architect → qa → evaluator → aprobar humano final | **aprobación humana antes de implementar** |
 
 Un cambio que toca contratos de datos es **C por definición**, aunque sean 3
 líneas.
@@ -46,7 +46,10 @@ líneas.
 | --- | --- | --- |
 | `orchestrator` | clasificar, invocar, consolidar | escribir código |
 | `architect` | implementar, proponer spec | publicar, pushear, migrar destructivo |
+| `proposer` | producir especificación técnica | implementar, escribir código, ejecutar shell |
+| `adversary` | atacar suposiciones de specs/plans | implementar, escribir código, ejecutar shell, invocar subagentes |
 | `reviewer` | leer, `git diff/log/show/status` | editar, escribir, shell libre |
+| `evaluator` | consolidar reportes, emitir veredicto + recomendación | implementar, decidir aprobación final (eso es del orquestador) |
 | `security-auditor` | leer, `git diff/log/show`, `npm audit`, `npm ls` | editar, escribir |
 | `data-specialist` | leer, `git` read-only, correr scripts de inspección | migrar, borrar datos |
 | `qa-specialist` | correr la suite del repo | editar código ni tests |
@@ -90,6 +93,25 @@ NO VERIFICADO: <qué no se pudo comprobar y por qué>
 
 `NO VERIFICADO` es obligatorio: convierte el silencio en una afirmación
 explícita y corta la costumbre de rellenar con falsos positivos.
+
+## Esquema de salida del evaluator (fijo)
+
+```
+VEREDICTO: APROBADO | CONDICIONAL | RECHAZADO
+CRÍTICOS:      <n> | ninguno
+ADVERTENCIAS:  <n> | ninguna
+RECOMENDACIÓN: ADOPTAR | MODIFICAR | RECHAZAR
+NO VERIFICADO: <qué no se pudo comprobar y por qué>
+```
+
+Mapeo obligatorio (1:1, no es un segundo eje de decisión):
+- `APROBADO → ADOPTAR`
+- `CONDICIONAL → MODIFICAR`
+- `RECHAZADO → RECHAZAR`
+
+El evaluator recibe **todos** los reportes del nivel. Si un agente no se
+invocó, se declara explícitamente como `NO INVOCADO` (no se omite en
+silencio). El orquestador conserva la decisión final.
 
 ## Qué exige un hallazgo para ser crítico
 

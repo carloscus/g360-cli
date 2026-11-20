@@ -12,7 +12,10 @@ Sistema de coordinación multiagente basado en el método **Elefante–Goldfish*
 |---|---|---|
 | `orchestrator` | Clasifica nivel A/B/C, invoca agentes, consolida reporte | Escribir código |
 | `architect` | Implementa código según especificación | Publicar, pushear, migrar destructivo |
+| `proposer` | Produce la especificación técnica | Implementar, escribir código |
+| `adversary` | Ataca suposiciones de specs/plans antes de implementar | Implementar, escribir código, ejecutar shell, invocar subagentes |
 | `reviewer` (Goldfish) | Revisa diff aislado vs criterio de aceptación | Editar archivos |
+| `evaluator` | Consolida reportes del nivel, emite veredicto + recomendación | Implementar, decidir aprobación final (eso es del orquestador) |
 | `security-auditor` | Busca credenciales, CVEs, rupturas de contrato | Editar archivos |
 | `data-specialist` | Audita schemas, migraciones, contratos de datos | Migrar/borrar datos |
 | `qa-specialist` | Corre la suite de tests y reporta | Editar código |
@@ -22,8 +25,8 @@ Sistema de coordinación multiagente basado en el método **Elefante–Goldfish*
 | Nivel | Qué es | Flujo | Gate |
 |---|---|---|---|
 | **A** | Mantenimiento ligero (typo, estilo, dep menor) | implementa → (qa opcional) | Ninguno |
-| **B** | Módulo o funcionalidad nueva | architect → reviewer → qa | Reviewer puede bloquear |
-| **C** | Estructural (schema, migración, contratos de datos) | data-specialist → architect (spec) → reviewer ×2 → security-auditor → data-specialist (plan migración) → architect (implementa) → qa → **aprobación humana** | Aprobación obligatoria antes de implementar |
+| **B** | Módulo o funcionalidad nueva | proposer → adversary → architect → reviewer → qa → evaluator → orquestador decide | Reviewer puede bloquear |
+| **C** | Estructural (schema, migración, contratos de datos) | data-specialist → proposer → adversary → reviewer ×2 → security-auditor → data-specialist (plan migración) → architect (implementa) → qa → evaluator → **aprobación humana** | Aprobación obligatoria antes de implementar |
 
 > Un cambio que toca contratos de datos es **C por definición**, aunque sean 3 líneas.
 
@@ -68,6 +71,22 @@ NO VERIFICADO: <qué no se pudo comprobar y por qué>
 ```
 
 `NO VERIFICADO` es obligatorio: convierte el silencio en una afirmación explícita y corta la costumbre de rellenar con falsos positivos.
+
+## Esquema de salida del evaluator
+
+```
+VEREDICTO: APROBADO | CONDICIONAL | RECHAZADO
+CRÍTICOS:      <n> | ninguno
+ADVERTENCIAS:  <n> | ninguna
+RECOMENDACIÓN: ADOPTAR | MODIFICAR | RECHAZAR
+NO VERIFICADO: <qué no se pudo comprobar y por qué>
+```
+
+Mapeo obligatorio (1:1): `APROBADO → ADOPTAR`, `CONDICIONAL → MODIFICAR`, `RECHAZADO → RECHAZAR`.
+
+El evaluator recibe **todos** los reportes del nivel. Si un agente no se
+invocó, se declara explícitamente como `NO INVOCADO`. El orquestador
+conserva la decisión final.
 
 ### Qué exige un hallazgo para ser crítico
 

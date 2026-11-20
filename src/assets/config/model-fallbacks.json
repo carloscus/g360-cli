@@ -10,20 +10,32 @@
     "opencode/glm-5.3-flash#none"
   ],
   "reviewer": [
-    "opencode/glm-5.3-flash#max",
+    "opencode-go/beam-free#max",
     "opencode/minimax-m3.1-flash-free#max",
     "agnes/agnes-3.0-flash#max"
   ],
-  "security_auditor": [
+  "security-auditor": [
     "opencode/glm-5.3-flash#low",
     "opencode/glm-5.3-flash-free#low"
   ],
-  "data_specialist": [
+  "data-specialist": [
     "opencode/glm-5.3-flash#low",
     "opencode/glm-5.3-flash-free#low"
   ],
-  "qa_specialist": [
+  "qa-specialist": [
     "nvidia/minimaxai/minimax-m3.1-flash#none",
     "opencode/glm-5.3-flash#none"
+  ],
+  "adversary": [
+    "nvidia/minimaxai/minimax-m3.1-flash#none",
+    "opencode/glm-5.3-flash#low"
+  ],
+  "proposer": [
+    "nvidia/stepfun-ai/step-5-preview#medium",
+    "opencode/glm-5.3-flash#none"
+  ],
+  "evaluator": [
+    "opencode/qwen3.8-flash#xhigh",
+    "opencode/glm-5.3-flash#max"
   ]
 }
