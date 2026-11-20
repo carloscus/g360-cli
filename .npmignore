@@ -1,31 +1,6 @@
-# Python cache
-__pycache__/
-*.pyc
-*.pyo
-.pytest_cache/
-
-# Node modules
-node_modules/
-package-lock.json
-
-# Build artifacts
-dist/
-build/
-.svelte-kit/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-npm-debug.log*
-
-# Test artifacts
-coverage/
-.vitest/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache
+py/tests/
+py/uv.lock
+src/commands/__tmp_out.csv
