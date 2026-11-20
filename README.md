@@ -104,7 +104,7 @@ CLI tool para el ecosistema G360 que permite inicializar proyectos con estructur
 
 ## Versión
 
-**Current: 2.1.1** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
+**Current: 2.2.0** — [Ver en npm](https://www.npmjs.com/package/g360-cli)
 
 ---
 
