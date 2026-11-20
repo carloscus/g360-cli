@@ -73,11 +73,13 @@ export async function runPythonStdout(code, optionsOrArgs = {}, extraOptions = {
 }
 
 /**
- * Crea el prefijo de Python para importar desde src/py/src
+ * Crea el prefijo de Python para importar g360_core desde py/src.
+ * Sube DOS niveles desde el command dir para alcanzar la raiz del paquete,
+ * donde vive py/. Esto funciona tanto en desarrollo como tras npm install.
  * @param {string} commandDir - Directorio del comando que invoca
  * @returns {string} Lineas Python para sys.path.insert
  */
 export function g360CorePath(commandDir) {
-  const pySrc = path.join(commandDir, '..', 'py', 'src').replace(/\\/g, '\\\\');
+  const pySrc = path.join(commandDir, '../..', 'py', 'src').replace(/\\/g, '\\\\');
   return `import sys\nsys.path.insert(0, '${pySrc}')`;
 }
