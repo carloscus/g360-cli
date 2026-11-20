@@ -56,4 +56,12 @@ describe('permisos instalados (kilo.jsonc generado por setup)', () => {
       expect(fs.existsSync(real), p).toBe(true);
     }
   });
+
+  it('no sobrescribe un AGENTS.md existente del usuario', async () => {
+  const agents = path.join(process.env.HOME, '.agents', 'AGENTS.md');
+  await fs.writeFile(agents, 'REGLAS PERSONALES');
+  await setup({ platform: 'kilo', reset: false });
+  expect(fs.existsSync(agents)).toBe(true);
+  expect(await fs.readFile(agents, 'utf8')).toBe('REGLAS PERSONALES');
 });
+})
