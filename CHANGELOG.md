@@ -29,7 +29,7 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
   con código 0 aunque todos los archivos resulten inválidos.
 - **`g360 validate` falla al crear `ERPScanner`**: `validate.js` pasa
   `min_valid_score`, argumento que el constructor de la clase no admite.
-- Ambos problemas son anteriores a 2.3.0. Su corrección está prevista
+- Los dos primeros problemas son anteriores a 2.3.0. Su corrección está prevista
   para 2.3.1.
 - **`g360 scan` muestra un traceback sin controlar** cuando el directorio
   indicado no existe. Mejora prevista para 2.3.1.
