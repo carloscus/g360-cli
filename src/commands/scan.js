@@ -19,14 +19,15 @@ export async function scan(directory, options) {
   // Usar sys.argv para pasar la ruta al script Python, evitando
   // interpolación directa que rompe en Windows (backslash escapes).
   // Ver: src/commands/scan-interpolation.test.js
-  // Inyectar recursive como literal Python (true/false) desde variable JS.
+  // Convertir booleano JS → Python antes de interpolar.
+  const recursivePython = recursive ? 'True' : 'False';
   const pyCode = `
 ${g360CorePath(__dirname)}
 from g360_core.scanner import find_erp_files_in_dir
 from pathlib import Path
 import json
 
-valid, invalid = find_erp_files_in_dir(Path(sys.argv[1]), recursive=${recursive})
+valid, invalid = find_erp_files_in_dir(Path(sys.argv[1]), recursive=${recursivePython})
 result = {
     "valid": [{"path": str(v.path), "erp_type": v.erp_type, "size_bytes": v.size_bytes} for v in valid],
     "invalid": [{"path": str(i.path), "error_msg": i.error_msg} for i in invalid],

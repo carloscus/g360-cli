@@ -47,4 +47,36 @@ describe('scan.js interpolación Windows', () => {
     // La ruta original se preserva tal cual
     expect(code).not.toMatch(/\buse\b/i); // No debería haber "use" suelto
   });
+
+  describe('conversión booleano JS → Python', () => {
+    it('recursive=true genera Python True (mayúscula)', () => {
+      const recursive = true;
+      const recursivePython = recursive ? 'True' : 'False';
+      const code = `find_erp_files_in_dir(Path(sys.argv[1]), recursive=${recursivePython})`;
+      expect(code).toContain('recursive=True');
+      expect(code).not.toContain('recursive=true');
+    });
+
+    it('recursive=false genera Python False (mayúscula)', () => {
+      const recursive = false;
+      const recursivePython = recursive ? 'True' : 'False';
+      const code = `find_erp_files_in_dir(Path(sys.argv[1]), recursive=${recursivePython})`;
+      expect(code).toContain('recursive=False');
+      expect(code).not.toContain('recursive=false');
+    });
+
+    it('evita NameError por true/false sin definir en Python', () => {
+      // Simular lo que genera scan.js con la corrección
+      const recursiveValues = [true, false];
+      for (const recursive of recursiveValues) {
+        const recursivePython = recursive ? 'True' : 'False';
+        const code = `valid, invalid = find_erp_files_in_dir(Path(sys.argv[1]), recursive=${recursivePython})`;
+        // Verificar que NO hay booleanos en minúsculas
+        expect(code).not.toMatch(/recursive=(true|false)\b/);
+        // Verificar que SÍ hay booleanos Python
+        expect(code).toMatch(/recursive=(True|False)/);
+      }
+    });
+  });
 });
+
