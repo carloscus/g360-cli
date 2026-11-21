@@ -7,6 +7,35 @@ y este proyecto adherce a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [2.3.0] - 2026-11-20
+
+### Fixed
+- **Compatibilidad con rutas Windows en `g360 scan`**: 2.2.0 podía
+  fallar con `SyntaxError: unicodeescape` al procesar rutas Windows;
+  2.3.0 pasa el directorio mediante `sys.argv`, evitando interpolarlo
+  directamente en el código Python.
+- **Serialización del flag `--recursive` hacia Python**: se convertía
+  `true`/`false` (JavaScript) en lugar de `True`/`False` (Python),
+  provocando `NameError`. Ahora usa conversión explícita antes de
+  la interpolación.
+- **Resolución de `py/src` tras npm install**: `g360CorePath()` sube
+  dos niveles (`../..`) desde el command dir para alcanzar la raíz
+  del paquete donde vive `py/`. Corregido para funcionar tanto en
+  desarrollo como tras instalación global o local.
+
+### Known issues
+- **`g360 scan` no valida archivos ERP**: `scanner.py` pasa `nrows` a
+  `read_erp_file`, que no admite ese argumento. El comando puede terminar
+  con código 0 aunque todos los archivos resulten inválidos.
+- **`g360 validate` falla al crear `ERPScanner`**: `validate.js` pasa
+  `min_valid_score`, argumento que el constructor de la clase no admite.
+- Ambos problemas son anteriores a 2.3.0. Su corrección está prevista
+  para 2.3.1.
+- **`g360 scan` muestra un traceback sin controlar** cuando el directorio
+  indicado no existe. Mejora prevista para 2.3.1.
+
+---
+
 ## [1.21.3] - 2026-11-07
 
 ### Added
