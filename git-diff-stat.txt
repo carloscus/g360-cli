@@ -1,0 +1,18 @@
+ .gitignore                              |  3 ++
+ .npmignore                              | 37 +++-----------
+ CHANGELOG.md                            | 29 +++++++++++
+ opencode-config.json                    |  2 +-
+ package-lock.json                       | 10 ++--
+ package.json                            |  9 +++-
+ py/.npmignore                           |  4 ++
+ setup.permissions.opencode.test.js      | 39 +++++++++++++++
+ setup.permissions.test.js               | 67 +++++++++++++++++++++++++
+ src/commands/scan-interpolation.test.js | 82 ++++++++++++++++++++++++++++++
+ src/commands/scan-windows.test.js       | 89 +++++++++++++++++++++++++++++++++
+ src/commands/scan.js                    | 12 +++--
+ src/commands/setup.js                   | 15 +++++-
+ src/lib/python-runner.js                |  6 ++-
+ src/lib/python-runner.test.js           | 43 ++++++++++++++++
+ src/lib/vitest-config.test.js           | 36 +++++++++++++
+ test-credencial.txt                     |  1 -
+ 17 files changed, 438 insertions(+), 46 deletions(-)

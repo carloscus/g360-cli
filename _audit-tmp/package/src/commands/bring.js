@@ -1,0 +1,457 @@
+import chalk from 'chalk';
+import fs from 'fs-extra';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { progress } from '../lib/progress.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const INGESTION_FILES = [
+  { src: 'ingestion/core/ingestion.py', dest: 'src/core/ingestion.py' },
+  { src: 'ingestion/core/__init__.py', dest: 'src/core/__init__.py' },
+  { src: 'ingestion/ui/ingestion_panel.py', dest: 'src/ui/ingestion_panel.py' },
+  { src: 'ingestion/ui/__init__.py', dest: 'src/ui/__init__.py' },
+];
+
+export async function bring(asset, options) {
+  const { path: targetPath = '.', dryRun = false, force = false } = options;
+  const targetDir = path.resolve(targetPath);
+  const assetsPath = path.join(__dirname, '../assets');
+
+  console.log(chalk.bold.cyan('\n📦 G360 Asset Manager\n'));
+
+  if (!asset || asset === 'all') {
+    console.log(chalk.yellow('Bringing all G360 assets...\n'));
+    return copyAssets(assetsPath, targetDir, dryRun, force);
+  }
+
+  const assetPath = path.join(assetsPath, asset);
+
+  if (!fs.existsSync(assetPath)) {
+    console.error(chalk.red(`❌ Asset "${asset}" not found.`));
+    console.log(chalk.gray('\nRun "g360 list all" to see available assets.'));
+    return;
+  }
+
+  if (asset === 'ingestion') {
+    return installIngestion(targetDir, dryRun, force);
+  }
+
+  if (asset === 'layouts' || asset.startsWith('layouts/')) {
+    return installLayouts(targetDir, asset, dryRun);
+  }
+
+  if (asset === 'harness' || asset.startsWith('harness/')) {
+    return installHarness(targetDir, asset, dryRun, force);
+  }
+
+  await copyAssets(assetPath, targetDir, dryRun, force);
+
+  if (asset.startsWith('brand')) {
+    const brandName = asset.split('/')[1];
+    if (brandName) {
+      await applyBrand(targetDir, brandName, dryRun);
+      await applyBrandFavicons(targetDir, brandName, dryRun);
+    }
+  }
+}
+
+async function applyBrand(targetDir, brandName, dryRun) {
+  const brandConfigPath = path.join(targetDir, 'g360', 'brand', 'brand.json');
+  if (!fs.existsSync(brandConfigPath)) {
+    console.log(chalk.yellow(`\n⚠ brand.json not found. Run 'g360 bring brand' first.`));
+    return;
+  }
+
+  let brandConfig;
+  try {
+    brandConfig = fs.readJsonSync(brandConfigPath);
+  } catch {
+    console.log(chalk.yellow(`\n⚠ Could not parse brand.json.`));
+    return;
+  }
+
+  const brand = brandConfig.brands?.[brandName];
+  if (!brand) {
+    console.log(chalk.yellow(`\n⚠ Brand "${brandName}" not found in brand.json`));
+    return;
+  }
+
+  const skillCandidates = [
+    path.join(targetDir, 'skill.json'),
+    path.join(targetDir, 'src', 'core', 'skill.json'),
+  ];
+
+  let skillPath = null;
+  for (const c of skillCandidates) {
+    if (fs.existsSync(c)) {
+      skillPath = c;
+      break;
+    }
+  }
+
+  if (!skillPath) {
+    console.log(chalk.yellow(`\n⚠ No skill.json found. Create one with 'g360 init'.`));
+    return;
+  }
+
+  if (dryRun) {
+    console.log(chalk.yellow(`\n📋 DRY RUN - Would update ${skillPath}`));
+    return;
+  }
+
+  const skill = fs.readJsonSync(skillPath);
+  skill.brand = brandName;
+
+  if (!skill.guidelines) skill.guidelines = {};
+  skill.guidelines.logo = brand.default_logo;
+  skill.guidelines.description = brand.description;
+
+  if (brand.signature) {
+    if (!skill.signature) skill.signature = {};
+    skill.signature.mode = brand.signature.mode;
+    skill.signature.text = brand.signature.text;
+  }
+
+  // La marca aporta la FAMILIA de acento: los colores salen de ahi, no de un
+  // hex propio (asi la marca y la paleta no pueden contradecirse).
+  if (brand.accentFamily) {
+    const { accentTokensFor } = await import('../lib/accent-families.js');
+    const familyTokens = accentTokensFor(brand.accentFamily);
+    if (familyTokens) {
+      if (!skill.colors) skill.colors = {};
+      skill.colors = { ...skill.colors, ...familyTokens };
+      skill.accentFamily = brand.accentFamily;
+    }
+  }
+
+  fs.writeJsonSync(skillPath, skill, { spaces: 2 });
+  console.log(chalk.green(`\n✅ Brand "${brandName}" applied to ${skillPath}`));
+  console.log(chalk.gray(`   Logo: ${brand.default_logo}`));
+  console.log(chalk.gray(`   Signature: ${brand.signature?.text || 'none'}`));
+}
+
+async function applyBrandFavicons(targetDir, brandName, dryRun) {
+  const brandConfigPath = path.join(targetDir, 'g360', 'brand', 'brand.json');
+  if (!fs.existsSync(brandConfigPath)) return;
+
+  let brandConfig;
+  try {
+    brandConfig = fs.readJsonSync(brandConfigPath);
+  } catch {
+    return;
+  }
+
+  const brand = brandConfig.brands?.[brandName];
+  if (!brand?.assets) return;
+
+  const brandDir = path.join(targetDir, 'g360', 'brand', brandName);
+
+  const isWebProject = (
+    fs.existsSync(path.join(targetDir, 'public')) ||
+    fs.existsSync(path.join(targetDir, 'static'))
+  );
+
+  const isDesktopProject = (
+    fs.existsSync(path.join(targetDir, 'src', 'main.py')) &&
+    fs.existsSync(path.join(targetDir, 'pyproject.toml'))
+  );
+
+  if (isWebProject) {
+    const publicDir = fs.existsSync(path.join(targetDir, 'public'))
+      ? path.join(targetDir, 'public')
+      : path.join(targetDir, 'static');
+
+    if (brand.assets.favicons) {
+      for (const [, srcFile] of Object.entries(brand.assets.favicons)) {
+        const srcPath = path.join(brandDir, srcFile);
+        const destPath = path.join(publicDir, path.basename(srcFile));
+        if (fs.existsSync(srcPath) && !fs.existsSync(destPath)) {
+          if (!dryRun) await fs.copy(srcPath, destPath);
+          console.log(chalk.gray(`   + ${path.basename(srcFile)}`));
+        }
+      }
+    }
+
+    if (brand.assets.pwa) {
+      for (const [, srcFile] of Object.entries(brand.assets.pwa)) {
+        const srcPath = path.join(brandDir, srcFile);
+        const destPath = path.join(publicDir, path.basename(srcFile));
+        if (fs.existsSync(srcPath) && !fs.existsSync(destPath)) {
+          if (!dryRun) await fs.copy(srcPath, destPath);
+          console.log(chalk.gray(`   + ${path.basename(srcFile)}`));
+        }
+      }
+    }
+  }
+
+  if (isDesktopProject) {
+    const imagesDir = path.join(targetDir, 'assets', 'images');
+    if (!fs.existsSync(imagesDir)) {
+      if (!dryRun) fs.mkdirpSync(imagesDir);
+    }
+
+    if (brand.assets.favicons?.ico) {
+      const srcPath = path.join(brandDir, brand.assets.favicons.ico);
+      const destPath = path.join(imagesDir, path.basename(brand.assets.favicons.ico));
+      if (fs.existsSync(srcPath) && !fs.existsSync(destPath)) {
+        if (!dryRun) await fs.copy(srcPath, destPath);
+        console.log(chalk.gray(`   + ${path.basename(brand.assets.favicons.ico)}`));
+      }
+    }
+
+    if (brand.assets.logotypes) {
+      for (const logoFile of brand.assets.logotypes) {
+        const srcPath = path.join(brandDir, logoFile);
+        const fileName = path.basename(logoFile).toLowerCase().replace(/-/g, '_');
+        const destPath = path.join(imagesDir, fileName);
+        if (fs.existsSync(srcPath) && !fs.existsSync(destPath)) {
+          if (!dryRun) await fs.copy(srcPath, destPath);
+          console.log(chalk.gray(`   + ${fileName}`));
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Copia layouts del catalogo al proyecto (docs/diseño) para referencia
+ * del agente. `g360 bring layouts` trae todos; `layouts/<name>` uno solo.
+ */
+async function installLayouts(targetDir, asset, dryRun) {
+  const assetsPath = path.join(__dirname, '../assets');
+  const layoutsDir = path.join(assetsPath, 'layouts');
+  const onlyName = asset.startsWith('layouts/') ? asset.split('/')[1] : null;
+
+  if (!fs.existsSync(layoutsDir)) {
+    console.error(chalk.red('❌ Layouts asset not found in package.'));
+    return;
+  }
+
+  let files = fs.readdirSync(layoutsDir).filter((f) => f.endsWith('.md'));
+  if (onlyName) {
+    files = files.filter((f) => f === `${onlyName}.md`);
+    if (files.length === 0) {
+      console.error(chalk.red(`❌ Layout "${onlyName}" not found.`));
+      console.log(chalk.gray('   Run "g360 list layouts" to see available layouts.'));
+      return;
+    }
+  }
+
+  const destDir = path.join(targetDir, 'g360', 'layouts');
+
+  if (dryRun) {
+    console.log(chalk.yellow('\n📋 DRY RUN - Would install layouts:'));
+    for (const f of files) console.log(chalk.gray(`   g360/layouts/${f}`));
+    return;
+  }
+
+  fs.mkdirpSync(destDir);
+  for (const f of files) {
+    fs.copySync(path.join(layoutsDir, f), path.join(destDir, f));
+    console.log(chalk.gray(`   + g360/layouts/${f}`));
+  }
+  console.log(chalk.green(`\n✅ ${files.length} layout(s) installed`));
+  console.log(chalk.gray('   Next: g360 plan-ui <layout> --app "Mi pantalla" --out UI-PLAN.md\n'));
+}
+
+async function installIngestion(targetDir, dryRun, force) {
+  const assetsPath = path.join(__dirname, '../assets');
+  const ingestionDir = path.join(assetsPath, 'ingestion');
+
+  if (!fs.existsSync(ingestionDir)) {
+    console.error(chalk.red('❌ Ingestion asset not found in package.'));
+    return;
+  }
+
+  const hasFlet = (
+    fs.existsSync(path.join(targetDir, 'pyproject.toml')) &&
+    fs.existsSync(path.join(targetDir, 'src', 'main.py'))
+  );
+
+  if (!hasFlet) {
+    console.error(chalk.red('❌ This command requires a G360 Flet project.'));
+    console.log(chalk.gray('   Run "g360 init <name> --template python-flet" first.'));
+    return;
+  }
+
+  const srcCore = path.join(targetDir, 'src', 'core');
+  const srcUi = path.join(targetDir, 'src', 'ui');
+
+  if (!fs.existsSync(srcCore)) {
+    if (!dryRun) fs.mkdirpSync(srcCore);
+    console.log(chalk.gray('   Created src/core/'));
+  }
+  if (!fs.existsSync(srcUi)) {
+    if (!dryRun) fs.mkdirpSync(srcUi);
+    console.log(chalk.gray('   Created src/ui/'));
+  }
+
+  if (dryRun) {
+    console.log(chalk.yellow('\n📋 DRY RUN - Would install:'));
+    for (const f of INGESTION_FILES) {
+      console.log(chalk.gray(`   ${f.dest}`));
+    }
+    return;
+  }
+
+  console.log(chalk.cyan('\n📦 Option A — Install via pip (recommended):'));
+  console.log(chalk.white('     pip install g360-core'));
+
+  const progressBar = progress('Installing local fallback files...');
+
+  try {
+    let copied = 0;
+    for (const f of INGESTION_FILES) {
+      const srcFile = path.join(assetsPath, f.src);
+      const destFile = path.join(targetDir, f.dest);
+
+      if (fs.existsSync(destFile) && !force) {
+        console.log(chalk.yellow(`\n⚠ ${f.dest} exists. Use --force to overwrite.`));
+        continue;
+      }
+
+      await fs.copy(srcFile, destFile, { overwrite: force });
+      copied++;
+    }
+
+    progressBar.stop();
+
+    if (copied > 0) {
+      console.log(chalk.green(`\n✅ ${copied} local fallback file(s) installed\n`));
+      console.log(chalk.gray('   These files are used when g360-core pip package is not available.'));
+      console.log(chalk.cyan('\n   Import (auto-detects pip package → local fallback):'));
+      console.log(chalk.white('     from ui.ingestion_panel import IngestionPanel'));
+    }
+
+    console.log(chalk.cyan('\n   Or add to your pyproject.toml:'));
+    console.log(chalk.white('     "g360-core>=0.1.0"'));
+  } catch (error) {
+    progressBar.stop();
+    console.error(chalk.red(`\n❌ Error: ${error.message}`));
+  }
+}
+
+async function installHarness(targetDir, asset, dryRun, force) {
+  const assetsPath = path.join(__dirname, '../assets');
+  const harnessDir = path.join(assetsPath, 'harness');
+
+  if (!fs.existsSync(harnessDir)) {
+    console.error(chalk.red('❌ Harness asset not found in package.'));
+    return;
+  }
+
+  const scope = asset === 'harness' ? 'all' : asset.split('/')[1];
+  if (!['all', 'opencode', 'kilocode'].includes(scope)) {
+    console.error(chalk.red(`❌ Harness scope "${scope}" not found. Use: harness, harness/opencode, harness/kilocode`));
+    return;
+  }
+
+  const plan = [];
+  const withScope = (s) => scope === 'all' || scope === s;
+
+  if (withScope('opencode')) {
+    plan.push({ src: 'opencode/skills/g360-design/SKILL.md', dest: '.opencode/skills/g360-design/SKILL.md' });
+    for (const f of fs.readdirSync(path.join(harnessDir, 'opencode', 'commands'))) {
+      if (f.endsWith('.md')) plan.push({ src: `opencode/commands/${f}`, dest: `.opencode/commands/${f}` });
+    }
+  }
+
+  if (withScope('kilocode')) {
+    for (const f of fs.readdirSync(path.join(harnessDir, 'kilocode', 'rules'))) {
+      if (!f.endsWith('.md')) continue;
+      plan.push({ src: `kilocode/rules/${f}`, dest: `.kilo/rules/${f}` });
+      plan.push({ src: `kilocode/rules/${f}`, dest: `.kilocode/rules/${f}` });
+    }
+    for (const f of fs.readdirSync(path.join(harnessDir, 'kilocode', 'commands'))) {
+      if (f.endsWith('.md')) plan.push({ src: `kilocode/commands/${f}`, dest: `.kilo/commands/${f}` });
+    }
+  }
+
+  plan.push({ src: 'AGENTS.md', dest: 'AGENTS.md', noOverwrite: true });
+
+  if (dryRun) {
+    console.log(chalk.yellow('\n📋 DRY RUN - Would install harness:'));
+    for (const p of plan) console.log(chalk.gray(`   ${p.dest}`));
+    if (withScope('kilocode')) console.log(chalk.gray('   kilo.jsonc (merge instructions)'));
+    return;
+  }
+
+  let copied = 0;
+  let skipped = 0;
+  for (const p of plan) {
+    const srcFile = path.join(harnessDir, p.src);
+    const destFile = path.join(targetDir, p.dest);
+    if ((fs.existsSync(destFile) && !force) || (p.noOverwrite && fs.existsSync(destFile))) {
+      skipped++;
+      continue;
+    }
+    await fs.copy(srcFile, destFile, { overwrite: true });
+    copied++;
+  }
+
+  if (withScope('kilocode')) {
+    const merged = mergeKiloJsonc(targetDir, force);
+    if (merged) copied++;
+    else skipped++;
+  }
+
+  console.log(chalk.green(`\n✅ Harness installed: ${copied} file(s)`));
+  if (skipped > 0) console.log(chalk.yellow(`   ${skipped} skipped (exists — use --force to overwrite)`));
+  console.log(chalk.gray('   OpenCode: .opencode/skills/g360-design + .opencode/commands/'));
+  console.log(chalk.gray('   Kilo Code: .kilo/rules/ + .kilo/commands/ (+ legacy .kilocode/rules/)'));
+  console.log(chalk.gray('   ✓ Repo-local mode: assets installed in project directory'));
+  console.log(chalk.gray('   ✓ No global ~/.config/ modification required'));
+  console.log();
+}
+
+function mergeKiloJsonc(targetDir, force) {
+  const assetsPath = path.join(__dirname, '../assets');
+  const wanted = ['.kilo/rules/g360-less-is-more.md', '.kilo/rules/g360-naming.md'];
+  const dest = path.join(targetDir, 'kilo.jsonc');
+
+  if (!fs.existsSync(dest)) {
+    fs.copySync(path.join(assetsPath, 'harness', 'kilocode', 'kilo.jsonc'), dest);
+    return true;
+  }
+
+  let current;
+  try {
+    current = fs.readJsonSync(dest);
+  } catch {
+    console.log(chalk.yellow('   ⚠ kilo.jsonc has comments or custom format — merge skipped (edit manually)'));
+    return false;
+  }
+
+  const instructions = new Set([...(current.instructions || []), ...wanted]);
+  if (instructions.size === (current.instructions || []).length && !force) return false;
+  current.instructions = [...instructions];
+  fs.writeJsonSync(dest, current, { spaces: 2 });
+  return true;
+}
+
+async function copyAssets(src, dest, dryRun, force) {
+  if (dryRun) {
+    console.log(chalk.yellow('📋 DRY RUN - No files will be copied\n'));
+    return;
+  }
+
+  const progressBar = progress('Copying assets...');
+
+  try {
+    const items = fs.readdirSync(src);
+    for (const item of items) {
+      const srcPath = path.join(src, item);
+      const destPath = path.join(dest, 'g360', item);
+
+      if (fs.statSync(srcPath).isDirectory()) {
+        await fs.copy(srcPath, destPath, { overwrite: force });
+      }
+    }
+
+    progressBar.stop();
+    console.log(chalk.green('\n✅ Assets copied successfully!\n'));
+  } catch (error) {
+    progressBar.stop();
+    console.error(chalk.red(`\n❌ Error: ${error.message}`));
+  }
+}

@@ -1,0 +1,12 @@
+
+    Directory: C:\Users\ccusi\Documents\Proyect_Coder\G360-ecosystem\projects\g360-cli
+
+Mode                 LastWriteTime         Length Na
+                                                  me
+----                 -------------         ------ --
+-a---          20/11/2026    15:07             96 .n
+                                                  pm
+                                                  ig
+                                                  no
+                                                  re
+

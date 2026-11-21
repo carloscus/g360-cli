@@ -1,0 +1,5 @@
+
+­ƒöì Escaneando directorio: .tmp-scan-test-final
+
+ÔØî Error escaneando: no se encontr´┐¢ Python; ejecutar sin argumentos para instalar desde el Microsoft Store o deshabilitar este acceso directo desde Configuraci´┐¢n > Aplicaciones > Configuraci´┐¢n avanzada de aplicaciones > Alias de ejecuci´┐¢n de aplicaciones.
+

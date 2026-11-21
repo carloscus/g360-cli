@@ -1,0 +1,317 @@
+#!/usr/bin/env node
+
+import { Command } from 'commander';
+import chalk from 'chalk';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Lazy-load de comandos: cada modulo se importa solo cuando se invoca.
+// Mantiene `g360 --version` y `g360 --help` rapidos (sin arrastrar inquirer).
+const lazy = (modulePath, exportName) => (...args) =>
+  import(modulePath).then((m) => m[exportName](...args));
+
+const init = lazy('./commands/init.js', 'init');
+const setSkill = lazy('./commands/set-skill.js', 'setSkill');
+const bring = lazy('./commands/bring.js', 'bring');
+const list = lazy('./commands/list.js', 'list');
+const present = lazy('./commands/present.js', 'present');
+const audit = lazy('./commands/audit.js', 'audit');
+const agents = lazy('./commands/agents.js', 'agents');
+const tokens = lazy('./commands/tokens.js', 'tokens');
+const clean = lazy('./commands/clean.js', 'clean');
+const health = lazy('./commands/health.js', 'health');
+const update = lazy('./commands/update.js', 'update');
+const convert = lazy('./commands/convert.js', 'convert');
+const signature = lazy('./commands/signature.js', 'signature');
+const scan = lazy('./commands/scan.js', 'scan');
+const validate = lazy('./commands/validate.js', 'validate');
+const ingest = lazy('./commands/ingest.js', 'ingest');
+const addon = lazy('./commands/addon.js', 'addon');
+const docs = lazy('./commands/docs.js', 'docs');
+const lint = lazy('./commands/lint.js', 'lint');
+const review = lazy('./commands/review.js', 'review');
+const pptx = lazy('./commands/pptx.js', 'pptx');
+const capture = lazy('./commands/capture.js', 'capture');
+const planUi = lazy('./commands/plan-ui.js', 'planUi');
+const setAccent = lazy('./commands/set-accent.js', 'setAccent');
+const setup = lazy('./commands/setup.js', 'setup');
+const registry = lazy('./commands/registry.js', 'registry');
+
+// Comando config (no requiere archivo separado)
+function configAction(options) {
+  const { get, set, list } = options;
+  if (list) {
+    console.log(chalk.bold.cyan('\n⚙️  G360 Config\n'));
+    console.log(chalk.white('  g360-signature:'));
+    console.log(chalk.gray('    mode: powered, own'));
+    console.log(chalk.gray('    positions: bottom-right, bottom-left, bottom-center, footer-right, footer-left'));
+    console.log(chalk.white('  templates:'));
+    console.log(chalk.gray('    web-pwa, lit-web, solid-web, svelte-web,'));
+    console.log(chalk.gray('    python-cli, python-flet-polished (default), python-flet-legacy, python-flet-migrate, python-customtkinter, vba-excel'));
+    console.log(chalk.white('  skills:'));
+    console.log(chalk.gray('    corporativo, corporativo-movil, corporativo-g360, corporativo-g360-movil,'));
+    console.log(chalk.gray('    moderno, moderno-movil, minimalista, custom,'));
+    console.log(chalk.gray('    flet-desktop, flet-desktop-corporativo\n'));
+    return;
+  }
+  if (get) {
+    console.log(chalk.bold.cyan('\n⚙️  G360 Config\n'));
+    console.log(chalk.white(`  ${get}: `) + chalk.gray('(config value placeholder)'));
+    console.log(chalk.gray('  Use: g360 config --list to see all options\n'));
+    return;
+  }
+  if (set) {
+    const [key, value] = set.split('=');
+    if (key && value) {
+      console.log(chalk.bold.cyan('\n⚙️  G360 Config\n'));
+      console.log(chalk.green(`  ✅ Config set: ${chalk.white(key)} = ${chalk.white(value)}\n`));
+    } else {
+      console.log(chalk.red('❌ Invalid format. Use: g360 config --set key=value\n'));
+    }
+    return;
+  }
+  console.log(chalk.yellow('\n⚠️  Use --list, --get <key>, or --set <key>=<value>\n'));
+}
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import { readJsonSafe } from './lib/json-io.js';
+const pkg = readJsonSafe(path.join(__dirname, '../package.json'));
+
+const program = new Command();
+
+program
+  .name('g360')
+  .description('CLI tool for bootstrapping G360 ecosystem projects')
+  .version(pkg.version);
+
+program
+  .command('init')
+  .argument('<name>', 'Project name')
+    .option('-t, --template <type>', 'Project template type (default: auto segun skill — python-flet-polished para Flet)', 'auto')
+    .option('-s, --skill <skill>', 'Skill to use (corporativo, corporativo-movil, moderno, moderno-movil, minimalista, custom, flet-desktop, flet-desktop-corporativo, flet-desktop-polished, cipsa, cipsa-movil)', 'corporativo-movil')
+  .option('-d, --dir <path>', 'Target directory', '.')
+  .option('--dry-run', 'Preview without creating files')
+  .option('--force', 'Overwrite existing files')
+  .option('--portable', 'Create portable version (for python-flet, python-cli)')
+  .option('--no-portable', 'Skip portable version creation')
+  .option('--brand', 'Apply G360 branding (logo, colors, signature) after init')
+  .action(init);
+
+program
+  .command('set-skill')
+  .argument('<skill>', 'Skill name to set')
+  .option('--verbose', 'Show detailed output')
+  .option('--force', 'Overwrite existing skill')
+  .action(setSkill);
+
+program
+  .command('bring')
+  .argument('[asset]', 'Asset to bring: brand, brand/cipsa, brand/g360, components, templates, skills, all')
+  .option('-p, --path <path>', 'Target path', '.')
+  .option('--dry-run', 'Preview without copying')
+  .option('--force', 'Overwrite existing files')
+  .action(bring);
+
+program
+  .command('list')
+  .argument('[type]', 'Type to list (templates/components/skills/snippets/brands/all)', 'all')
+  .option('--json', 'Output as JSON')
+  .action(list);
+
+program
+  .command('present')
+  .argument('[path]', 'Project path to present', '.')
+  .option('--depth <n>', 'Max depth to display', '3')
+  .action(present);
+
+program
+  .command('audit')
+  .argument('[path]', 'Path to audit', '.')
+  .option('--verbose', 'Show detailed output')
+  .option('--no-autonomy', 'Omitir los checks de autosuficiencia')
+  .option('--ecosystem', 'Auditar todos los repos bajo <path>/projects y mostrar un resumen')
+  .option('--agents', 'Verificar integridad de los prompts de agentes instalados (manifest)')
+  .option('--json', 'Output results as JSON')
+  .action(audit);
+
+program
+  .command('agents')
+  .argument('[path]', 'Path to the project', '.')
+  .option('--dry-run', 'Preview without writing')
+  .option('--force', 'Overwrite AGENTS.md entirely (loses manual content)')
+  .option('--env-example', 'Also create .env.example with the detected variables')
+  .option('--ecosystem', 'Generate for every repo under <path>/projects')
+  .action(agents);
+
+program
+  .command('tokens')
+  .argument('[path]', 'Path to the project', '.')
+  .option('--skill <name>', 'Skill to apply (default: el del skill.json del proyecto)')
+  .option('--accent <family>', 'Familia de acento a aplicar')
+  .option('--dry-run', 'Preview without writing')
+  .option('--wire-css', 'Conectar el token file con las hojas de estilo del proyecto')
+  .option('--verbose', 'Show detailed output')
+  .action(tokens);
+
+program
+  .command('clean')
+  .argument('[path]', 'Path to clean', '.')
+  .option('--dry-run', 'Preview files to be removed')
+  .option('--force', 'Skip confirmation')
+  .option('--dead', 'Remove dead/deprecated files')
+  .option('--duplicates', 'Remove duplicate files')
+  .option('--orphans', 'Remove orphan files (unreferenced)')
+  .option('--organize', 'Show misplaced files suggestions')
+  .option('--all', 'Run all cleanup tasks')
+  .option('--github', 'Prepare repo for GitHub (update .gitignore)')
+  .option('--pre-push', 'Alias for --github (prepare before push)')
+  .action(clean);
+
+program
+  .command('health')
+  .option('--verbose', 'Show detailed health info')
+  .action(health);
+
+program
+  .command('update')
+  .option('--check', 'Check for updates without installing')
+  .action(update);
+
+program
+  .command('convert')
+  .argument('[path]', 'Path to convert', '.')
+    .option('-s, --skill <skill>', 'Skill to apply (corporativo, corporativo-movil, moderno, moderno-movil, minimalista, custom, flet-desktop, flet-desktop-corporativo, flet-desktop-polished, cipsa, cipsa-movil)', 'corporativo-movil')
+  .option('--dry-run', 'Preview without applying')
+  .option('--restructure', 'Restructure project files')
+  .option('--force', 'Force dangerous changes')
+  .option('--backup', 'Create backup before converting')
+  .action(convert);
+
+program
+  .command('set-accent')
+  .argument('<familia>', 'Familia de acento: emerald, cyan, azure, indigo, violet, amber, rose')
+  .description('Cambia la familia de acento del skill.json del proyecto (derivacion simetrica)')
+  .option('-p, --project <path>', 'Project path', '.')
+  .option('--mode <modo>', 'Modo de tema: dark (default) o light', 'dark')
+  .option('--dry-run', 'Preview changes without writing')
+  .action(setAccent);
+
+program
+  .command('signature')
+  .argument('<command>', 'Command to execute: install, positions')
+  .description('Install g360-signature branding component')
+  .option('-p, --path <path>', 'Target project path', '.')
+  .option('--force', 'Force reinstall if already exists')
+  .option('-m, --mode <mode>', 'Signature mode: own or powered', 'powered')
+  .option('-v, --version <version>', 'Version to display')
+  .option('--position <position>', 'Signature position: bottom-right, bottom-left, bottom-center, footer-right, footer-left', 'bottom-right')
+   .option('-i, --interactive', 'Interactive mode with guided suggestions')
+   .action(signature);
+
+// Comandos de procesamiento ERP
+program
+  .command('scan')
+  .argument('<directorio>', 'Directorio a escanear')
+  .option('-r, --recursive', 'Buscar recursivamente', true)
+  .option('--min-score <n>', 'Puntuación mínima', '10')
+  .action(scan);
+
+program
+  .command('validate')
+  .argument('<paths...>', 'Archivos o directorios a validar')
+  .option('-r, --recursive', 'Buscar recursivamente en directorios')
+  .action(validate);
+
+program
+  .command('ingest')
+  .argument('<input>', 'Archivo CSV/Excel o directorio con archivos ERP')
+  .option('-o, --output <archivo>', 'Ruta de salida', 'maestro_ventas_crm.csv')
+  .action(ingest);
+
+program
+  .command('config')
+  .description('View or modify G360 configuration')
+  .option('--list', 'List all configuration options')
+  .option('--get <key>', 'Get a configuration value')
+  .option('--set <key=value>', 'Set a configuration value')
+  .action(configAction);
+
+program
+  .command('addon')
+  .argument('<command>', 'Command: install, list, remove')
+  .argument('[package]', 'Package name to install')
+  .option('-p, --path <path>', 'Target path', '.')
+  .option('--dry-run', 'Preview without installing')
+  .option('--force', 'Force reinstall/remove')
+  .action(addon);
+
+program
+  .command('docs')
+  .argument('[level]', 'Documentation level: readme, architecture, business-rules, api, dependencies, classes, code-graph, all', 'readme')
+  .option('--project <path>', 'Project path', '.')
+  .option('--dry-run', 'Preview without writing files')
+  .action(docs);
+
+program
+  .command('lint')
+  .argument('[level]', 'Lint level: naming, duplicates, syntax, structure, all', 'all')
+  .option('--project <path>', 'Project path', '.')
+  .action(lint);
+
+program
+  .command('review')
+  .argument('[level]', 'Review level: tokens, hierarchy, components, all', 'all')
+  .option('--project <path>', 'Project path', '.')
+  .option('--json', 'Output as JSON')
+  .action(review);
+
+program
+  .command('pptx')
+  .argument('[path]', 'Project path to generate presentation from', '.')
+  .option('-m, --mode <type>', 'Mode: manual, demo, onboarding', 'manual')
+  .option('-t, --theme <name>', 'Brand theme: g360, cipsa (auto-detected from skill.json)', null)
+  .option('-o, --out <file>', 'Output file path (default: {app-name}-manual.pptx)', null)
+  .option('--dry-run', 'Preview outline without generating')
+  .option('--screenshots <dir>', 'Custom screenshots directory', 'assets/screenshots')
+  .action(pptx);
+
+program
+  .command('capture')
+  .description('Loop visual: lanza la app Flet y guarda un screenshot para revision del agente')
+  .option('-p, --project <path>', 'Project path', '.')
+  .option('-e, --entry <file>', 'Flet entrypoint (default: main.py o src/main.py)')
+  .option('-o, --out <file>', 'Output PNG path (default: assets/screenshots/capture-<ts>.png)')
+  .option('-w, --wait <seconds>', 'Seconds to wait after render', '3')
+  .option('-t, --timeout <seconds>', 'Hard timeout', '45')
+  .option('--python <exe>', 'Python interpreter (default: PYTHON env o python/python3)')
+  .action(capture);
+
+program
+  .command('plan-ui')
+  .description('Wireframe en texto a partir de un layout del catalogo (antes de generar codigo)')
+  .argument('<layout>', 'Layout: dashboard-kpi, master-detail, wizard, sidebar-panels, lista-filtros-export')
+  .option('-p, --project <path>', 'Project path', '.')
+  .option('-a, --app <name>', 'App/screen name', 'App G360')
+  .option('-s, --sections <list>', 'Comma-separated sections of this screen')
+  .option('-o, --out <file>', 'Save plan to file (e.g. UI-PLAN.md)')
+  .option('--print', 'Print plan to stdout')
+  .action(planUi);
+
+program
+  .command('setup')
+  .description('Instala la configuración global del sistema multiagente G360')
+  .option('--platform <platform>', 'Platform: opencode, kilo, cline, all (default: all)', 'all')
+  .option('--reset', 'Overwrite existing configuration')
+  .option('--dry-run', 'Preview without writing')
+  .option('--model <model>', 'Default model: free, paid (default: free)')
+  .action(setup);
+
+program
+  .command('registry')
+  .description('Muestra el catalogo de repositorios, consumers y cross-API del ecosistema')
+  .option('--schema <repo>', 'Show schema info for a repo')
+  .option('--external [--all]', 'List external consumers registered in catalog')
+  .option('--cross <apis...>', 'Show which consumers use given APIs')
+  .action(registry);
+
+program.parse();

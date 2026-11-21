@@ -1,0 +1,17 @@
+# npm audit report
+
+image-size  0.6.3 - 2.0.2
+Severity: high
+image-size: JXL and HEIF parsers allow denial of service through infinite loops - https://github.com/advisories/GHSA-5p2g-fcmc-qvqq
+image-size: ICNS parser allows denial of service through an infinite loop - https://github.com/advisories/GHSA-w3rx-r6r6-pgpr
+fix available via `npm audit fix --force`
+Will install pptxgenjs@4.0.0, which is a breaking change
+node_modules/image-size
+  pptxgenjs  >=4.0.1-beta.0
+  Depends on vulnerable versions of image-size
+  node_modules/pptxgenjs
+
+2 high severity vulnerabilities
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force

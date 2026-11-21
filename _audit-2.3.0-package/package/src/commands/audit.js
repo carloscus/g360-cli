@@ -1,0 +1,274 @@
+import chalk from 'chalk';
+import fs from 'fs-extra';
+import path from 'path';
+import { auditor } from '../lib/auditor.js';
+import { autonomyAuditor } from '../lib/autonomy-auditor.js';
+import { verifyManifest } from '../lib/setup-manifest.js';
+import { readJsonSafe } from '../lib/json-io.js';
+import { fileURLToPath } from 'url';
+
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const REPO_MARKERS = [
+  '.git', 'package.json', 'pyproject.toml', 'go.mod', 'Cargo.toml', 'requirements.txt'
+];
+
+const G360_MARKERS = ['g360-manifest.json', 'g360/', '.opencode/', '.kilo/'];
+
+const COLUMNS = [
+  { id: 'instructions', label: 'AGENTS' },
+  { id: 'verification', label: 'VERIF' },
+  { id: 'readme', label: 'README' },
+  { id: 'lockfile', label: 'LOCK' },
+  { id: 'env-example', label: 'ENV' },
+  { id: 'skipped-tests', label: 'TESTS' },
+  { id: 'stack', label: 'STACK' },
+];
+
+/**
+ * Rellena con espacios hasta el ancho pedido.
+ * @param {string} text - Texto a alinear
+ * @param {number} width - Ancho objetivo
+ * @returns {string}
+ */
+function pad(text, width) {
+  const value = String(text);
+  return value.length >= width ? value : value + ' '.repeat(width - value.length);
+}
+
+/**
+ * Indica si un directorio parece ser un repositorio de proyecto.
+ * @param {string} dir - Directorio
+ * @returns {boolean}
+ */
+function isRepo(dir) {
+  return REPO_MARKERS.some((marker) => fs.existsSync(path.join(dir, marker)));
+}
+
+function isG360Repo(dir) {
+  return G360_MARKERS.some((marker) => fs.existsSync(path.join(dir, marker))) || isRepo(dir);
+}
+
+/**
+ * Audita todos los repos de un workspace y muestra un resumen por repo.
+ * @param {string} rootDir - Raíz del workspace (o de la carpeta projects)
+ * @param {Object} options - Opciones
+ * @param {boolean} [options.verbose=false] - Mostrar el detalle de cada finding
+ * @returns {Promise<void>}
+ */
+export async function auditEcosystem(rootDir, options = {}) {
+  const { verbose = false } = options;
+  const projectsDir = fs.existsSync(path.join(rootDir, 'projects'))
+    ? path.join(rootDir, 'projects')
+    : rootDir;
+
+  const repos = fs
+    .readdirSync(projectsDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
+    .map((entry) => path.join(projectsDir, entry.name))
+    .filter((dir) => isG360Repo(dir))
+    .sort();
+
+  console.log(chalk.bold.cyan('\n🔍 Auditoría de autosuficiencia — ecosistema\n'));
+  console.log(chalk.gray(`Proyectos: ${repos.length}  ·  ${projectsDir}\n`));
+
+  const nameWidth = Math.max(10, ...repos.map((repo) => path.basename(repo).length));
+
+  console.log(
+    chalk.bold(pad('Proyecto', nameWidth)) + '  ' +
+    COLUMNS.map((column) => chalk.bold(pad(column.label, 6))).join('  ') +
+    '  ' + chalk.bold('Estado')
+  );
+  console.log(chalk.gray('-'.repeat(nameWidth + 2 + COLUMNS.length * 8 + 8)));
+
+  const tally = { pass: 0, warn: 0, fail: 0 };
+
+  // Cargar catálogo de stacks (fuente de verdad)
+  const STACKS_PATH = path.join(__dirname, '..', 'assets', 'config', 'stacks.json');
+  let stacksCatalog = {};
+  try {
+    const stacksData = readJsonSafe(STACKS_PATH);
+    stacksCatalog = stacksData.stacks || {};
+  } catch { /* catálogo no disponible, skip check */ }
+
+  for (const repo of repos) {
+    const { status, findings } = autonomyAuditor.check(repo);
+    const byId = Object.fromEntries(findings.map((finding) => [finding.id, finding]));
+
+    // Cross-check: stack vs catálogo
+    let stackStatus = 'n/a';
+    const pkgPath = path.join(repo, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      try {
+        const pkg = readJsonSafe(pkgPath);
+        const stackId = pkg?.g360?.stack;
+        if (stackId && stacksCatalog[stackId]) {
+          const stack = stacksCatalog[stackId];
+          if (stack.status === 'deprecated') stackStatus = 'deprecated';
+          else if (stack.status === 'experimental') stackStatus = 'experimental';
+          else stackStatus = 'ok';
+        } else if (stackId && !stacksCatalog[stackId]) {
+          stackStatus = 'unknown';
+        }
+      } catch { /* ignore */ }
+    }
+
+    const cells = COLUMNS.map((column) => {
+      if (column.id === 'stack') {
+        if (stackStatus === 'ok') return chalk.green(pad('✓', 6));
+        if (stackStatus === 'deprecated') return chalk.red(pad('⚠', 6));
+        if (stackStatus === 'experimental') return chalk.yellow(pad('~', 6));
+        if (stackStatus === 'unknown') return chalk.red(pad('?', 6));
+        return chalk.gray(pad('–', 6));
+      }
+      const findingStatus = byId[column.id]?.status;
+      if (findingStatus === 'pass') return chalk.green(pad('✓', 6));
+      if (findingStatus === 'warn') return chalk.yellow(pad('!', 6));
+      if (findingStatus === 'n/a') return chalk.gray(pad('–', 6));
+      return chalk.red(pad('✗', 6));
+    });
+
+    const label = status === 'pass'
+      ? chalk.green('ok')
+      : status === 'warn'
+        ? chalk.yellow('warn')
+        : chalk.red('fail');
+
+    tally[status] += 1;
+
+    console.log(pad(path.basename(repo), nameWidth) + '  ' + cells.join('  ') + '  ' + label);
+
+    if (verbose) {
+      for (const finding of findings.filter((item) => item.status !== 'pass')) {
+        const icon = finding.status === 'fail' ? chalk.red('✗') : chalk.yellow('!');
+        console.log('    ' + icon + ' ' + chalk.gray(`${finding.label}: ${finding.message}`));
+      }
+    }
+  }
+
+  console.log('');
+  console.log(
+    chalk.green(`  ok: ${tally.pass}`) + '   ' +
+    chalk.yellow(`  warn: ${tally.warn}`) + '   ' +
+    chalk.red(`  fail: ${tally.fail}`) +
+    chalk.gray(`   de ${repos.length} repos`)
+  );
+  console.log('');
+}
+
+/**
+ * Audita la integridad de los prompts de agentes instalados por `g360 setup`.
+ * Compara los hashes del manifest (~/.agents/.manifest.json) contra el disco.
+ * @param {string} [baseDir] - Home del usuario (default: HOME/USERPROFILE)
+ * @returns {Promise<{status: 'ok'|'warn'|'fail', mismatches: string[]}>}
+ */
+export async function auditAgents(baseDir) {
+  const home = baseDir ?? process.env.HOME ?? process.env.USERPROFILE;
+  if (!home) {
+    return { status: 'warn', mismatches: [], message: 'HOME not defined, skipping agents integrity check' };
+  }
+  const result = await verifyManifest(home);
+
+  console.log(chalk.bold.cyan('\n🔐 G360 Agents Integrity Audit\n'));
+
+  if (result.missing) {
+    console.log(chalk.yellow('⚠  No hay manifest de integridad de agentes.'));
+    console.log(chalk.gray('   Ejecuta `g360 setup --platform all` para crearlo (~/.agents/.manifest.json).\n'));
+    return { status: 'warn', mismatches: [] };
+  }
+
+  if (!result.valid) {
+    console.log(chalk.red('✗ Integridad comprometida: archivos modificados desde el setup:'));
+    result.mismatches.forEach((mismatch) => console.log(chalk.red(`   - ${mismatch}`)));
+    console.log('');
+    console.log(chalk.gray(`   Archivos auditados: ${result.fileCount}  ·  Manifest: ${result.createdAt}`));
+    console.log(chalk.gray('   Si el cambio es intencional, regenerá el manifest con `g360 setup --platform all`.\n'));
+    return { status: 'fail', mismatches: result.mismatches };
+  }
+
+  console.log(chalk.green('✓ Integridad de agentes OK'));
+  console.log(chalk.gray(`   Archivos auditados: ${result.fileCount}`));
+  console.log(chalk.gray(`   Manifest creado: ${result.createdAt}`));
+  console.log(chalk.gray('   Manifest: ~/.agents/.manifest.json\n'));
+  return { status: 'ok', mismatches: [] };
+}
+
+/**
+ * Audita un proyecto: checks de G360 + checks de autosuficiencia.
+ * @param {string} projectPath - Ruta del proyecto (relativa o absoluta)
+ * @param {Object} options - Opciones
+ * @param {boolean} [options.verbose=false] - Mostrar detalle
+ * @param {boolean} [options.autonomy=true] - Incluir checks de autosuficiencia
+ * @param {boolean} [options.ecosystem=false] - Auditar todo el workspace
+ * @param {boolean} [options.agents=false] - Verificar integridad de prompts de agentes
+ * @returns {Promise<void>}
+ */
+export async function audit(projectPath, options) {
+  const { verbose = false, autonomy = true, ecosystem = false, agents = false, json = false } = options;
+  const targetDir = path.resolve(process.cwd(), projectPath);
+
+  if (agents) {
+    await auditAgents();
+    return;
+  }
+
+  if (ecosystem) {
+    await auditEcosystem(targetDir, { verbose });
+    return;
+  }
+
+  if (!fs.existsSync(targetDir)) {
+    console.error(chalk.red(`❌ Path not found: ${targetDir}`));
+    return;
+  }
+
+  const results = await auditor.audit(targetDir, { verbose, autonomy });
+
+  if (json) {
+    const result = {
+      passed: results.passed,
+      failed: results.failed,
+      warnings: results.warnings,
+      total: results.total,
+      issues: results.issues,
+    };
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  console.log(chalk.bold.cyan('\n🔍 G360 Project Audit\n'));
+  console.log(chalk.gray(`Path: ${targetDir}\n`));
+
+  console.log(chalk.yellow('📊 Audit Results:'));
+  console.log(chalk.green(`  Passed: ${results.passed}`));
+  console.log(chalk.red(`  Failed: ${results.failed}`));
+  console.log(chalk.cyan(`  Warnings: ${results.warnings}\n`));
+
+  if (results.issues.length > 0) {
+    console.log(chalk.bold.yellow('Issues Found:'));
+    results.issues.forEach(issue => {
+      const icon = issue.severity === 'error' ? chalk.red('✗') : chalk.yellow('!');
+      console.log(`  ${icon} ${chalk.gray(issue.file)}: ${issue.message}`);
+    });
+    console.log();
+  }
+
+  if (results.passed === results.total && results.warnings === 0) {
+    console.log(chalk.green('✅ Project is G360 compliant!\n'));
+  } else {
+    console.log(chalk.yellow('⚠️  Some issues need attention.\n'));
+  }
+
+  if (autonomy) {
+    const { status, findings } = autonomyAuditor.check(targetDir);
+    if (status === 'fail') {
+      const failed = findings.filter((finding) => finding.status === 'fail').map((finding) => finding.label);
+      console.log(chalk.red(`❌ El proyecto no es autosuficiente: ${failed.join(', ')}`));
+      console.log(chalk.gray('   Criterio: `git clone` + un comando => app arriba y tests en verde, sin red.\n'));
+    } else if (status === 'warn') {
+      const warned = findings.filter((finding) => finding.status === 'warn').map((finding) => finding.label);
+      console.log(chalk.yellow(`⚠️  Autosuficiencia con pendientes: ${warned.join(', ')}\n`));
+    }
+  }
+}

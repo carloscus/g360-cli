@@ -1,0 +1,624 @@
+# G360-CLI Skill para OpenCode
+
+Este skill proporciona acceso a los recursos de g360-cli para desarrollo asistido por IA en OpenCode.
+
+## Descripción
+
+El skill G360-CLI permite a OpenCode acceder a:
+- Skills de identidad visual G360
+- Snippets de código reutilizables
+- Plantillas de proyecto estandarizadas
+- Componentes G360 predefinidos
+- Convenciones de desarrollo del ecosistema G360
+
+## Politica G360 — Less is More (leer primero)
+
+Toda generacion o refactor de UI obedece estas reglas, sin excepcion:
+
+- NO hardcodear colores. Todo color sale de `skill.json` → `theme` / `var(--g360-*)`.
+- NO logica de negocio en UI. `core/` nunca importa el framework UI.
+- NO mas de 3 niveles de nesting visual.
+- SIEMPRE loading visible en operaciones bloqueantes (fetch, threads, exports).
+- SIEMPRE error visible al usuario (toast/SnackBar). Nunca `except: pass` ni `catch {}`.
+- NO duplicar componentes. Reusar desde `src/assets/snippets/snippets.json`.
+- Un componente por archivo. Archivos UI de maximo 400 lineas.
+- Una vista = un solo `<h1>`. Nunca saltar niveles (H1 → H3 prohibido).
+- Maximo 6 pasos tipograficos (H1, H2, H3, body, caption, mono).
+- Toda app incluye los 8 esenciales: header, KPI card, tabla, drop-zone,
+  loading, firma G360, menu export, busqueda.
+
+Verificar con `g360 review` (objetivo >= 90/100) antes de presentar.
+En proyectos con harness instalado, el skill `g360-design` (OpenCode) y las
+rules `.kilo/rules/g360-*.md` (Kilo Code) aplican esta misma politica.
+
+## Recursos Disponibles
+
+### Skills de Identidad Visual
+
+Los skills definen el estilo visual, dispositivo y signature del proyecto:
+
+- **corporativo** - Proyectos para clientes - estilo corporativo conservador (PC)
+- **corporativo-movil** - Proyectos para clientes - estilo corporativo - enfoque móvil
+- **corporativo-g360** - Proyectos para clientes con colores G360 vibrantes (PC)
+- **corporativo-g360-movil** - Proyectos para clientes con colores G360 - enfoque móvil
+- **moderno** - Herramientas propias G360 - estilo innovador (PC)
+- **moderno-movil** - Herramientas propias G360 - estilo innovador (móvil)
+- **minimalista** - Proyectos minimalistas - scripts, CLI, Python
+- **custom** - Configuración personalizada - colores ajustables
+- **flet-desktop** - Aplicaciones de escritorio Flet - estilo moderno G360 (PC)
+- **flet-desktop-corporativo** - Aplicaciones Flet para clientes - estilo corporativo conservador
+- **flet-desktop-polished** - Aplicaciones Flet con patrones UI avanzados (theme dual, auto-refresh, hash cache, search debounce, KPI glow)
+
+### Snippets de Código
+
+#### Python CLI
+- `cli-argparse-basic` - Basic argparse CLI structure
+- `cli-subcommands` - CLI with subcommands (git-style)
+- `cli-logging` - Logging setup for CLI
+- `cli-config-json` - Load JSON config file
+- `cli-progress-bar` - Progress bar with tqdm
+- `cli-env-config` - Environment-based configuration
+- `cli-exit-codes` - Exit codes constants
+
+#### Web Components
+- `g360-header` - Standard G360 header
+- `g360-button` - G360 styled button
+- `g360-card` - G360 card component
+- `g360-badge` - G360 status badge
+
+#### Flet Components
+- `flet-page` - Flet page setup with G360 theme
+- `flet-card` - G360 styled Flet Card
+- `flet-button` - G360 styled Flet Button
+- `flet-nav-rail` - Flet navigation rail for desktop
+- `flet-datatable` - Flet DataTable with G360 styling
+- `flet-dialog` - Flet modal dialog
+- `flet-chart-bar` - Flet bar chart for data visualization
+- `flet-chart-line` - LineChart for time series data
+- `flet-kpi-card` - Reusable KPI card for dashboards
+- `flet-drop-zone` - File upload zone with FilePicker
+- `flet-progress-bar` - Styled progress bar for loading states
+- `flet-search-field` - Search field with icon
+- `flet-tabs` - Tabs for multi-view layouts
+- `flet-tooltip` - Rich tooltip on hover
+- `flet-pagination` - Pagination control for large tables
+- `flet-export-menu` - Export dropdown with PopupMenuButton
+
+#### Pandas / Data Processing
+- `pandas-groupby-agg` - Data aggregation with groupby and agg
+- `pandas-nc-normalize` - Normalize Notas de Credito from ERP data
+- `pandas-calculate-kpi` - Calculate derived KPIs from data
+- `pandas-date-range` - Filter DataFrame by date range
+- `pandas-gap-analysis` - Gap analysis between catalog and purchases
+- `pandas-temporal-compare` - Temporal comparison A vs B period
+- `pandas-hhi-index` - Calculate Herfindahl-Hirschman Index
+
+#### Excel / Openpyxl
+- `openpyxl-workbook` - Create Excel workbook with G360 styling
+- `openpyxl-styled-table` - Write styled table to Excel sheet
+- `openpyxl-kpi-sheet` - Create KPI summary sheet with formatting
+- `openpyxl-multi-sheet` - Create multi-sheet Excel report
+
+### Plantillas de Proyecto
+
+- **web-pwa** - Progressive Web App with offline support
+- **svelte-web** - Svelte web application
+- **solid-web** - SolidJS web application
+- **lit-web** - Lit web application
+- **python-cli** - Python command-line tool
+- **python-flet-polished** ⭐ - Python desktop app con Flet — **ESTANDAR ACTUAL** (dual theme, auto-refresh, hash cache, search debounce, KPI glow, G360 signature widget, portable launcher 5 pasos)
+- **python-flet** (legacy) - Python desktop app basico con Flet — us `python-flet-polished` para nuevos proyectos
+- **python-flet-migrate** - Migrate tkinter/ctkinter app to Flet
+- **python-customtkinter** - Python desktop app with CustomTkinter
+
+### Componentes G360
+
+- **g360-signature** - Firma G360 para proyectos web (Web Component)
+- **G360DragModal** - Modal draggable para interfaces
+
+## Convenciones de Desarrollo
+
+### Frameworks y Tecnologías
+
+- **SolidJS**: Usa signals y memos en lugar de React hooks
+- **File Extensions**: `.jsx` para componentes, `.js` para utilities
+- **Imports**: ES6 modules, relative paths preferidos
+- **Naming**: camelCase para funciones/variables, PascalCase para componentes, kebab-case para CSS classes
+- **Exports**: Both named y default exports para componentes
+
+### Flet Desktop
+
+#### Arquitectura Estandar (python-flet-polished)
+```
+proyecto-flet/
+├── src/
+│   ├── core/          # Motor de datos (sin imports de flet)
+│   │   ├── constants.py   # URL, rutas, ventana, version
+│   │   ├── processor.py   # Logica de negocio (heredar BaseProcessor)
+│   │   └── skill.json     # Config del skill aplicado
+│   ├── config/
+│   │   └── theme.py       # Paleta dual dark/light + persistencia
+│   ├── ui/
+│   │   ├── dashboard.py   # Layout base: sidebar, KPIs, search overlay
+│   │   ├── kpi_card.py    # Card reutilizable con glow backlight
+│   │   └── search_overlay.py  # Buscador flotante con debounce
+│   └── app.py             # Orquestador: cache, auto-refresh, shutdown
+├── g360_flet/
+│   └── g360_signature.py  # Widget isotipo G360 (detecta tema auto)
+├── assets/
+│   ├── fonts/             # Inter + JetBrains Mono Variable
+│   ├── images/            # Logos e iconos
+│   └── data/              # Datos de muestra + cache runtime
+├── skill.json             # Skill G360 aplicado
+├── run.bat                # Launcher 5 pasos auto-instalable
+├── launch.vbs             # Lanzador minimizado (sin consola)
+├── build-portable.bat     # Build EXE standalone con PyInstaller
+├── sync_portable.py       # Sincroniza a carpeta portable
+└── requirements.txt       # Dependencias
+```
+
+#### Convenciones de Nombres (Completo)
+
+**Clases UI** — PascalCase con sufijos identificadores:
+| Sufijo | Uso | Ejemplo | Archivo |
+|--------|-----|---------|---------|
+| `App` | Orquestador principal | `StockMonitorApp`, `G360App` | `app.py` |
+| `Dashboard` | Vista principal con KPIs | `SalesDashboard` | `dashboard.py` |
+| `Card` | Tarjeta reutilizable | `KpiCard`, `WarehouseCard` | `kpi_card.py` |
+| `Modal` | Ventana modal | `ExportModal`, `SearchModal` | `export_modal.py` |
+| `Overlay` | Capa flotante | `SearchOverlay`, `LoadingOverlay` | `search_overlay.py` |
+| `Badge` | Indicador pequeno | `HealthBadge`, `StatusBadge` | `health_badge.py` |
+| `Chip` | Tag seleccionable | `WarehouseChip`, `FilterChip` | `filter_chips.py` |
+| `Table` | Tabla de datos | `ProductTable`, `TransferTable` | `product_table.py` |
+| `Header` | Cabecera | `DashboardHeader` | `dashboard_header.py` |
+| `Footer` | Pie de pagina | `AppFooter` | `app_footer.py` |
+
+**Funciones/Metodos** — camelCase con prefijos semanticos:
+| Prefijo | Uso | Ejemplo | Contexto |
+|---------|-----|---------|----------|
+| `_setup_` | Inicializacion | `_setup_page()`, `_setup_theme()` | `__init__` o metodo de setup |
+| `_build_` | Construccion UI | `_build_header()`, `_build_content()` | Metodos de construccion |
+| `_on_` | Event handlers | `_on_click()`, `_on_refresh()` | Manejo de eventos |
+| `_fetch_` / `_download_` | Obtencion datos | `_fetch_data()`, `_download_api()` | HTTP/API calls |
+| `_load_` / `_save_` | Persistencia | `_load_cache()`, `_save_data()` | File I/O |
+| `_update_` / `_refresh_` | Actualizacion | `_update_ui()`, `_refresh_kpis()` | Refresco de datos |
+| `_show_` / `_hide_` | Visibilidad | `_show_loading()`, `_hide_overlay()` | Toggle UI |
+| `_toggle_` | Cambio estado | `_toggle_theme()`, `_toggle_filter()` | Switch estados |
+| `_validate_` | Validaciones | `_validate_input()` | Check datos |
+| `_format_` / `_transform_` | Transformacion | `_format_date()`, `_transform_data()` | Data processing |
+| `_confirm_` / `_alert_` | Confirmaciones | `_confirm_exit()`, `_alert_error()` | Dialogs |
+
+**Variables/Attrs** — snake_case con underscore privado:
+| Patroón | Uso | Ejemplo | Contexto |
+|---------|-----|---------|----------|
+| `_ref_componente` | Referencias UI | `_kpi_row`, `_sidebar` | Atributos de widget |
+| `_estado` | State interno | `_raw_data`, `_loading` | Estado de la app |
+| `_on_accion` | Callbacks | `_on_refresh`, `_on_theme_toggle` | Callbacks registrados |
+| `CONSTANTE` | Globales | `WINDOW_WIDTH`, `CACHE_FILE` | Constantes en modulo |
+
+**Archivos** — snake_case por capa:
+| Capa | Convention | Ejemplo |
+|------|------------|---------|
+| Entry | `main.py` | `main.py` |
+| App orchestration | `app.py` | `app.py`, `monitor.py` |
+| Config/Theme | `config/*.py` | `theme.py`, `constants.py` |
+| Core business | `core/*.py` | `processor.py`, `downloader.py`, `models.py` |
+| UI components | `ui/*.py` | `dashboard.py`, `kpi_card.py` |
+| UI modals | `ui/modals/*.py` | `export_modal.py`, `detail_dialog.py` |
+| Export/Report | `export/*.py` | `excel_report.py` |
+| Tests | `test_*.py` | `test_app.py`, `test_processor.py` |
+
+**Pattern de Entry Point** (Obligatorio):
+```python
+def main(page: ft.Page):
+    """Entry point estandar G360."""
+    app = G360App(page)
+    page.on_close = lambda _: app.shutdown() if hasattr(app, "shutdown") else None
+
+if __name__ == "__main__":
+    ft.app(main, view=ft.AppView.FLET_APP)
+```
+
+#### Theme Colors (skill flet-desktop)
+| Token | Color | Uso |
+|---|---|---|
+| `bg` | `#0b1220` | Fondo principal |
+| `surface` | `#1a2332` | Cards, contenedores |
+| `accent` | `#00d084` | Verde G360 primary |
+| `text` | `#f0f4f8` | Texto principal |
+| `muted` | `#94a3b8` | Texto secundario |
+| `success` | `#22c55e` | Exito/positivo |
+| `warning` | `#f59e0b` | Advertencia |
+| `error` | `#ef4444` | Error/peligro |
+
+Los colores se leen desde `skill.json` via `G360Theme` - **nunca hardcodear**.
+
+Ver `AGENTS-UIUX.md` para:
+- Patrones de componente por framework (Flet, React, Solid, Svelte, Lit)
+- Convenciones de nomenclatura y estructura de archivos
+- Threading, loading states, responsive design
+- Checklist de calidad UI/UX
+
+#### Build Portable
+- **Herramienta**: PyInstaller (onefile, windowed)
+- **Requisito**: VC++ Redistributable en PC destino
+- **Script**: `build-portable.bat` (auto-detecta/instala uv, Python, VC++ Redist)
+- **Output**: `dist/G360-App.exe` (~50-80 MB)
+- **PC limpias**: `run.bat` instala uv → Python 3.11 → .venv → dependencias automaticamente
+
+#### Plantilla python-flet-polished (UI Avanzada)
+Herada de patrones probados en production (stock-monitor CIPSA). Incluye:
+
+| Patrón | Implementacion | Archivo |
+|--------|---------------|---------|
+| Dual theme + persistencia | `src/config/theme.py` | `get_colors()`, `load_theme_preference()`, `save_theme_preference()` |
+| Auto-refresh con lock | `src/app.py` | `threading.Lock()`, `threading.Event()`, `_auto_refresh_loop()` |
+| Cache con hash diff | `src/app.py` | `_hash_data()`, `_data_changed()` — skip rebuild si no cambio |
+| Logger RotatingFileHandler | `main.py` | `RotatingFileHandler(maxBytes=2MB, backupCount=3)` |
+| Search con debounce 250ms | `src/ui/search_overlay.py` | `asyncio.sleep(0.25)`, flechas ↑↓, Enter selecciona |
+| KPI cards con glow | `src/ui/kpi_card.py` | `BoxShadow` + `border` inferior por color semantico |
+| G360 Signature widget | `g360_flet/g360_signature.py` | Detecta tema auto (dark/light), isotipo 3 puntos + chevron |
+| Launcher 5 pasos | `run.bat` | Verif internet → uv → Python 3.11 → .venv → shortcut → app |
+| Sync portable | `sync_portable.py` | Diferencial por mtime/size, elimina obsoletos |
+| Fonts embebidas | `assets/fonts/` | Inter + JetBrains Mono Variable |
+| Stale data badge | `src/ui/dashboard.py` | Indicador visual cuando datos vienen de cache |
+| Shutdown limpio | `main.py` | `page.on_close` → `_auto_refresh_stop.set()` + `join(timeout=3)` |
+
+Uso:
+```bash
+g360 init mi-app --template python-flet-polished --skill flet-desktop-polished --portable
+```
+
+### Formato y Estilo
+
+- **Indentation**: 2 espacios
+- **Line Length**: 100 caracteres máximo
+- **Quotes**: Single quotes para JavaScript, double para JSX attributes
+- **Semicolons**: Requeridos
+- **Trailing Commas**: Requeridos en multi-line objects/arrays
+
+### Organización de Imports
+
+```javascript
+// 1. SolidJS imports
+import { createSignal, createMemo, onMount } from 'solid-js';
+
+// 2. External libraries
+import { utils, writeFile } from 'xlsx';
+
+// 3. Internal modules (relative imports)
+import { formatCurrency } from '../utils/formatters';
+import ProductTable from '../components/ProductTable';
+
+// 4. Styles (at bottom)
+import './App.css';
+```
+
+### Manejo de Errores
+
+- Usa try-catch para operaciones async
+- Proporciona mensajes de error significativos
+- Log errores con contexto
+- Fallbacks graciosos para errores visibles al usuario
+
+### Performance
+
+- Usa `createMemo` para computaciones costosas
+- Evita re-renders innecesarios con proper dependency tracking
+- Usa `For` component para listas en lugar de map
+- Lazy load componentes pesados cuando sea posible
+
+### Formato de Moneda y Números
+
+- **Locale**: es-PE (Peruvian Spanish)
+- **Currency**: S/ para Peruvian Soles
+- **Numbers**: Thousands separator comma, decimal point
+
+### Codificación de Colores
+
+- **Stock Status**: Red para agotado, Yellow para bajo stock, Green para disponible
+- **G360 Theme**: #00d084 primary, glassmorphism effects
+
+### Design Tokens (nunca hardcodear colores)
+
+Los colores salen de los tokens del proyecto, no de constantes escritas a mano.
+
+| Stack | Archivo de tokens | Cómo se consume |
+|-------|-------------------|-----------------|
+| Web (React/Svelte/Solid/Lit/PWA) | `src/styles/g360-tokens.css` | `var(--g360-accent)`, `var(--g360-surface)`, ... |
+| Tailwind v4 | `src/styles/g360-tokens.tailwind.css` | `bg-g360-accent`, `text-g360-muted`, ... |
+| Python (Flet/CustomTkinter) | `src/core/g360_theme.py` | `theme.accent`, `theme.surface`, ... (lee `skill.json`) |
+| Go | `internal/theme/tokens.go` | `theme.Accent` |
+| Rust / Tauri | `src-tauri/src/theme.rs` | `theme::dark::ACCENT` |
+
+Reglas:
+
+- **Nunca** escribir `#00d084` (ni ningún hex) en un componente: usar el token.
+  Si falta un rol, agregarlo al generador (`src/lib/token-generator.js`) y
+  reemitir, no hardcodearlo en el componente.
+- Para cambiar la identidad: `g360 set-accent <familia>` — reemite los tokens
+  de todos los stacks del proyecto.
+- Para regenerar: `g360 tokens [ruta]` (+ `--wire-css` para conectar el token
+  file con las hojas de estilo del proyecto).
+- Un componente debe funcionar igual en todos los stacks: si un rol existe en
+  CSS, tiene que existir en Python, Go y Rust con el mismo nombre.
+- **Tema**: el CSS declara `color-scheme: dark light` y cada rol con
+  `light-dark(oscuro, claro)`. Un toggle de app es
+  `html[data-theme="light"] { color-scheme: light; }`. No escribir reglas de
+  tema a mano.
+
+### Nombres de Archivos
+
+- Components: PascalCase (ProductTable.jsx)
+- Utilities: camelCase (formatCurrency.js)
+- Tests: mismo nombre con extensión .test.js
+- Styles: kebab-case (.btn-primary)
+
+## Comandos g360-cli Disponibles
+
+### Flujo de Diseño UI (loop visual — usar antes y durante tocar UI)
+
+```bash
+# 1. PLANIFICAR (wireframe en texto antes de generar codigo)
+g360 plan-ui <layout> --app "Nombre pantalla" --sections "KPIs,Grafico,Tabla" --out UI-PLAN.md
+
+# Layouts: dashboard-kpi, master-detail, wizard, sidebar-panels, lista-filtros-export
+# (composiciones, no widgets sueltos — ver: g360 list layouts)
+
+# 2. IMPLEMENTAR siguiendo el plan aprobado
+
+# 3. VER (captura screenshot de la app Flet corriendo)
+g360 capture --project <ruta> [--wait 3] [--timeout 45]
+
+# 4. El agente LEE el PNG, compara contra UI-PLAN.md y corrige desviaciones
+
+# 5. AUDITAR (review estatico, objetivo >= 90/100)
+g360 review --project <ruta>
+```
+
+**Regla**: UI nueva nunca empieza en codigo. Primero plan-ui (aprobacion),
+despues codigo, despues capture + comparacion, despues review. Repetir
+hasta que captura == plan y review >= 90.
+
+### Inicialización de Proyectos
+
+```bash
+# Inicializar nuevo proyecto
+g360 init <nombre> [opciones]
+
+# Opciones:
+# -t, --template <tipo>     Tipo de plantilla (default: web-pwa)
+# -s, --skill <skill>       Skill a usar (default: corporativo-movil)
+# -d, --dir <ruta>          Directorio destino (default: .)
+# --dry-run                 Previsualizar sin crear
+# --force                   Sobrescribir existente
+```
+
+### Familias de Acento (derivación simétrica)
+
+```bash
+# Ver familias disponibles (las 7 seleccionables)
+g360 set-accent
+
+# Cambiar la familia del proyecto (reescribe tokens accent* de skill.json)
+g360 set-accent <familia> --project <ruta> [--mode dark|light] [--dry-run]
+
+# Familias: emerald, cyan, azure, indigo, violet, amber, rose
+```
+
+**Sistema**: misma estructura de tokens en todas las familias (simetría),
+semánticos fijos (`success #22c55e`, `warning #f59e0b`, `error #ef4444`,
+`info #3b82f6`), solo cambia el hue. Invariantes validadas por test:
+contraste AA (≥4.5) y `dHue(accent, success) ≥ 25°` salvo excepciones de
+marca (emerald/teal/cipsa, donde `accent === success` sigue prohibido).
+
+### Gestión de Skills
+
+```bash
+# Cambiar skill del proyecto actual
+g360 set-skill <skill> [opciones]
+
+# Opciones:
+# --verbose    Mostrar detalles
+# --force      Sobrescribir skill existente
+```
+
+### Gestión de Assets
+
+```bash
+# Traer assets G360 al proyecto actual
+g360 bring [asset] [opciones]
+
+# Opciones:
+# -p, --path <ruta>    Ruta destino
+# --dry-run            Previsualizar
+# --force              Sobrescribir
+
+# Skills variantes (misma simetria, otro hue):
+#   moderno-azure, flet-desktop-indigo
+#
+# Assets disponibles:
+#   brand               Assets de marca (SVGs, logos, iconos)
+#   brand/cipsa         Aplica marca CIPSA + actualiza skill.json
+#   brand/g360          Aplica marca G360 + actualiza skill.json
+#   components          Componentes UI reutilizables
+#   templates           Plantillas de proyecto
+#   skills              Skills de identidad visual
+#   layouts             Recetas de composicion de pantallas (a g360/layouts/)
+#   layouts/<name>      Un layout especifico (ej. layouts/dashboard-kpi)
+#   all                 Todo
+
+# Ejemplo: aplicar marca CIPSA a proyecto existente
+#   g360 bring brand/cipsa
+#   -> Copia assets a g360/brand/cipsa/
+#   -> Actualiza skill.json con logo, signature y colores
+```
+
+### Listado de Recursos
+
+```bash
+# Listar assets disponibles
+g360 list [tipo] [opciones]
+
+# Tipos:
+# templates    Lista de plantillas
+# components   Lista de componentes
+# skills       Lista de skills
+# snippets     Lista de snippets
+# all          Todo (por defecto)
+
+# Opciones:
+# --json       Salida JSON
+```
+
+### Auditoría y Limpieza
+
+```bash
+# Auditar proyecto para compliance G360
+g360 audit [ruta] [opciones]
+
+# Opciones:
+# --verbose    Salida detallada
+# --no-autonomy    Omitir los checks de autosuficiencia
+
+# Check de stack:
+# - desktop-flet: detecta imports de customtkinter/ctkinter (mezcla de toolkits)
+#   y la versión de Flet vs el target de stacks.json (1.0.5). Los hallazgos son
+#   warning y no cambian el exit code.
+
+# Limpiar código muerto, duplicados y archivos huérfanos
+g360 clean [ruta] [opciones]
+
+# Opciones:
+# --dry-run        Previsualizar archivos
+# --force          Omitir confirmación
+# --dead           Eliminar archivos muertos/descontinuados
+# --duplicates     Eliminar archivos duplicados
+# --orphans        Eliminar archivos huérfanos
+# --organize       Mostrar archivos descolocados
+# --all            Ejecutar todas las verificaciones
+```
+
+### Conversión de Proyectos
+
+```bash
+# Convertir proyecto existente a identidad G360
+g360 convert [ruta] [opciones]
+
+# Opciones:
+# -s, --skill <skill>    Skill a aplicar (default: corporativo-movil)
+# --dry-run              Previsualizar sin aplicar
+# --restructure          Reestructurar archivos
+# --force                Forzar cambios peligrosos
+# --backup               Crear backup antes
+```
+
+### Firma G360
+
+```bash
+# Instalar componente de firma oficial G360
+g360 signature install [opciones]
+
+# Opciones:
+# -p, --path <ruta>    Ruta al index.html (default: .)
+# --force              Reinstalar si ya existe
+```
+
+## Integración con OpenCode
+
+### Uso del Skill
+
+Cuando este skill está activo en OpenCode, el asistente de IA puede:
+
+1. **Recomendar skills apropiados** basándose en el tipo de proyecto
+2. **Sugerir snippets** relevantes para el contexto de desarrollo
+3. **Aplicar convenciones** del ecosistema G360 automáticamente
+4. **Generar código** siguiendo los patrones G360
+5. **Validar compliance** con los estándares G360
+
+### Ejemplos de Interacción
+
+#### Crear Nuevo Proyecto
+
+```
+Usuario: "Quiero crear una app web para un cliente corporativo"
+OpenCode: "Te recomiendo usar el skill 'corporativo-movil' con la plantilla 'web-pwa'. 
+¿Quieres que inicialice el proyecto con g360 init mi-proyecto --skill corporativo-movil --template web-pwa?"
+```
+
+#### Agregar Componente
+
+```
+Usuario: "Necesito un botón con estilo G360"
+OpenCode: "Puedo usar el snippet 'g360-button' que incluye los estilos G360 estándar. 
+Aquí está el código: <button class='g360-btn'>Click</button>"
+```
+
+#### Aplicar Skill
+
+```
+Usuario: "Este proyecto necesita identidad G360"
+OpenCode: "Puedo convertir el proyecto actual usando g360 convert con el skill apropiado. 
+¿Qué skill prefieres: corporativo, moderno, o flet-desktop?"
+```
+
+#### Validar Compliance
+
+```
+Usuario: "Verifica si este proyecto cumple con los estándares G360"
+OpenCode: "Ejecutaré g360 audit para verificar compliance y te reportaré cualquier problema encontrado."
+```
+
+## Configuración del Skill
+
+### Ruta de Recursos
+
+Los recursos de g360-cli se encuentran en:
+
+```
+C:\Users\ccusi\Documents\Proyect_Coder\G360-ecosystem\projects\g360-cli\src\assets\
+├── config/
+│   ├── g360-skills.json    # Skills visuales/branding (corporativo, flet-desktop, etc.)
+│   ├── agent-skills.json   # Skills funcionales/agentes (code-audit, backend, data, etc.)
+│   ├── snippets.json       # Snippets de codigo
+│   └── project-types.json  # Tipos de proyecto
+├── snippets/
+│   └── snippets.json       # Snippets de código
+├── templates/               # Plantillas de proyecto
+├── components/              # Componentes reutilizables
+└── engine/                  # Motor de procesamiento
+```
+
+### Comandos de Ejecución
+
+```bash
+# Desde el directorio del repo g360-cli
+cd "C:\Users\ccusi\Documents\Proyect_Coder\G360-ecosystem\projects\g360-cli"
+
+# Ejecutar comandos g360
+node src/cli.js <comando> [opciones]
+```
+
+## Actualización del Skill
+
+Para mantener este skill actualizado:
+
+1. **Sincronizar con g360-cli**: Actualizar este archivo cuando se agreguen nuevos skills o snippets
+2. **Validar comandos**: Verificar que los comandos de g360-cli funcionen correctamente
+3. **Documentar cambios**: Agregar nuevas funcionalidades a la documentación
+4. **Testing**: Probar las integraciones con OpenCode regularmente
+
+## Referencias
+
+- **g360-cli README**: Documentación completa de g360-cli
+- **AGENTS.md**: Guías de desarrollo para agentes en el ecosistema G360
+- **AGENTS-UIUX.md**: Lineamientos UI/UX por framework (Flet, React, Solid, Svelte, Lit)
+- **FLET-DESKTOP-FEEDBACK.md**: Lecciones aprendidas de apps Flet reales
+- **G360 Ecosystem**: Documentación del ecosistema G360
+
+## Notas
+
+- Este skill está diseñado para funcionar con OpenCode y proporcionar contexto sobre el ecosistema G360
+- Los recursos de g360-cli están disponibles localmente en el repo del proyecto
+- Para usar los comandos de g360-cli, asegúrate de estar en el directorio correcto
+- Los skills y snippets pueden ser personalizados según las necesidades del proyecto

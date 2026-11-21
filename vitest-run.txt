@@ -1,0 +1,470 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.6 [39m[90mC:/Users/ccusi/Documents/Proyect_Coder/G360-ecosystem/projects/g360-cli[39m
+
+(node:11796) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ [32mÔ£ô[39m src/commands/setup.test.js [2m([22m[2m22 tests[22m[2m)[22m[33m 2978[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m crea backup del contenido existente antes de sobrescribir [33m 337[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m reutiliza el backup del mismo d├¡a en vez de duplicar [33m 492[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m no crea backup cuando no hay configuraci├│n previa [33m 367[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m crea el manifest de integridad al terminar [33m 621[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m isPlatformInstalled returns false when config missing (opencode installed) [33m 481[2mms[22m[39m
+ [32mÔ£ô[39m src/commands/init.test.js [2m([22m[2m2 tests[22m[2m)[22m[33m 1750[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m should export init function [33m 1747[2mms[22m[39m
+ [32mÔ£ô[39m src/commands/health.test.js [2m([22m[2m4 tests[22m[2m)[22m[33m 6508[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m debe reportar ok cuando npm responde con status 0 [33m 2790[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m detecta npm realmente instalado en esta m├íquina (integraci├│n) [33m 3674[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/agents-generator.test.js [2m([22m[2m24 tests[22m[2m)[22m[33m 574[2mms[22m[39m
+stderr | src/commands/validate.test.js > validate command > --json flag support > should accept json option without breaking
+  No se encontraron archivos para validar
+[90mstdout[2m | src/commands/validate.test.js[2m > [22m[2mvalidate command[2m > [22m[2mschema validation[2m > [22m[2mshould fail with descriptive error when a required field is missing
+[22m[39m2026-11-20 21:54:46 [[33MWARN[39M]: Validation failed for schema: skills-schema {"errors":["/skills/0 must have required property 'description'","/skills/0 must have required property 'device'","/skills/0 must have required property 'colors'","/skills/0 must have required property 'signature'"]}
+
+[90mstdout[2m | src/commands/validate.test.js[2m > [22m[2mvalidate command[2m > [22m[2m--json flag support[2m > [22m[2mshould accept json option without breaking
+[22m[39m
+­ƒöì Validando archivos ERP
+
+
+
+ [32mÔ£ô[39m src/commands/validate.test.js [2m([22m[2m5 tests[22m[2m)[22m[33m 1284[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m should validate a valid skill against skills schema [33m 1120[2mms[22m[39m
+ [32mÔ£ô[39m src/commands/audit.test.js [2m([22m[2m8 tests[22m[2m)[22m[33m 374[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/ui-review.test.js [2m([22m[2m29 tests[22m[2m)[22m[33m 343[2mms[22m[39m
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m
+­ƒöº G360 Multi-Agent Setup
+
+  Plataforma: opencode
+  Reset: s├¡
+  Dry-run: no
+
+  [!] --reset eliminar├í la configuraci├│n existente antes de reinstalar
+
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m
+­ƒöº OPENCODE
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô opencode/opencode.json
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô agents/adversary.md
+
+ [32mÔ£ô[39m src/commands/scan-windows.test.js [2m([22m[2m19 tests[22m[2m)[22m[33m 10794[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m sys.argv[1] recibe ruta correcta con recursive=true: 'Unix simple' [33m 1088[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m sys.argv[1] recibe ruta correcta con recursive=true: 'Windows Users' [33m 974[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m sys.argv[1] recibe ruta correcta con recursive=true: 'Windows newline seq' [33m 788[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m sys.argv[1] recibe ruta correcta con recursive=true: 'Espacios' [33m 1078[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m sys.argv[1] recibe ruta correcta con recursive=true: 'Ap├│strofe' [33m 1959[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m sys.argv[1] recibe ruta correcta con recursive=true: 'Unicode japon├®s' [33m 1201[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m sys.argv[1] recibe ruta correcta con recursive=false: 'Unix simple' [33m 663[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m sys.argv[1] recibe ruta correcta con recursive=false: 'Windows Users' [33m 414[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m sys.argv[1] recibe ruta correcta con recursive=false: 'Windows newline seq' [33m 711[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m sys.argv[1] recibe ruta correcta con recursive=false: 'Espacios' [33m 608[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m sys.argv[1] recibe ruta correcta con recursive=false: 'Ap├│strofe' [33m 612[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m sys.argv[1] recibe ruta correcta con recursive=false: 'Unicode japon├®s' [33m 643[2mms[22m[39m
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô agents/architect.md
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô agents/data-specialist.md
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô agents/evaluator.md
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô agents/orchestrator.md
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô agents/proposer.md
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô agents/qa-specialist.md
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô agents/reviewer.md
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô agents/security-auditor.md
+
+ [32mÔ£ô[39m src/commands/update.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 188[2mms[22m[39m
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô skills/orchestrate/SKILL.md
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m
+­ƒôÜ Docs can├│nicas
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô .agents/HANDOFF.md
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô .agents/MULTIAGENTE.md
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô .agents/AGENTS.md
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô .agents/MIGRACIONES.md
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m  Ô£ô .agents/GLOSARIO.md
+
+[90mstdout[2m | setup.permissions.opencode.test.js[2m > [22m[2mpermisos instalados (opencode.json generado por setup)
+[22m[39m
+Ô£ô manifest creado en ~\.agents\.manifest.json (16 archivos)
+
+­ƒôè Resumen
+
+  Ô£ô opencode: installed
+
+  Docs: .agents/HANDOFF.md, MULTIAGENTE.md
+
+Ô£à Configuraci├│n lista.
+
+  Para verificar:
+    opencode api get /api/agent    # OpenCode
+    kilo agent list                  # Kilo
+    Test con: g360 audit .
+
+
+ [32mÔ£ô[39m setup.permissions.opencode.test.js [2m([22m[2m9 tests[22m[2m)[22m[33m 1029[2mms[22m[39m
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)
+[22m[39m
+­ƒöº G360 Multi-Agent Setup
+
+  Plataforma: kilo
+  Reset: s├¡
+  Dry-run: no
+
+  [!] --reset eliminar├í la configuraci├│n existente antes de reinstalar
+
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)
+[22m[39m
+­ƒöº KILO
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)
+[22m[39m  Ô£ô kilo/kilo.jsonc
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)
+[22m[39m
+­ƒôÜ Docs can├│nicas
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)
+[22m[39m  Ô£ô .agents/HANDOFF.md
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)
+[22m[39m  Ô£ô .agents/MULTIAGENTE.md
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)
+[22m[39m  Ô£ô .agents/AGENTS.md
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)
+[22m[39m  Ô£ô .agents/MIGRACIONES.md
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)
+[22m[39m  Ô£ô .agents/GLOSARIO.md
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)
+[22m[39m
+Ô£ô manifest creado en ~\.agents\.manifest.json (6 archivos)
+
+­ƒôè Resumen
+
+  Ô£ô kilo: installed
+
+  Docs: .agents/HANDOFF.md, MULTIAGENTE.md
+
+Ô£à Configuraci├│n lista.
+
+  Para verificar:
+    opencode api get /api/agent    # OpenCode
+    kilo agent list                  # Kilo
+    Test con: g360 audit .
+
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)[2m > [22m[2mno sobrescribe un AGENTS.md existente del usuario
+[22m[39m
+­ƒöº G360 Multi-Agent Setup
+
+  Plataforma: kilo
+  Reset: no
+  Dry-run: no
+
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)[2m > [22m[2mno sobrescribe un AGENTS.md existente del usuario
+[22m[39mÔ£ô backup creado en ~\.backup\20261120-215450
+
+  ÔÜá kilo: ya instalado. Us├í --reset para sobrescribir.
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)[2m > [22m[2mno sobrescribe un AGENTS.md existente del usuario
+[22m[39m
+­ƒôÜ Docs can├│nicas
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)[2m > [22m[2mno sobrescribe un AGENTS.md existente del usuario
+[22m[39m  Ô£ô .agents/HANDOFF.md
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)[2m > [22m[2mno sobrescribe un AGENTS.md existente del usuario
+[22m[39m  Ô£ô .agents/MULTIAGENTE.md
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)[2m > [22m[2mno sobrescribe un AGENTS.md existente del usuario
+[22m[39m  Ô£ô .agents/AGENTS.md
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)[2m > [22m[2mno sobrescribe un AGENTS.md existente del usuario
+[22m[39m  Ô£ô .agents/MIGRACIONES.md
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)[2m > [22m[2mno sobrescribe un AGENTS.md existente del usuario
+[22m[39m  Ô£ô .agents/GLOSARIO.md
+
+[90mstdout[2m | setup.permissions.test.js[2m > [22m[2mpermisos instalados (kilo.jsonc generado por setup)[2m > [22m[2mno sobrescribe un AGENTS.md existente del usuario
+[22m[39m
+Ô£ô manifest creado en ~\.agents\.manifest.json (6 archivos)
+
+­ƒôè Resumen
+
+  ! kilo: skipped
+
+  Docs: .agents/HANDOFF.md, MULTIAGENTE.md
+
+Ô£à Configuraci├│n lista.
+
+  Para verificar:
+    opencode api get /api/agent    # OpenCode
+    kilo agent list                  # Kilo
+    Test con: g360 audit .
+
+
+ [32mÔ£ô[39m setup.permissions.test.js [2m([22m[2m20 tests[22m[2m)[22m[32m 204[2mms[22m[39m
+ [32mÔ£ô[39m src/commands/tokens.test.js [2m([22m[2m2 tests[22m[2m)[22m[33m 311[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m should export tokens function [33m 307[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/autonomy-auditor.test.js [2m([22m[2m17 tests[22m[2m)[22m[32m 223[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/auditor.test.js [2m([22m[2m16 tests[22m[2m)[22m[32m 210[2mms[22m[39m
+[90mstdout[2m | src/e2e/setup-bring-audit.test.js[2m > [22m[2mE2E: setup ÔåÆ bring ÔåÆ audit flow[2m > [22m[2msetup dry-run no escribe nada en el directorio base
+[22m[39m
+­ƒöº G360 Multi-Agent Setup
+
+  Plataforma: opencode
+  Reset: no
+  Dry-run: s├¡
+
+
+[90mstdout[2m | src/e2e/setup-bring-audit.test.js[2m > [22m[2mE2E: setup ÔåÆ bring ÔåÆ audit flow[2m > [22m[2msetup dry-run no escribe nada en el directorio base
+[22m[39m
+­ƒöº OPENCODE
+
+[90mstdout[2m | src/e2e/setup-bring-audit.test.js[2m > [22m[2mE2E: setup ÔåÆ bring ÔåÆ audit flow[2m > [22m[2msetup dry-run no escribe nada en el directorio base
+[22m[39m  [dry-run] would create:
+    opencode/opencode.json
+    opencode/agents/{adversary,architect,data-specialist,evaluator,orchestrator,proposer,qa-specialist,reviewer,security-auditor}.md
+    opencode/skills/orchestrate/SKILL.md
+
+[90mstdout[2m | src/e2e/setup-bring-audit.test.js[2m > [22m[2mE2E: setup ÔåÆ bring ÔåÆ audit flow[2m > [22m[2msetup dry-run no escribe nada en el directorio base
+[22m[39m
+­ƒôÜ Docs can├│nicas
+  [dry-run] would create:
+    .agents/HANDOFF.md
+    .agents/MULTIAGENTE.md
+    .agents/AGENTS.md (copy from can├│nico)
+    .agents/MIGRACIONES.md
+    .agents/GLOSARIO.md
+
+[90mstdout[2m | src/e2e/setup-bring-audit.test.js[2m > [22m[2mE2E: setup ÔåÆ bring ÔåÆ audit flow[2m > [22m[2msetup dry-run no escribe nada en el directorio base
+[22m[39m
+  [dry-run] would create manifest in ~/.agents/.manifest.json
+
+­ƒôè Resumen
+
+  - opencode: dry-run
+
+  Docs: .agents/HANDOFF.md, MULTIAGENTE.md
+
+Ô£à Configuraci├│n lista.
+
+  Para verificar:
+    opencode api get /api/agent    # OpenCode
+    kilo agent list                  # Kilo
+    Test con: g360 audit .
+
+
+ [32mÔ£ô[39m src/commands/audit-json.test.js [2m([22m[2m2 tests[22m[2m)[22m[33m 449[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m produce salida JSON v├ílida con propiedades esperadas [33m 445[2mms[22m[39m
+ [32mÔ£ô[39m src/e2e/setup-bring-audit.test.js [2m([22m[2m4 tests[22m[2m)[22m[33m 785[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m debe crear estructura G360 b├ísica con bring harness [33m 488[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/setup-manifest.test.js [2m([22m[2m6 tests[22m[2m)[22m[32m 187[2mms[22m[39m
+ [32mÔ£ô[39m src/commands/bring.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 105[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/token-generator.test.js [2m([22m[2m30 tests[22m[2m)[22m[33m 2454[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m should regenerate tokens for a changed accent family [33m 1099[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m should ship the same tokens in every web template [33m 1071[2mms[22m[39m
+ [32mÔ£ô[39m src/commands/addon.test.js [2m([22m[2m5 tests[22m[2m)[22m[33m 716[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m should export addon function [33m 712[2mms[22m[39m
+ [32mÔ£ô[39m src/commands/lint.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 109[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/manifest.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 113[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/json-io.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 191[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/asset-validator.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/file-cache.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 89[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/accent-families.test.js [2m([22m[2m13 tests[22m[2m)[22m[32m 51[2mms[22m[39m
+ [32mÔ£ô[39m src/commands/present.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/stacks-generator.test.js [2m([22m[2m6 tests[22m[2m)[22m[32m 58[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/fuzzing-path.test.js [2m([22m[2m7 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/fuzzing-encoding.test.js [2m([22m[2m6 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32mÔ£ô[39m src/commands/plan-ui.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+(node:7236) [DEP0187] DeprecationWarning: Passing invalid argument types to fs.existsSync is deprecated
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ [32mÔ£ô[39m src/lib/validator.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 98[2mms[22m[39m
+ [32mÔ£ô[39m src/commands/set-skill.test.js [2m([22m[2m6 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32mÔ£ô[39m src/commands/review.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/design-consistency.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/properties.test.js [2m([22m[2m6 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/fuzzing-injection.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32mÔ£ô[39m src/commands/ingest.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 132[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/model-resolver.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+[90mstdout[2m | src/commands/list.test.js[2m > [22m[2mlist command[2m > [22m[2mlist templates[2m > [22m[2mshould list available templates
+[22m[39m
+­ƒôï G360 Assets
+
+Warning: Could not read skills config: Cannot read properties of undefined (reading 'skills')
+Warning: Could not read layouts config: Cannot read properties of undefined (reading 'layouts')
+Warning: Could not read snippets config: Cannot read properties of undefined (reading 'snippets')
+Warning: Could not read brand config: Cannot read properties of undefined (reading 'brands')
+
+­ƒôü Templates:
+  - web-pwa
+  - svelte-web
+  - solid-web
+
+
+[90mstdout[2m | src/commands/list.test.js[2m > [22m[2mlist command[2m > [22m[2mlist templates[2m > [22m[2mshould return empty array when templates directory does not exist
+[22m[39m
+­ƒôï G360 Assets
+
+
+­ƒôü Templates:
+  No templates found
+
+
+[90mstdout[2m | src/commands/list.test.js[2m > [22m[2mlist command[2m > [22m[2mlist skills[2m > [22m[2mshould list skills from g360-skills.json
+[22m[39m
+­ƒôï G360 Assets
+
+Warning: Could not read snippets config: Cannot read properties of undefined (reading 'map')
+
+ÔÜí Skills:
+  - corporativo
+    Proyectos corporativos
+    Device: pc
+  - moderno
+    Herramientas modernas
+    Device: movil
+
+
+[90mstdout[2m | src/commands/list.test.js[2m > [22m[2mlist command[2m > [22m[2mlist skills[2m > [22m[2mshould handle missing g360-skills.json gracefully
+[22m[39m
+­ƒôï G360 Assets
+
+
+ÔÜí Skills:
+  No skills found
+
+
+[90mstdout[2m | src/commands/list.test.js[2m > [22m[2mlist command[2m > [22m[2mlist snippets[2m > [22m[2mshould list snippets from snippets.json
+[22m[39m
+­ƒôï G360 Assets
+
+Warning: Could not read skills config: Cannot read properties of undefined (reading 'map')
+
+­ƒôØ Snippets:
+  - cli-argparse-basic
+    Basic argparse CLI
+    Language: python
+  - g360-button
+    G360 styled button
+    Language: html
+
+
+[90mstdout[2m | src/commands/list.test.js[2m > [22m[2mlist command[2m > [22m[2mlist snippets[2m > [22m[2mshould handle missing snippets.json gracefully
+[22m[39m
+­ƒôï G360 Assets
+
+
+­ƒôØ Snippets:
+  No snippets found
+
+
+[90mstdout[2m | src/commands/list.test.js[2m > [22m[2mlist command[2m > [22m[2mlist all[2m > [22m[2mshould list all asset types
+[22m[39m
+­ƒôï G360 Assets
+
+Warning: Could not read skills config: Cannot read properties of undefined (reading 'map')
+Warning: Could not read snippets config: Cannot read properties of undefined (reading 'map')
+
+­ƒôü Templates:
+  - web-pwa
+  - svelte-web
+
+­ƒº® Components:
+  No components found
+
+ÔÜí Skills:
+  No skills found
+
+­ƒôÑ Ingestion Modules:
+  - ingestion (ERP data normalizer for Flet)
+    Run: g360 bring ingestion
+
+­ƒÄ¿ Brands:
+  No brands found
+
+­ƒôØ Snippets:
+  No snippets found
+
+­ƒñû Harness:
+  - opencode (skills/g360-design + commands en .opencode/)
+  - kilocode (rules + commands en .kilo/, legacy .kilocode/)
+    Run: g360 bring harness
+
+­ƒù║  Layouts (composicion de pantallas):
+  No layouts found
+
+
+[90mstdout[2m | src/commands/list.test.js[2m > [22m[2mlist command[2m > [22m[2mJSON output[2m > [22m[2mshould output JSON when requested
+[22m[39mWarning: Could not read snippets config: Cannot read properties of undefined (reading 'map')
+{
+  "templates": [
+    "web-pwa"
+  ],
+  "components": [],
+  "skills": [
+    {
+      "name": "corporativo",
+      "description": "Proyectos corporativos",
+      "device": "pc"
+    }
+  ],
+  "brands": [],
+  "ingestion": [
+    "ingestion"
+  ],
+  "harness": [
+    "web-pwa"
+  ],
+  "layouts": []
+}
+
+ [32mÔ£ô[39m src/commands/list.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/reviewer-evals.test.js [2m([22m[2m20 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/data-catalog.test.js [2m([22m[2m12 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/python-runner.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/adversary-reporter.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32mÔ£ô[39m src/commands/scan-interpolation.test.js [2m([22m[2m17 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32mÔ£ô[39m src/commands/agents.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/version-sync.test.js [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/path-utils.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32mÔ£ô[39m src/lib/vitest-config.test.js [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m49 passed[39m[22m[90m (49)[39m
+[2m      Tests [22m [1m[32m450 passed[39m[22m[90m (450)[39m
+[2m   Start at [22m 21:54:36
+[2m   Duration [22m 31.31s[2m (transform 3.05s, setup 0ms, import 11.16s, tests 32.83s, environment 13ms)[22m
+

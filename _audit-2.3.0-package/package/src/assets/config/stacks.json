@@ -1,0 +1,139 @@
+{
+  "version": "1.0.0",
+  "lastReview": "2026-11-07",
+  "stacks": {
+    "web-react-vite": {
+      "slug": "web-react-vite",
+      "name": "React + Vite",
+      "status": "recommended",
+      "domain": "web",
+      "targetVersions": {
+        "node": ">=22",
+        "vite": "5.x",
+        "react": "18.x"
+      },
+      "whenToUse": "App web interactiva con estado complejo, requiere routing y componentes reutilizables",
+      "whenNotToUse": "Script simple, CLI, o app de escritorio (usar Flet o Tauri)",
+      "visualVerification": "Playwright por componente, matriz claro/oscuro × ancho/estrecho",
+      "exception": null
+    },
+    "web-svelte-vite": {
+      "slug": "web-svelte-vite",
+      "name": "Svelte + Vite",
+      "status": "maintained",
+      "domain": "web",
+      "targetVersions": {
+        "node": ">=22",
+        "vite": "5.x",
+        "svelte": "4.x"
+      },
+      "whenToUse": "App web ligera, buen rendimiento sin virtual DOM, proyectos pequeños",
+      "whenNotToUse": "Cuando el equipo domina React; Svelte tiene menor ecosistema de componentes",
+      "visualVerification": "Playwright por componente, matriz claro/oscuro",
+      "exception": null
+    },
+    "web-solid-vite": {
+      "slug": "web-solid-vite",
+      "name": "SolidJS + Vite",
+      "status": "maintained",
+      "domain": "web",
+      "targetVersions": {
+        "node": ">=22",
+        "vite": "5.x",
+        "solid": "1.x"
+      },
+      "whenToUse": "App web de alto rendimiento con reactividad fine-grained",
+      "whenNotToUse": "Proyectos que necesitan grandes ecosystems de componentes (React tiene más)",
+      "visualVerification": "Playwright por componente",
+      "exception": null
+    },
+    "web-lit-vite": {
+      "slug": "web-lit-vite",
+      "name": "Lit + Vite",
+      "status": "deprecated",
+      "domain": "web",
+      "successor": "web-react-vite",
+      "targetVersions": {
+        "node": ">=22",
+        "vite": "5.x",
+        "lit": "3.x"
+      },
+      "whenToUse": null,
+      "whenNotToUse": "Nuevo proyecto: usar React+Vite. Solo mantener existencias.",
+      "visualVerification": null,
+      "exception": "g360-stock-reporter-lit — migrar en próximo rollout"
+    },
+    "desktop-flet": {
+      "slug": "desktop-flet",
+      "name": "Flet Desktop",
+      "status": "maintained",
+      "domain": "desktop",
+      "targetVersions": {
+        "python": ">=3.11",
+        "flet": "1.0.5",
+        "pip": ">=24.0"
+      },
+      "whenToUse": "App de escritorio Python con UI rica, procesamiento de archivos locales, integración ERP",
+      "whenNotToUse": "Web app, CLI tool, o cuando se necesita rendimiento nativo (usar Tauri/Rust)",
+      "visualVerification": "Playwright en modo web Flet + screenshot manual en desktop",
+      "exception": null
+    },
+    "desktop-tauri": {
+      "slug": "desktop-tauri",
+      "name": "Tauri 2",
+      "status": "experimental",
+      "domain": "desktop",
+      "reviewBy": "2027-02-01",
+      "targetVersions": {
+        "node": ">=22",
+        "tauri": "2.x",
+        "rust": "1.75+"
+      },
+      "whenToUse": "App de escritorio web-based con instalador pequeño (<10MB), distribución sin Python",
+      "whenNotToUse": "Requiere lógica Python compleja (pandas, procesadores ERP); usar Flet en ese caso",
+      "visualVerification": "Playwright + Tauri WebDriver por componente, matriz tema × resolución",
+      "exception": "Piloto en g360-day-calculator"
+    },
+    "cli-node": {
+      "slug": "cli-node",
+      "name": "Node CLI",
+      "status": "recommended",
+      "domain": "cli",
+      "targetVersions": {
+        "node": ">=22"
+      },
+      "whenToUse": "Herramienta de línea de comandos Node.js, scripts de automatización",
+      "whenNotToUse": "App con GUI (usar Flet/Tauri) o procesamiento pesado de datos (usar Python)",
+      "visualVerification": null,
+      "exception": null
+    },
+    "cli-python": {
+      "slug": "cli-python",
+      "name": "Python CLI",
+      "status": "recommended",
+      "domain": "cli",
+      "targetVersions": {
+        "python": ">=3.11",
+        "uv": ">=0.4"
+      },
+      "whenToUse": "CLI Python con procesamiento de datos, integración con pandas/DuckDB",
+      "whenNotToUse": "App con GUI (usar Flet) o tool simple (usar Node CLI)",
+      "visualVerification": null,
+      "exception": null
+    },
+    "api-hono": {
+      "slug": "api-hono",
+      "name": "Hono API",
+      "status": "recommended",
+      "domain": "api",
+      "targetVersions": {
+        "node": ">=22",
+        "hono": "4.x"
+      },
+      "whenToUse": "API REST/edge-compatible con TypeScript, testing sin servidor (app.request())",
+      "whenNotToUse": "Tool de escritorio, CLI, o app monolítica sin necesidad de API separada",
+      "visualVerification": null,
+      "exception": null
+    }
+  }
+}
